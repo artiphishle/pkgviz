@@ -2,6 +2,9 @@
 import { readdirSync } from 'node:fs';
 import { resolve, relative } from 'node:path';
 
+// Put to constants (also in other file)
+const JAVA_ROOT = 'src/main/java';
+
 export async function getIntrinsicPackagesRecursive(
   root: string = resolve(process.env.NEXT_PUBLIC_PROJECT_PATH || ''),
   currentPath?: string,
@@ -9,7 +12,7 @@ export async function getIntrinsicPackagesRecursive(
 ) {
   if (!root) throw new Error('Required env: NEXT_PUBLIC_PROJECT_PATH');
 
-  const basePath = resolve(root, 'src/main/java');
+  const basePath = resolve(root, JAVA_ROOT);
   const dirPath = currentPath ?? basePath;
 
   const entries = readdirSync(dirPath, { withFileTypes: true });

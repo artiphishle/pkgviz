@@ -14,10 +14,8 @@ export function Cytoscape({ currentPackage, setCurrentPackage }: CytoscapeProps)
   useEffect(() => {
     async function init() {
       const graph = await getJson<ElementsDefinition>('/api/fs/getAllFilesRecursive');
-      const root = await getJson<string>('/api/fs/getRoot');
 
       setPackageGraph(graph);
-      setCurrentPackage(root);
     }
     init();
   }, [setCurrentPackage]);

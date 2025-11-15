@@ -8,12 +8,14 @@ import { ELanguage } from '@/app/utils/detectLanguage.types';
 import { parseJavaFile } from '@/app/utils/parser/java/parseJavaFile';
 import { parseFile as parseTypeScriptFile } from '@/app/utils/parser/typescript/parseFile';
 
+const JAVA_ROOT = 'src/main/java';
+
 /**
  * Returns whether Java file structure is valid
  */
 function isValidJavaFileStructure(dir: string) {
-  const srcMainJavaDir = resolve(dir, 'src/main/java');
-  if (!existsSync(srcMainJavaDir)) throw new Error("Missing dir: 'src/main/java'");
+  const srcMainJavaDir = resolve(dir, JAVA_ROOT);
+  if (!existsSync(srcMainJavaDir)) throw new Error(`Missing dir: ${JAVA_ROOT}'`);
 
   return true;
 }
@@ -24,8 +26,8 @@ function isValidJavaFileStructure(dir: string) {
 export async function resolveRoot(dir: string, detectedLanguage: ELanguage) {
   switch (detectedLanguage) {
     case ELanguage.Java:
-      isValidJavaFileStructure(dir);
-      return resolve(dir, 'src/main/java');
+      if (!isValidJavaFileStructure(dir)) console.error('Failed to find:', JAVA_ROOT);
+      return resolve(dir, JAVA_ROOT);
     case ELanguage.TypeScript:
       return resolve(dir, 'src');
     default:
