@@ -1,4 +1,4 @@
-import type { IFile } from '@/app/api/fs/types';
+import type { IFile } from '@/app/api/fs/types/index';
 
 import { resolve } from 'node:path';
 import { describe, it } from 'node:test';

@@ -8,7 +8,7 @@ import {
   getConcentricStyle,
   getGridStyle,
   getKlayStyle,
-} from '@/themes';
+} from '@/themes/index';
 
 import cytoscape, {
   Core,

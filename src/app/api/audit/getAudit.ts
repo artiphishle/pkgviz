@@ -1,5 +1,5 @@
 'use server';
-import type { IDirectory } from '@/app/api/fs/types';
+import type { IDirectory } from '@/app/api/fs/types/index';
 import type { ILanguageDetectionResult } from '@/app/utils/detectLanguage.types';
 
 import { getParsedFileStructure } from '@/app/utils/getParsedFileStructure';

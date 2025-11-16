@@ -1,5 +1,5 @@
 'use server';
-import type { IDirectory } from '@/app/api/fs/types';
+import type { IDirectory } from '@/app/api/fs/types/index';
 
 import { existsSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -29,7 +29,7 @@ export async function resolveRoot(dir: string, detectedLanguage: ELanguage) {
       if (!isValidJavaFileStructure(dir)) console.error('Failed to find:', JAVA_ROOT);
       return resolve(dir, JAVA_ROOT);
     case ELanguage.TypeScript:
-      return resolve(dir, 'src');
+      return resolve(dir);
     default:
       throw new Error(`Invalid file structure for ${detectedLanguage}`);
   }

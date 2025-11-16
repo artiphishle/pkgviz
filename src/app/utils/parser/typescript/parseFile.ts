@@ -1,4 +1,9 @@
-import type { IFile, MethodCall, MethodDefinition, ImportDefinition } from '@/app/api/fs/types';
+import type {
+  IFile,
+  MethodCall,
+  MethodDefinition,
+  ImportDefinition,
+} from '@/app/api/fs/types/index';
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -15,7 +20,9 @@ function extractImports(content: string): ImportDefinition[] {
   sourceFile.forEachChild(node => {
     if (ts.isImportDeclaration(node)) {
       const moduleSpecifier = (node.moduleSpecifier as ts.StringLiteral).text;
-      const replacedAlias = moduleSpecifier.replace(/^\@/, 'src');
+      const replacedAlias = moduleSpecifier.replace(/^@/, 'src');
+
+      console.log(moduleSpecifier, extractTypeScriptPackageFromImport(moduleSpecifier));
 
       imports.push({
         name: replacedAlias.split('/').join('.'),

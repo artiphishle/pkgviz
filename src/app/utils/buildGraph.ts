@@ -4,7 +4,7 @@ import type {
   ElementsDefinition,
   NodeDefinition,
 } from 'cytoscape';
-import type { IDirectory, IFile } from '@/app/api/fs/types';
+import type { IDirectory, IFile } from '@/app/api/fs/types/index';
 
 /**
  * Builds a weighted dependency graph based on package-level imports.
