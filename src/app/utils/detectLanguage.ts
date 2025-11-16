@@ -106,6 +106,7 @@ export async function isJavaRoot(directoryPath: string): Promise<boolean> {
   const files = fs.readdirSync(directoryPath);
   return (
     files.includes('pom.xml') ||
+    /*** @todo Files ending in .java doesn't make a folder a project root */
     files.some(file => file.endsWith('.java')) ||
     files.includes('build.gradle') ||
     files.includes('build.gradle.kts')

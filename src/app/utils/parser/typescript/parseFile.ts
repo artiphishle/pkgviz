@@ -36,7 +36,7 @@ function extractClassName(content: string, fileName: string): string {
   if (classMatch) {
     return classMatch[1];
   }
-
+  /*** @todo Don't return this fallback, search for functional wrapper instead */
   return path.basename(fileName, '.ts');
 }
 
