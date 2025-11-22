@@ -29,14 +29,16 @@ export function buildGraph(dir: IDirectory) {
 
       // 1) Add directory as a node
       if (isDirectory) {
-        const path = currentPath ? `${currentPath}.${key}` : key;
+        const pkg = currentPath ? `${currentPath}.${key}` : key;
+        console.log('pkg,currentDir,currentPath,key', pkg, currentDir, currentPath, key);
+
         nodes.push({
-          data: { id: path, path, label: path, isIntrinsic: true },
+          data: { id: pkg, path: pkg, parent: currentPath, label: key, isIntrinsic: true },
           group: 'nodes',
         });
 
         // Recurse into subdirectories
-        return buildGraphRecursively(dirOrFile as IDirectory, path, nodes, edges);
+        return buildGraphRecursively(dirOrFile as IDirectory, pkg, nodes, edges);
       }
 
       // 2) Aggregate file imports as weighted package edges (package perspective)
@@ -75,9 +77,12 @@ export function buildGraph(dir: IDirectory) {
       // Node already defined while handling intrinsic directories
       if (rawElements.nodes.find(node => node.data.id === id)) return;
 
+      // Grab the eventual parent for compound nodes
+      const parent = id.includes('.') ? id.split('.').slice(0, -1).join('.') : '';
+
       // Add vendor node: 'isIntrinsic' is not set (vendor package)
       rawElements.nodes.push({
-        data: { id, label: id, path: id },
+        data: { id: parent ? id.split('.').pop() : id, label: id, path: id, parent },
         group: 'nodes',
       });
     });

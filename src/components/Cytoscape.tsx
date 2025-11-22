@@ -7,17 +7,17 @@ import { getJson } from '@/utils/getJson';
 import Loader from '@/components/Loader';
 import ZoomInput from '@/components/ZoomInput';
 
+const API_GET_ALL_FILES_RECURSIVE = '/api/fs/getAllFilesRecursive';
+
 export function Cytoscape({ currentPackage, setCurrentPackage }: CytoscapeProps) {
   const [packageGraph, setPackageGraph] = useState<ElementsDefinition | null>(null);
   const { cyRef, cyInstance } = useCytoscape(packageGraph, currentPackage, setCurrentPackage);
 
   useEffect(() => {
-    async function init() {
-      const graph = await getJson<ElementsDefinition>('/api/fs/getAllFilesRecursive');
-
+    (async function init() {
+      const graph = await getJson<ElementsDefinition>(API_GET_ALL_FILES_RECURSIVE);
       setPackageGraph(graph);
-    }
-    init();
+    })();
   }, [setCurrentPackage]);
 
   if (!packageGraph) return <Loader />;

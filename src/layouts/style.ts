@@ -1,6 +1,6 @@
 import type { ElementsDefinition, StylesheetJson } from 'cytoscape';
 
-import { getWeightBuckets } from '@/themes/getWeightBuckets';
+import { getWeightBuckets } from '@/layouts/getWeightBuckets';
 
 export type ThemeKey = 'dark' | 'light';
 
@@ -48,6 +48,7 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
     {
       selector: 'node',
       style: {
+        shape: 'bottom-round-rectangle',
         'background-color': colors.nodeBg,
         'border-color': colors.nodeBorder,
         color: colors.nodeText,
@@ -56,14 +57,14 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         'text-halign': 'center',
         width: 'label',
         height: 'label',
-        padding: '24px',
+        padding: '8px 8px',
         'border-width': 1,
-        'font-size': '16px',
+        'font-size': '14px',
         'overlay-opacity': 0, // avoid gray overlay
       },
     },
+
     { selector: 'node.isParent', style: { 'font-weight': 'bold' } },
-    { selector: 'node.hushed', style: { 'background-opacity': 0.2, opacity: 0.5 } },
     { selector: 'node.packageCycle', style: { 'border-color': '#d80303', 'border-width': 3 } },
 
     // --- Node Selection ---
@@ -79,9 +80,6 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         opacity: 1,
         'overlay-opacity': 0,
 
-        'z-index-compare': 'manual',
-        'z-index': 999,
-
         // Keep labels readable
         'text-outline-color': theme === 'dark' ? '#000000' : '#FFFFFF',
         'text-outline-width': 1,
@@ -90,6 +88,20 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
     {
       selector: 'node:selected.hushed',
       style: { 'background-opacity': 1, opacity: 1 },
+    },
+    {
+      selector: 'node:parent, node:parent:selected',
+      style: {
+        color: colors.nodeText,
+        'border-width': 1,
+        'border-color': colors.nodeBorder,
+        'text-valign': 'top',
+        'text-margin-y': 20,
+        padding: '10px',
+        'padding-top': '20px',
+        'text-halign': 'center',
+        'font-size': 14,
+      },
     },
 
     // --- Edges ---

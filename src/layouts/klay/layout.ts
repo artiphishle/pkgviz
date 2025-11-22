@@ -1,29 +1,31 @@
-import cytoscape from 'cytoscape';
 import type { KlayLayoutOptions } from 'cytoscape-klay';
 
+import cytoscape from 'cytoscape';
 import klay from 'cytoscape-klay';
 cytoscape.use(klay);
 
 export const layout: KlayLayoutOptions = {
   name: 'klay',
-  nodeDimensionsIncludeLabels: false, // Boolean which changes whether label dimensions are included when calculating node dimensions
-  fit: true, // Whether to fit
-  padding: 20, // Padding on fit
-  animate: false, // Whether to transition the node positions
+
+  animate: true, // Whether to transition the node positions
   animateFilter: function (/* node, i */) {
     return true;
   }, // Whether to animate specific nodes when animation is on; non-animated nodes immediately go to their final positions
   animationDuration: 500, // Duration of animation in ms if enabled
   animationEasing: undefined, // Easing of animation if enabled
+
+  fit: true, // Whether to fit
+  nodeDimensionsIncludeLabels: true, // Boolean which changes whether label dimensions are included when calculating node dimensions
   transform: function (node, pos) {
     return pos;
   }, // A function that applies a transform to the final node position
+  // padding: 20, // Padding on fit
   ready: undefined, // Callback on layoutready
   stop: undefined, // Callback on layoutstop
   klay: {
     // Following descriptions taken from http://layout.rtsys.informatik.uni-kiel.de:9444/Providedlayout.html?algorithm=de.cau.cs.kieler.klay.layered
     addUnnecessaryBendpoints: false, // Adds bend points even if an edge does not change direction.
-    aspectRatio: 1.6, // The aimed aspect ratio of the drawing, that is the quotient of width by height
+    // aspectRatio: 1.6, // The aimed aspect ratio of the drawing, that is the quotient of width by height
     borderSpacing: 20, // Minimal amount of space to be left to the border
     compactComponents: false, // Tries to further compact components (disconnected sub-graphs).
     crossingMinimization: 'LAYER_SWEEP', // Strategy for crossing minimization.
@@ -45,7 +47,7 @@ export const layout: KlayLayoutOptions = {
     RIGHTDOWN Chooses the right-down candidate from the four possible candidates.
     BALANCED Creates a balanced layout from the four possible candidates. */
     inLayerSpacingFactor: 1.0, // Factor by which the usual spacing is multiplied to determine the in-layer spacing between objects.
-    layoutHierarchy: false, // Whether the selected layouter should consider the full hierarchy
+    layoutHierarchy: true, // Whether the selected layouter should consider the full hierarchy
     linearSegmentsDeflectionDampening: 0.3, // Dampens the movement of nodes to keep the diagram from getting too large.
     mergeEdges: false, // Edges that have no ports are merged so they touch the connected nodes at the same points.
     mergeHierarchyCrossingEdges: true, // If hierarchical layout is active, hierarchy-crossing edges use as few hierarchical ports as possible.
@@ -62,7 +64,7 @@ export const layout: KlayLayoutOptions = {
     routeSelfLoopInside: false, // Whether a self-loop is routed around or inside its node.
     separateConnectedComponents: true, // Whether each connected component should be processed separately
     spacing: 20, // Overall setting for the minimal amount of space to be left between objects
-    thoroughness: 7, // How much effort should be spent to produce a nice layout..
+    thoroughness: 100, // How much effort should be spent to produce a nice layout..
   },
   priority: function (/* edge */) {
     return null;

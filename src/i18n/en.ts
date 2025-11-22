@@ -20,6 +20,7 @@ const en: ILanguage = {
   breadthfirst: 'Breadthfirst',
   circle: 'Circle',
   concentric: 'Concentric',
+  elk: 'Elk: Layered',
   grid: 'Grid',
   klay: 'Klay',
 };

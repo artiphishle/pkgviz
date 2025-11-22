@@ -7,7 +7,7 @@ import type {
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import * as ts from 'typescript';
+import ts from 'typescript';
 import { extractTypeScriptPackageFromImport } from '@/app/utils/parser/typescript/extractTypeScriptPackageFromImport';
 
 /**
@@ -18,18 +18,15 @@ function extractImports(content: string): ImportDefinition[] {
   const imports: ImportDefinition[] = [];
 
   sourceFile.forEachChild(node => {
-    if (ts.isImportDeclaration(node)) {
-      const moduleSpecifier = (node.moduleSpecifier as ts.StringLiteral).text;
-      const replacedAlias = moduleSpecifier.replace(/^@/, 'src');
+    if (!ts.isImportDeclaration(node)) return;
 
-      console.log(moduleSpecifier, extractTypeScriptPackageFromImport(moduleSpecifier));
+    const moduleSpecifier = (node.moduleSpecifier as ts.StringLiteral).text;
+    const replacedAlias = moduleSpecifier.replace(/^@/, 'src');
 
-      imports.push({
-        name: replacedAlias.split('/').join('.'),
-        pkg: extractTypeScriptPackageFromImport(moduleSpecifier),
-        isIntrinsic: moduleSpecifier.startsWith('@'),
-      });
-    }
+    const isIntrinsic = moduleSpecifier.startsWith('@/');
+    const name = replacedAlias.split('/').join('.');
+    const pkg = extractTypeScriptPackageFromImport(moduleSpecifier);
+    imports.push({ name, pkg, isIntrinsic });
   });
 
   return imports;

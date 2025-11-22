@@ -1,14 +1,15 @@
 'use client';
 import { useTheme } from 'next-themes';
 import { useEffect, useRef, useState } from 'react';
-import { getStyle as getCommonStyle, getCanvasBg } from '@/themes/style';
+import { getStyle as getCommonStyle, getCanvasBg } from '@/layouts/style';
 import {
   getBreadthfirstStyle,
   getCircleStyle,
   getConcentricStyle,
+  getElkStyle,
   getGridStyle,
   getKlayStyle,
-} from '@/themes/index';
+} from '@/layouts/index';
 
 import cytoscape, {
   Core,
@@ -23,7 +24,7 @@ import { filterByPackagePrefix } from '@/utils/filter/filterByPackagePrefix';
 import { filterVendorPackages } from '@/utils/filter/filterVendorPackages';
 import { hasChildren } from '@/utils/hasChildren';
 import { filterEmptyPackages } from '@/utils/filter/filterEmptyPackages';
-import { LAYOUTS } from '@/themes/constants';
+import { LAYOUTS } from '@/layouts/constants';
 import { filterSubPackagesByDepth, getMaxDepth } from '@/utils/filter/filterSubPackagesFromDepth';
 
 export function useCytoscape(
@@ -79,7 +80,6 @@ export function useCytoscape(
     };
 
     console.log(finalElements);
-
     setFilteredElements(finalElements);
     setMaxSubPackageDepth(getMaxDepth(elements));
   }, [
@@ -101,18 +101,20 @@ export function useCytoscape(
         ? getBreadthfirstStyle
         : cytoscapeLayout === 'circle'
           ? getCircleStyle
-          : cytoscapeLayout === 'grid'
-            ? getGridStyle
-            : cytoscapeLayout === 'klay'
-              ? getKlayStyle
-              : getConcentricStyle;
+          : cytoscapeLayout === 'elk'
+            ? getElkStyle
+            : cytoscapeLayout === 'grid'
+              ? getGridStyle
+              : cytoscapeLayout === 'klay'
+                ? getKlayStyle
+                : getConcentricStyle;
 
     const cy = cytoscape({
       layout: {
         ...LAYOUTS[cytoscapeLayout as LayoutOptions['name']],
         spacingFactor: cytoscapeLayoutSpacing,
       } as LayoutOptions,
-      style: [...getLayoutStyle(), ...getCommonStyle(filteredElements, theme)],
+      style: [...getCommonStyle(filteredElements, theme), ...getLayoutStyle()],
       container: cyRef.current,
       elements: filteredElements,
       selectionType: 'additive',
@@ -149,7 +151,10 @@ export function useCytoscape(
       const rawNode = filteredElements.nodes.find(
         elm => elm.data.id === node.data().id
       ) as NodeDefinition;
-      if (hasChildren(rawNode, elements.nodes)) document.body.style.cursor = 'pointer';
+      if (hasChildren(rawNode, elements.nodes)) {
+        document.body.style.cursor = 'pointer';
+        if (hasChildren(rawNode, filteredElements.nodes)) return;
+      }
 
       cy.elements()
         .subtract(node.outgoers())

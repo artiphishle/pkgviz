@@ -15,7 +15,15 @@ export const parseEnv = (name: string, value: string | undefined) => {
  */
 export const getCytoscapeLayout = () => {
   const env = parseEnv('NEXT_PUBLIC_SETTINGS_LAYOUT', process.env.NEXT_PUBLIC_SETTINGS_LAYOUT);
-  return env === 'grid' ? 'grid' : env === 'circle' ? 'circle' : 'concentric';
+  return env === 'grid'
+    ? 'grid'
+    : env === 'circle'
+      ? 'circle'
+      : env === 'klay'
+        ? 'klay'
+        : env === 'elk'
+          ? 'elk'
+          : 'concentric';
 };
 
 /**
