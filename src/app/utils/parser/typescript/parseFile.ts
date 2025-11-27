@@ -24,7 +24,8 @@ function extractImports(content: string): ImportDefinition[] {
     const replacedAlias = moduleSpecifier.replace(/^@/, 'src');
 
     const isIntrinsic = moduleSpecifier.startsWith('@/');
-    const name = replacedAlias.split('/').join('.');
+    const delimiter = replacedAlias.includes('\\') ? '\\' : '/';
+    const name = replacedAlias.split(delimiter).join('.');
     const pkg = extractTypeScriptPackageFromImport(moduleSpecifier);
     imports.push({ name, pkg, isIntrinsic });
   });
