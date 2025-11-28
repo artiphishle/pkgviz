@@ -17,8 +17,12 @@ jobs:
       - name: 🔧 Setup Bun
         uses: oven-sh/setup-bun@v1
 
-      - name: 📥 Install dependencies
-        run: bun install
+      - name: 📥 Install dependencies (scripts disabled)
+        env:
+          # Protect vs SHA1-Hulud attack
+          BUN_INSTALL_POSTINSTALL: '0'
+          BUN_INSTALL_PREINSTALL: '0'
+        run: bun install --no-save # noch weniger Angriffsfläche
 
       - name: 🧹 Lint
         run: bun run lint
