@@ -101,7 +101,8 @@ function extractMethodCalls(content: string): MethodCall[] {
 export async function parseFile(fullPath: string, projectRoot: string): Promise<IFile> {
   const content = await fs.readFile(fullPath, 'utf-8');
   const relativePath = path.relative(projectRoot, fullPath);
-  const segments = relativePath.split('/');
+  const delimiter = relativePath.includes('\\') ? '\\' : '/';
+  const segments = relativePath.split(delimiter);
   const segmentedPath = segments.slice(0, -1);
 
   return {
