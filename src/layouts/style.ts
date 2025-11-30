@@ -44,7 +44,6 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
   const { thresholds } = getWeightBuckets(3, 'linear', filteredElements);
 
   return [
-    // --- Nodes ---
     {
       selector: 'node',
       style: {
@@ -63,11 +62,8 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         'overlay-opacity': 0, // avoid gray overlay
       },
     },
-
     { selector: 'node.isParent', style: { 'font-weight': 'bold' } },
     { selector: 'node.packageCycle', style: { 'border-color': '#d80303', 'border-width': 3 } },
-
-    // --- Node Selection ---
     {
       selector: 'node:selected',
       style: {
@@ -103,8 +99,6 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         'font-size': 14,
       },
     },
-
-    // --- Edges ---
     {
       selector: 'edge',
       style: {
@@ -113,7 +107,7 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         'target-arrow-shape': 'chevron',
         'target-arrow-fill': 'filled',
         'line-color': colors.edge,
-        'curve-style': 'bezier',
+        'curve-style': 'straight',
         opacity: 1,
         'line-opacity': 1,
       },
