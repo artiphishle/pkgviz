@@ -11,10 +11,7 @@ export function getStyle() {
     },
     {
       selector: 'edge',
-      style: {
-        // Bezier curves work well to avoid overlaps
-        'curve-style': 'bezier',
-      },
+      style: {},
     },
   ];
   return styles;

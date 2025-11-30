@@ -5,13 +5,12 @@ export function getStyle() {
     {
       selector: 'node',
       style: {
-        shape: 'rectangle', // Use sharp rectangles for a grid
+        shape: 'rectangle',
       },
     },
     {
       selector: 'edge',
       style: {
-        'curve-style': 'straight', // Straight lines are best for grids
         'text-margin-x': 0, // Reset text margins for straight lines
         'text-margin-y': 0,
       },
