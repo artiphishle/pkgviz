@@ -6,7 +6,6 @@ import {
   concentricLayout,
   elkLayout,
   gridLayout,
-  klayLayout,
 } from '@/layouts/index';
 
 export const LAYOUTS: Record<LayoutOptions['name'], LayoutOptions> = {
@@ -15,5 +14,4 @@ export const LAYOUTS: Record<LayoutOptions['name'], LayoutOptions> = {
   concentric: concentricLayout,
   elk: elkLayout,
   grid: gridLayout,
-  klay: klayLayout,
 } as const;

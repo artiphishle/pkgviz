@@ -8,7 +8,6 @@ import {
   getConcentricStyle,
   getElkStyle,
   getGridStyle,
-  getKlayStyle,
 } from '@/layouts/index';
 
 import cytoscape, {
@@ -105,9 +104,7 @@ export function useCytoscape(
             ? getElkStyle
             : cytoscapeLayout === 'grid'
               ? getGridStyle
-              : cytoscapeLayout === 'klay'
-                ? getKlayStyle
-                : getConcentricStyle;
+              : getConcentricStyle;
 
     const cy = cytoscape({
       layout: {

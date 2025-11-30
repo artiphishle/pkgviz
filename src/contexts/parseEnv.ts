@@ -19,11 +19,9 @@ export const getCytoscapeLayout = () => {
     ? 'grid'
     : env === 'circle'
       ? 'circle'
-      : env === 'klay'
-        ? 'klay'
-        : env === 'elk'
-          ? 'elk'
-          : 'concentric';
+      : env === 'elk'
+        ? 'elk'
+        : 'concentric';
 };
 
 /**

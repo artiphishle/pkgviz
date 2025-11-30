@@ -15,7 +15,7 @@ NEXT_PUBLIC_SETTINGS_SHOW_SUBPACKAGES=true
 # boolean @default false
 NEXT_PUBLIC_SETTINGS_SHOW_VENDORPACKAGES=false
 
-# 'breadthfirst' | 'circle' | 'concentric' | 'elk' | 'grid' | 'klay' @default 'concentric'
+# 'breadthfirst' | 'circle' | 'concentric' | 'elk' | 'grid' @default 'concentric'
 NEXT_PUBLIC_SETTINGS_LAYOUT=concentric
 
 # number @default 0.6 @min 0.1 @max 1 @step 0.1
