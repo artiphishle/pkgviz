@@ -7,18 +7,19 @@ export type ThemeKey = 'dark' | 'light';
 const palette = {
   light: {
     canvasBg: '#ffffff',
-    edge: '#9E9E9E',
-    weightXs: '#B0B0B0',
-    weightMd: '#7A7A7A',
-    weightXl: '#424242',
+    // edge: '#9E9E9E',
+    edge: '#000',
+    weightXs: '#000',
+    weightMd: '#000',
+    weightXl: '#000',
 
-    nodeBg: '#FFFFFF',
-    nodeBorder: '#D0D7DE',
-    nodeText: '#222222',
+    nodeBg: '#E8F1FF',
+    nodeBorder: '#0B5FFF',
+    nodeText: '#0B5FFF',
 
-    selectedFill: '#E8F1FF',
+    selectedFill: '#0B5FFF',
     selectedRing: '#0B5FFF',
-    selectedText: '#0B5FFF',
+    selectedText: '#FFF',
   },
   dark: {
     canvasBg: '#171717',
@@ -62,8 +63,8 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         'overlay-opacity': 0, // avoid gray overlay
       },
     },
-    { selector: 'node.isParent', style: { 'font-weight': 'bold' } },
     { selector: 'node.packageCycle', style: { 'border-color': '#d80303', 'border-width': 3 } },
+    { selector: 'node.isParent', style: { 'font-weight': 'bold' } },
     {
       selector: 'node:selected',
       style: {
@@ -71,14 +72,9 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         'border-color': colors.selectedRing,
         'border-width': 3,
         color: colors.selectedText,
-
         'background-opacity': 1,
         opacity: 1,
         'overlay-opacity': 0,
-
-        // Keep labels readable
-        'text-outline-color': theme === 'dark' ? '#000000' : '#FFFFFF',
-        'text-outline-width': 1,
       },
     },
     {
@@ -88,6 +84,8 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
     {
       selector: 'node:parent, node:parent:selected',
       style: {
+        'background-opacity': 0.1,
+        'background-color': colors.selectedFill,
         color: colors.nodeText,
         'border-width': 1,
         'border-color': colors.nodeBorder,
@@ -97,6 +95,7 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         'padding-top': '20px',
         'text-halign': 'center',
         'font-size': 14,
+        'font-weight': 'bold',
       },
     },
     {
@@ -115,11 +114,7 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
     {
       selector: 'edge.hushed',
       style: {
-        opacity: 0.2, // affects the entire edge (incl. arrows)
-        'line-opacity': 0.4, // extra fade for the stroke
-        'line-color': colors.edge,
-        'target-arrow-color': colors.edge,
-        'source-arrow-color': colors.edge,
+        opacity: 0.1, // affects the entire edge (incl. arrows)
       },
     },
     {

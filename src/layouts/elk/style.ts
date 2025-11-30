@@ -5,8 +5,7 @@ export function getStyle() {
     {
       selector: 'node',
       style: {
-        // 'edge-distances': 'node-position',
-        'edge-distances': 'intersection',
+        'edge-distances': 'intersection', // 'node-position',
       },
     },
   ];
