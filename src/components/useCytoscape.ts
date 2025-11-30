@@ -78,7 +78,6 @@ export function useCytoscape(
       edges: afterVendorPkgFilter.edges,
     };
 
-    console.log(finalElements);
     setFilteredElements(finalElements);
     setMaxSubPackageDepth(getMaxDepth(elements));
   }, [
@@ -107,17 +106,18 @@ export function useCytoscape(
               : getConcentricStyle;
 
     const cy = cytoscape({
+      container: cyRef.current,
+      elements: filteredElements,
+      hideEdgesOnViewport: true,
       layout: {
         ...LAYOUTS[cytoscapeLayout as LayoutOptions['name']],
         spacingFactor: cytoscapeLayoutSpacing,
       } as LayoutOptions,
-      style: [...getCommonStyle(filteredElements, theme), ...getLayoutStyle()],
-      container: cyRef.current,
-      elements: filteredElements,
-      selectionType: 'additive',
-      userPanningEnabled: true,
       minZoom: 0.01,
       maxZoom: 2,
+      selectionType: 'additive',
+      style: [...getCommonStyle(filteredElements, theme), ...getLayoutStyle()],
+      userPanningEnabled: true,
     });
 
     setCyInstance(cy);
