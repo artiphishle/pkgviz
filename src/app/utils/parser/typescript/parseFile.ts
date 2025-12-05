@@ -9,26 +9,43 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import ts from 'typescript';
 import { extractTypeScriptPackageFromImport } from '@/app/utils/parser/typescript/extractTypeScriptPackageFromImport';
+import { parseProjectPath } from '@/contexts/parseEnv';
 
 /**
  * Extracts import statements from TypeScript code.
  */
-function extractImports(content: string): ImportDefinition[] {
+function extractImports(content: string, filename: string): ImportDefinition[] {
   const sourceFile = ts.createSourceFile('temp.ts', content, ts.ScriptTarget.Latest, true);
   const imports: ImportDefinition[] = [];
 
   sourceFile.forEachChild(node => {
     if (!ts.isImportDeclaration(node)) return;
 
+    const fullPath = filename.split('/').slice(0, -1).join('/');
     const moduleSpecifier = (node.moduleSpecifier as ts.StringLiteral).text;
 
-    /** @todo This means only projects with a 'src' folder are supporting path aliases */
-    const replacedAlias = moduleSpecifier.replace(/^@/, 'src');
-    const isIntrinsic = moduleSpecifier.startsWith('@/');
-    const delimiter = replacedAlias.includes('\\') ? '\\' : '/';
-    const name = replacedAlias.split(delimiter).join('.');
-    const pkg = extractTypeScriptPackageFromImport(moduleSpecifier);
-    imports.push({ name, pkg, isIntrinsic });
+    function resolveImportPath(curDir: string, specifier: string) {
+      const root = parseProjectPath();
+
+      if (specifier.startsWith('./') || specifier.startsWith('../'))
+        return {
+          isIntrinsic: true,
+          resolvedPath: path.resolve(curDir, specifier).slice(root.length + 1),
+        };
+
+      if (specifier.startsWith('@/'))
+        return {
+          isIntrinsic: true,
+          resolvedPath: specifier.replace(/^@/, 'src'),
+        };
+
+      return { isIntrinsic: false, resolvedPath: specifier };
+    }
+
+    const { resolvedPath, isIntrinsic } = resolveImportPath(fullPath, moduleSpecifier);
+
+    const pkg = extractTypeScriptPackageFromImport(resolvedPath);
+    imports.push({ name: pkg, pkg, isIntrinsic });
   });
 
   return imports;
@@ -102,13 +119,12 @@ function extractMethodCalls(content: string): MethodCall[] {
 export async function parseFile(fullPath: string, projectRoot: string): Promise<IFile> {
   const content = await fs.readFile(fullPath, 'utf-8');
   const relativePath = path.relative(projectRoot, fullPath);
-  const delimiter = relativePath.includes('\\') ? '\\' : '/';
-  const segments = relativePath.split(delimiter);
+  const segments = relativePath.split('/');
   const segmentedPath = segments.slice(0, -1);
 
   return {
     className: extractClassName(content, fullPath),
-    imports: extractImports(content),
+    imports: extractImports(content, fullPath),
     methods: extractMethodDefinitions(content),
     calls: extractMethodCalls(content),
     package: segmentedPath.join('.'),

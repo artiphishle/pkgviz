@@ -1,8 +1,6 @@
 // Relative import with '../'
 import A from '../components/A';
-
-// Relative import with only '..'
-import H2 from '..';
+import H2 from '../components/H2';
 
 export default function Nav() {
   return (

@@ -30,7 +30,6 @@ export function buildGraph(dir: IDirectory) {
       // 1) Add directory as a node
       if (isDirectory) {
         const pkg = currentPath ? `${currentPath}.${key}` : key;
-        console.log('pkg,currentDir,currentPath,key', pkg, currentDir, currentPath, key);
 
         nodes.push({
           data: { id: pkg, path: pkg, parent: currentPath, label: key, isIntrinsic: true },

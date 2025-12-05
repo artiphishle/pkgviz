@@ -1,4 +1,5 @@
 'use server';
+import { parseProjectPath } from '@/contexts/parseEnv';
 import { readdirSync } from 'node:fs';
 import { resolve, relative } from 'node:path';
 
@@ -6,12 +7,10 @@ import { resolve, relative } from 'node:path';
 const JAVA_ROOT = 'src/main/java';
 
 export async function getIntrinsicPackagesRecursive(
-  root: string = resolve(process.env.NEXT_PUBLIC_PROJECT_PATH || ''),
+  root: string = parseProjectPath(),
   currentPath?: string,
   results: string[] = []
 ) {
-  if (!root) throw new Error('Required env: NEXT_PUBLIC_PROJECT_PATH');
-
   const basePath = resolve(root, JAVA_ROOT);
   const dirPath = currentPath ?? basePath;
 

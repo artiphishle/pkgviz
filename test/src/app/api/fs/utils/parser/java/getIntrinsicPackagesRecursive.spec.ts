@@ -2,13 +2,12 @@ import { resolve } from 'node:path';
 import { describe, it } from 'node:test';
 import { expect } from '@artiphishle/testosterone/src/matchers';
 import { getIntrinsicPackagesRecursive } from '@/app/utils/parser/java/getIntrinsicPackagesRecursive';
+import { parseProjectPath } from '@/contexts/parseEnv';
 
 describe('[getIntrinsicPackagesRecursive]', () => {
   it('Finds "com" package and all sub packages', async () => {
     process.env.NEXT_PUBLIC_PROJECT_PATH = resolve(process.cwd(), 'examples/java/my-app');
-    const projectPath = process.env.NEXT_PUBLIC_PROJECT_PATH;
-    if (!projectPath) throw new Error('no project env');
-
+    const projectPath = parseProjectPath();
     const intrinsicPackages = (await getIntrinsicPackagesRecursive(projectPath)).sort();
 
     expect(intrinsicPackages.length).toBe(4);

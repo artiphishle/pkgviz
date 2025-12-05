@@ -50,10 +50,11 @@ export function useCytoscape(
     if (!elements) return;
 
     const afterPkgFilter = filterByPackagePrefix(elements, currentPackage.replace(/\//g, '.'));
+    console.log('afterPkgFilter', afterPkgFilter);
     const afterSubPkgFilter = showSubPackages
       ? afterPkgFilter
-      : filterSubPackagesByDepth(afterPkgFilter, false, subPackageDepth);
-    // const afterSubPkgFilter = showSubPackages ? afterPkgFilter : filterSubPackages(afterPkgFilter);
+      : filterSubPackagesByDepth(afterPkgFilter, true, subPackageDepth);
+
     const afterVendorPkgFilter = showVendorPackages
       ? afterSubPkgFilter
       : filterVendorPackages(afterSubPkgFilter);

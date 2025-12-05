@@ -1,10 +1,11 @@
 import React, { PropsWithChildren } from 'react';
 import ThemeToggle from '@/components/ThemeToggle';
 import { t } from '@/i18n/i18n';
+import { parseProjectPath } from '@/contexts/parseEnv';
 
 export default function Header({ children, title }: HeaderProps) {
-  const projectPath = process.env.NEXT_PUBLIC_PROJECT_PATH || '{Unknown}';
-  const projectName = projectPath.split(/[\\/]/).pop(); // Backslash for Windows paths
+  const projectPath = parseProjectPath();
+  const projectName = projectPath.split('/').pop();
 
   return (
     <header className="flex flex-row items-center justify-between text-blue-50 bg-blue-500 dark:bg-blue-950 border-b-1 border-b-neutral-200 mb-1 dark:border-b-blue-800 p-2 pb-1 gap-4">
