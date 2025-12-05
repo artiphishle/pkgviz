@@ -21,8 +21,9 @@ function extractImports(content: string): ImportDefinition[] {
     if (!ts.isImportDeclaration(node)) return;
 
     const moduleSpecifier = (node.moduleSpecifier as ts.StringLiteral).text;
-    const replacedAlias = moduleSpecifier.replace(/^@/, 'src');
 
+    /** @todo This means only projects with a 'src' folder are supporting path aliases */
+    const replacedAlias = moduleSpecifier.replace(/^@/, 'src');
     const isIntrinsic = moduleSpecifier.startsWith('@/');
     const delimiter = replacedAlias.includes('\\') ? '\\' : '/';
     const name = replacedAlias.split(delimiter).join('.');
