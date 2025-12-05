@@ -4,8 +4,7 @@ import { ChevronRight, Home } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Breadcrumb({ path, onNavigate }: BreadcrumbProps) {
-  const delimiter = path.includes('\\') ? '\\' : '/';
-  const parts = path.split(delimiter) || [''];
+  const parts = path.split('/') || [''];
 
   return (
     <nav className="flex items-center space-x-1 text-sm">

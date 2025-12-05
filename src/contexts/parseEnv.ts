@@ -1,3 +1,5 @@
+import { toPosix } from '@/utils/toPosix';
+
 /**
  * Parse ENV variable
  * @todo Support more than boolean as soon as needed
@@ -7,6 +9,13 @@ export const parseEnv = (name: string, value: string | undefined) => {
   if (value === 'true') return true;
   if (value === 'false') return false;
   return value;
+};
+
+export const parseProjectPath = () => {
+  const projectPath = process.env.NEXT_PUBLIC_PROJECT_PATH;
+  if (!projectPath) throw new Error('Missing ENV: NEXT_PUBLIC_PROJECT_PATH');
+
+  return toPosix(projectPath);
 };
 
 /**

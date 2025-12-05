@@ -7,6 +7,7 @@ import { detectLanguage } from '@/app/utils/detectLanguage';
 import { ELanguage } from '@/app/utils/detectLanguage.types';
 import { parseJavaFile } from '@/app/utils/parser/java/parseJavaFile';
 import { parseFile as parseTypeScriptFile } from '@/app/utils/parser/typescript/parseFile';
+import { parseProjectPath } from '@/contexts/parseEnv';
 
 const JAVA_ROOT = 'src/main/java';
 
@@ -81,7 +82,7 @@ export async function readDirRecursively(
       // TypeScript
       case ELanguage.TypeScript:
         if (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx')) {
-          result[entry.name] = await parseTypeScriptFile(fullPath, projectRoot);
+          result[entry.name] = await parseTypeScriptFile(fullPath, parseProjectPath());
         }
         break;
     }
@@ -93,9 +94,7 @@ export async function readDirRecursively(
 /**
  * Entrypoint
  */
-export async function getParsedFileStructure(
-  dir: string = process.env.NEXT_PUBLIC_PROJECT_PATH || ''
-) {
+export async function getParsedFileStructure(dir: string = parseProjectPath()) {
   // 1. Detect language & filter non-supported
   const detectedLanguage = (await detectLanguage(dir)).language;
   console.log('1. Detected language:', detectedLanguage);
