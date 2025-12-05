@@ -79,6 +79,7 @@ export function useCytoscape(
     };
 
     setFilteredElements(finalElements);
+    console.log(finalElements);
     setMaxSubPackageDepth(getMaxDepth(elements));
   }, [
     elements,
