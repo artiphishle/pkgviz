@@ -1,54 +1,16 @@
 'use server';
-
 import { ELanguage, type ILanguageDetectionResult } from '@/app/utils/detectLanguage.types';
 
 import fs from 'node:fs';
 import path from 'node:path';
 
-// Limit all filesystem operations to the project root
-const PROJECT_ROOT = path.resolve(process.cwd());
-
-/**
- * Resolve a user-supplied directory path to a safe absolute path
- * within the project root. This pattern is recognized by CodeQL
- * as mitigating path-injection/directory-traversal issues.
- */
-function getSafeDirectoryPath(directoryPath: string): string {
-  // Basic sanity check against null bytes, etc.
-  if (directoryPath.includes('\0')) {
-    throw new Error('Invalid directory path');
-  }
-
-  // Resolve relative to project root; if the input is absolute,
-  // path.resolve will use it and ignore PROJECT_ROOT.
-  const resolved = path.resolve(PROJECT_ROOT, directoryPath);
-
-  // Ensure the resolved path stays within PROJECT_ROOT
-  const rootWithSep = PROJECT_ROOT.endsWith(path.sep) ? PROJECT_ROOT : PROJECT_ROOT + path.sep;
-
-  if (resolved !== PROJECT_ROOT && !resolved.startsWith(rootWithSep)) {
-    throw new Error(`Directory path is outside of allowed root: ${directoryPath}`);
-  }
-
-  return resolved;
-}
-
 export async function detectLanguage(directoryPath: string): Promise<ILanguageDetectionResult> {
-  const safeDirectoryPath = getSafeDirectoryPath(directoryPath);
-
-  // Check if directory exists and is actually a directory
-  let stats: fs.Stats;
-  try {
-    stats = fs.statSync(safeDirectoryPath);
-  } catch {
-    throw new Error(`Directory does not exist: ${safeDirectoryPath}`);
+  // Check if directory exists
+  if (!fs.existsSync(directoryPath) || !fs.statSync(directoryPath).isDirectory()) {
+    throw new Error(`Directory does not exist: ${directoryPath}`);
   }
 
-  if (!stats.isDirectory()) {
-    throw new Error(`Path is not a directory: ${safeDirectoryPath}`);
-  }
-
-  const files = fs.readdirSync(safeDirectoryPath);
+  const files = fs.readdirSync(directoryPath);
   const indicators: Record<ELanguage, string[]> = {
     [ELanguage.JavaScript]: [],
     [ELanguage.TypeScript]: [],
@@ -76,8 +38,9 @@ export async function detectLanguage(directoryPath: string): Promise<ILanguageDe
   }
   if (files.includes('package.json')) {
     try {
-      const packageJsonPath = path.join(safeDirectoryPath, 'package.json');
-      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+      const packageJson = JSON.parse(
+        fs.readFileSync(path.join(directoryPath, 'package.json'), 'utf8')
+      );
       if (packageJson.dependencies?.typescript || packageJson.devDependencies?.typescript) {
         indicators[ELanguage.TypeScript].push('typescript dependency');
       }
@@ -130,20 +93,17 @@ export async function detectLanguage(directoryPath: string): Promise<ILanguageDe
 }
 
 export async function isJavaScriptRoot(directoryPath: string): Promise<boolean> {
-  const safeDirectoryPath = getSafeDirectoryPath(directoryPath);
-  const files = fs.readdirSync(safeDirectoryPath);
+  const files = fs.readdirSync(directoryPath);
   return files.includes('package.json') && !files.includes('tsconfig.json');
 }
 
 export async function isTypeScriptRoot(directoryPath: string): Promise<boolean> {
-  const safeDirectoryPath = getSafeDirectoryPath(directoryPath);
-  const files = fs.readdirSync(safeDirectoryPath);
+  const files = fs.readdirSync(directoryPath);
   return files.includes('tsconfig.json') && files.includes('package.json');
 }
 
 export async function isJavaRoot(directoryPath: string): Promise<boolean> {
-  const safeDirectoryPath = getSafeDirectoryPath(directoryPath);
-  const files = fs.readdirSync(safeDirectoryPath);
+  const files = fs.readdirSync(directoryPath);
   return (
     files.includes('pom.xml') ||
     /*** @todo Files ending in .java doesn't make a folder a project root */
