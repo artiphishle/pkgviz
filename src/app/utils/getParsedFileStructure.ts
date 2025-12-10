@@ -106,16 +106,18 @@ export async function readDirRecursively(
 /**
  * Entrypoint
  */
-export async function getParsedFileStructure(dir: string = parseProjectPath()) {
+export async function getParsedFileStructure() {
+  const projectPath = parseProjectPath();
+
   // 1. Detect language & filter non-supported
-  const detectedLanguage = (await detectLanguage(userPath)).language;
+  const detectedLanguage = (await detectLanguage(projectPath)).language;
   console.log('1. Detected language:', detectedLanguage);
 
   if (![ELanguage.Java, ELanguage.TypeScript].includes(detectedLanguage))
     throw new Error("Supported language is 'Java' & 'TypeScript'. More to follow.");
 
   // 2. Get validated root directory by detectedLanguage
-  const rootDir = await resolveRoot(userPath, detectedLanguage);
+  const rootDir = await resolveRoot(projectPath, detectedLanguage);
   console.log('2. rootDir:', rootDir);
 
   // 3. Read directory recursively (pass resolved root as both dir and projectRoot)
