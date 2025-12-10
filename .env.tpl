@@ -9,9 +9,6 @@ NEXT_PUBLIC_PROJECT_PATH=
 ### Settings (optional)
 ###
 
-# boolean @default true
-NEXT_PUBLIC_SETTINGS_SHOW_SUBPACKAGES=true
-
 # boolean @default false
 NEXT_PUBLIC_SETTINGS_SHOW_VENDORPACKAGES=false
 

@@ -1,26 +1,12 @@
 'use client';
 import type { ElementsDefinition } from 'cytoscape';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useCytoscape } from '@/components/useCytoscape';
-import { getJson } from '@/utils/getJson';
-import Loader from '@/components/Loader';
 import ZoomInput from '@/components/ZoomInput';
 
-const API_GET_ALL_FILES_RECURSIVE = '/api/fs/getAllFilesRecursive';
-
-export function Cytoscape({ currentPackage, setCurrentPackage }: CytoscapeProps) {
-  const [packageGraph, setPackageGraph] = useState<ElementsDefinition | null>(null);
+export function Cytoscape({ currentPackage, packageGraph, setCurrentPackage }: CytoscapeProps) {
   const { cyRef, cyInstance } = useCytoscape(packageGraph, currentPackage, setCurrentPackage);
-
-  useEffect(() => {
-    (async function init() {
-      const graph = await getJson<ElementsDefinition>(API_GET_ALL_FILES_RECURSIVE);
-      setPackageGraph(graph);
-    })();
-  }, [setCurrentPackage]);
-
-  if (!packageGraph) return <Loader />;
 
   return (
     <div className="flex flex-col w-full flex-1 gap-2">
@@ -32,5 +18,6 @@ export function Cytoscape({ currentPackage, setCurrentPackage }: CytoscapeProps)
 
 interface CytoscapeProps {
   readonly currentPackage: string;
+  readonly packageGraph: ElementsDefinition | null;
   readonly setCurrentPackage: (path: string) => void;
 }
