@@ -121,7 +121,9 @@ export async function parseFile(fullPath: string, projectRoot: string): Promise<
   const resolvedPath = posix.resolve(fullPath);
   const resolvedRoot = posix.resolve(projectRoot);
   if (!resolvedPath.startsWith(resolvedRoot)) {
-    throw new Error(`Path traversal detected: ${fullPath} is outside of project root ${projectRoot}`);
+    throw new Error(
+      `Path traversal detected: ${fullPath} is outside of project root ${projectRoot}`
+    );
   }
   const content = await fs.readFile(resolvedPath, 'utf-8');
   const relativePath = posix.relative(projectRoot, fullPath);
