@@ -53,7 +53,7 @@ export function useCytoscape(
     console.log('afterPkgFilter', afterPkgFilter);
     const afterSubPkgFilter = showSubPackages
       ? afterPkgFilter
-      : filterSubPackagesByDepth(afterPkgFilter, true, subPackageDepth);
+      : filterSubPackagesByDepth(afterPkgFilter, false, subPackageDepth);
 
     const afterVendorPkgFilter = showVendorPackages
       ? afterSubPkgFilter

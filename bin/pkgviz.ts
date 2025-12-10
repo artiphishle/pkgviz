@@ -4,6 +4,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as net from 'node:net';
+import { toPosix } from '@/utils/toPosix';
 
 interface Opts {
   out: string;
@@ -147,7 +148,7 @@ function openBrowser(url: string) {
 
 async function main() {
   const opts = parseArgs(process.argv);
-  const callerRoot = process.cwd(); // The project being analyzed
+  const callerRoot = toPosix(process.cwd()); // The project being analyzed
   const port = await findFreePort(opts.port);
   const pkgRoot = resolvePackageRoot(); // The packaged Next app root
   const nextBin = resolveNextBin(pkgRoot);
