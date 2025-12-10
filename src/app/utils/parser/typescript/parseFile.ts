@@ -117,7 +117,15 @@ function extractMethodCalls(content: string): MethodCall[] {
  * Parses a TypeScript file and returns metadata useful for diagram generation.
  */
 export async function parseFile(fullPath: string, projectRoot: string): Promise<IFile> {
-  const content = await fs.readFile(fullPath, 'utf-8');
+  // Validate that fullPath is inside projectRoot
+  const resolvedPath = posix.resolve(fullPath);
+  const resolvedRoot = posix.resolve(projectRoot);
+  if (!resolvedPath.startsWith(resolvedRoot)) {
+    throw new Error(
+      `Path traversal detected: ${fullPath} is outside of project root ${projectRoot}`
+    );
+  }
+  const content = await fs.readFile(resolvedPath, 'utf-8');
   const relativePath = posix.relative(projectRoot, fullPath);
   const segments = relativePath.split('/');
   const segmentedPath = segments.slice(0, -1);
