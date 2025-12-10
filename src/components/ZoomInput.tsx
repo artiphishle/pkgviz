@@ -32,14 +32,22 @@ export default function ZoomInput({ cyInstance }: IZoomInput) {
     };
   }, [cyInstance]);
 
-  // Slider change -> set zoom (and keep pan as-is)
+  // Slider change -> set zoom, anchored at viewport centre
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!cyInstance) return;
     const level = parseFloat(e.target.value);
 
-    // Update Cytoscape first so listeners stay consistent
-    cyInstance.zoom(level);
-    setZoom(level);
+    // Clamp to current min/max just in case
+    const clamped = Math.min(maxZoom, Math.max(minZoom, level));
+
+    // Anchor zoom around the canvas centre (in rendered coords)
+    const renderedPosition = {
+      x: cyInstance.width() / 2,
+      y: cyInstance.height() / 2,
+    };
+
+    cyInstance.zoom({ level: clamped, renderedPosition });
+    setZoom(clamped);
   };
 
   // Zoom to fit button
@@ -49,10 +57,11 @@ export default function ZoomInput({ cyInstance }: IZoomInput) {
     // Fit all elements with a bit of padding
     cyInstance.fit(undefined, 50);
 
-    // Optionally clamp min/max to something reasonable
-    // so slider can't zoom out so far that everything is a dot.
     const nextZoom = cyInstance.zoom();
     setZoom(nextZoom);
+    // If you want, you could also refresh min/max here:
+    // setMinZoom(cyInstance.minZoom());
+    // setMaxZoom(cyInstance.maxZoom());
   };
 
   return (

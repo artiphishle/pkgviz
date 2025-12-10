@@ -86,7 +86,6 @@ const Settings: React.FC = () => {
       </>
 
       <h3>{t('settings.layout')}</h3>
-      {/* Which Cytoscape layout style */}
       <Setting>
         <Select.Root value={cytoscapeLayout} onValueChange={setCytoscapeLayout}>
           <Select.Trigger

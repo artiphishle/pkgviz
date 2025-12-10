@@ -1,6 +1,6 @@
 'use client';
 import { useTheme } from 'next-themes';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { getStyle as getCommonStyle, getCanvasBg } from '@/layouts/style';
 import {
   getBreadthfirstStyle,
@@ -14,8 +14,8 @@ import cytoscape, {
   Core,
   LayoutOptions,
   type ElementsDefinition,
-  type NodeDataDefinition,
   type NodeDefinition,
+  type Layouts,
 } from 'cytoscape';
 import { useSettings } from '@/contexts/SettingsContext';
 import { filterByPackagePrefix } from '@/utils/filter/filterByPackagePrefix';
@@ -33,6 +33,16 @@ export function useCytoscape(
   const cyRef = useRef<HTMLDivElement>(null);
   const [filteredElements, setFilteredElements] = useState<ElementsDefinition | null>(null);
   const [cyInstance, setCyInstance] = useState<Core | null>(null);
+
+  // keep the running layout so we can stop it on swap
+  const layoutRef = useRef<Layouts | null>(null);
+
+  // refs for latest data so event handlers don't need to be re-created
+  const elementsRef = useRef<ElementsDefinition | null>(null);
+  const filteredElementsRef = useRef<ElementsDefinition | null>(null);
+  elementsRef.current = elements;
+  filteredElementsRef.current = filteredElements;
+
   const {
     cytoscapeLayout,
     cytoscapeLayoutSpacing,
@@ -44,12 +54,12 @@ export function useCytoscape(
   const { resolvedTheme } = useTheme();
   const theme = (resolvedTheme === 'dark' ? 'dark' : 'light') as 'dark' | 'light';
 
+  /** 1) Compute filteredElements when inputs change */
   useEffect(() => {
     if (!elements) return;
 
     const afterPkgFilter = filterByPackagePrefix(elements, currentPackage.replace(/\//g, '.'));
-    console.log('afterPkgFilter', afterPkgFilter);
-    const afterSubPkgFilter = filterSubPackagesByDepth(afterPkgFilter, false, subPackageDepth);
+    const afterSubPkgFilter = filterSubPackagesByDepth(afterPkgFilter, true, subPackageDepth);
 
     const afterVendorPkgFilter = showVendorPackages
       ? afterSubPkgFilter
@@ -76,7 +86,6 @@ export function useCytoscape(
     };
 
     setFilteredElements(finalElements);
-    console.log(finalElements);
     setMaxSubPackageDepth(getMaxDepth(elements));
   }, [
     elements,
@@ -87,40 +96,135 @@ export function useCytoscape(
     setMaxSubPackageDepth,
   ]);
 
-  // Init Cytoscape
-  useEffect(() => {
-    if (!cyRef.current || !elements || !filteredElements) return;
+  /** 2) Helper for layout options */
+  const makeLayoutOpts = useCallback(
+    (name: LayoutOptions['name']): LayoutOptions & { [k: string]: unknown } => ({
+      ...LAYOUTS[name],
+      spacingFactor: cytoscapeLayoutSpacing,
+      nodeDimensionsIncludeLabels: true,
+      fit: true,
+      animate: false,
+      animationDuration: 400,
+    }),
+    [cytoscapeLayoutSpacing]
+  );
 
-    const getLayoutStyle =
-      cytoscapeLayout === 'breadthfirst'
-        ? getBreadthfirstStyle
-        : cytoscapeLayout === 'circle'
-          ? getCircleStyle
-          : cytoscapeLayout === 'elk'
-            ? getElkStyle
-            : cytoscapeLayout === 'grid'
-              ? getGridStyle
-              : getConcentricStyle;
+  /** 3) run (or re-run) layout safely; stop any previous instance */
+  const runLayoutSafe = useCallback(
+    (cy: Core, name: LayoutOptions['name']) => {
+      // stop previous layout if any
+      try {
+        layoutRef.current?.stop();
+      } catch {
+        // ignore
+      }
+      layoutRef.current = null;
+
+      if (!cy || cy.destroyed()) return;
+
+      cy.resize();
+
+      requestAnimationFrame(() => {
+        if (!cy || cy.destroyed()) return;
+
+        const layout = cy.layout(makeLayoutOpts(name));
+        layoutRef.current = layout;
+
+        const onStop = () => {
+          if (cy.destroyed()) return;
+          cy.fit(undefined, 50);
+        };
+        cy.one('layoutstop', onStop);
+
+        layout.run();
+      });
+    },
+    [makeLayoutOpts]
+  );
+
+  // Init Cytoscape ONCE (do not depend on cyInstance / filters / spacing / layout)
+  useEffect(() => {
+    if (!cyRef.current) return;
 
     const cy = cytoscape({
       container: cyRef.current,
-      elements: filteredElements,
+      elements: [], // we'll add data in a separate effect
       hideEdgesOnViewport: true,
-      layout: {
-        ...LAYOUTS[cytoscapeLayout as LayoutOptions['name']],
-        spacingFactor: cytoscapeLayoutSpacing,
-      } as LayoutOptions,
       minZoom: 0.01,
       maxZoom: 2,
       selectionType: 'additive',
-      style: [...getCommonStyle(filteredElements, theme), ...getLayoutStyle()],
+      style: getCommonStyle({ nodes: [], edges: [] } as ElementsDefinition, theme),
       userPanningEnabled: true,
     });
 
     setCyInstance(cy);
     cyRef.current.style.background = getCanvasBg(theme);
 
+    const handleResize = () => {
+      if (cy.destroyed()) return;
+      cy.fit(undefined, 50);
+    };
+    const observer = new ResizeObserver(() => requestAnimationFrame(handleResize));
+    observer.observe(cyRef.current);
+
+    return () => {
+      try {
+        layoutRef.current?.stop();
+      } catch {
+        // ignore
+      }
+      layoutRef.current = null;
+      observer.disconnect();
+      cy.destroy();
+      setCyInstance(null);
+    };
+
+    // IMPORTANT: we do NOT include cyInstance or settings here, otherwise
+    // this effect would loop. We handle updates in other effects.
+  }, [theme]); // or [] if you don't care about initial theme here
+
+  /** 5) When data (filteredElements) changes: update graph + rerun layout */
+  useEffect(() => {
+    if (!cyInstance || !filteredElements || cyInstance.destroyed()) return;
+
+    cyInstance.batch(() => {
+      cyInstance.elements().remove();
+      cyInstance.add(filteredElements);
+    });
+
+    // mark parents + dblclick handler based on latest elementsRef
+    cyInstance.nodes().forEach(node => {
+      const rawNode = filteredElementsRef.current?.nodes.find(
+        elm => elm.data.id === node.data().id
+      ) as NodeDefinition | undefined;
+
+      const allNodes = elementsRef.current?.nodes ?? [];
+      node.removeClass('isParent');
+      node.off('dblclick');
+
+      if (!rawNode) return;
+      if (!hasChildren(rawNode, allNodes)) return;
+
+      node.addClass('isParent');
+      node.on('dblclick', () => setCurrentPackage(node.id().replace(/\./g, '/')));
+    });
+
+    runLayoutSafe(cyInstance, cytoscapeLayout as LayoutOptions['name']);
+  }, [cyInstance, filteredElements, cytoscapeLayout, runLayoutSafe, setCurrentPackage]);
+
+  /** 6) If only layout / spacing changes: rerun layout on existing graph */
+  useEffect(() => {
+    if (!cyInstance || !filteredElements || cyInstance.destroyed()) return;
+    runLayoutSafe(cyInstance, cytoscapeLayout as LayoutOptions['name']);
+  }, [cyInstance, filteredElements, cytoscapeLayout, cytoscapeLayoutSpacing, runLayoutSafe]);
+
+  /** 7) Attach interactive event handlers once (using refs for latest data) */
+  useEffect(() => {
+    if (!cyInstance) return;
+    const cy = cyInstance;
+
     const updateHighlights = () => {
+      if (cy.destroyed()) return;
       const selectedNodes = cy.nodes(':selected');
       const all = cy.elements();
       all.removeClass('hushed highlight highlight-outgoer highlight-incomer');
@@ -134,20 +238,19 @@ export function useCytoscape(
 
     cy.on('select unselect', 'node', updateHighlights);
 
-    cy.ready(() => {
-      cy.nodes()
-        .filter(node => !!(node.data as NodeDataDefinition).isParent)
-        .addClass('isParent');
-    });
-
     cy.on('mouseover', 'node', event => {
+      if (cy.destroyed()) return;
       const node = event.target;
-      const rawNode = filteredElements.nodes.find(
-        elm => elm.data.id === node.data().id
-      ) as NodeDefinition;
-      if (hasChildren(rawNode, elements.nodes)) {
+
+      const fe = filteredElementsRef.current;
+      const el = elementsRef.current;
+      const rawNode = fe?.nodes.find(elm => elm.data.id === node.data().id) as
+        | NodeDefinition
+        | undefined;
+
+      if (rawNode && el && hasChildren(rawNode, el.nodes)) {
         document.body.style.cursor = 'pointer';
-        if (hasChildren(rawNode, filteredElements.nodes)) return;
+        if (fe && hasChildren(rawNode, fe.nodes)) return;
       }
 
       cy.elements()
@@ -161,20 +264,25 @@ export function useCytoscape(
     });
 
     cy.on('mouseout', 'node', () => {
+      if (cy.destroyed()) return;
       document.body.style.cursor = 'default';
       updateHighlights();
     });
 
     let highlightDelay: ReturnType<typeof setTimeout>;
     cy.on('mouseover', 'edge', e => {
+      if (cy.destroyed()) return;
       const edge = e.target;
       edge.addClass('highlight-dependency');
       highlightDelay = setTimeout(() => {
+        if (cy.destroyed()) return;
         edge.source().addClass('highlight-dependency');
         edge.target().addClass('highlight-dependency');
       }, 150);
     });
+
     cy.on('mouseout', 'edge', e => {
+      if (cy.destroyed()) return;
       const edge = e.target;
       edge.removeClass('highlight-dependency');
       clearTimeout(highlightDelay);
@@ -182,40 +290,31 @@ export function useCytoscape(
       edge.target().removeClass('highlight-dependency');
     });
 
-    cy.nodes().forEach(node => {
-      const rawNode = filteredElements.nodes.find(
-        elm => elm.data.id === node.data().id
-      ) as NodeDefinition;
-      if (!hasChildren(rawNode, elements.nodes)) return;
-      node.addClass('isParent');
-      node.on('dblclick', () => setCurrentPackage(node.id().replace(/\./g, '/')));
-    });
-
-    // Fit on resize
-    const handleResize = () => cy.fit();
-    const observer = new ResizeObserver(() => requestAnimationFrame(handleResize));
-    observer.observe(cyRef.current);
-
     return () => {
-      cy.destroy();
-      observer.disconnect();
-      setCyInstance(null);
+      cy.removeAllListeners?.();
+      document.body.style.cursor = 'default';
     };
-  }, [
-    elements,
-    filteredElements,
-    cytoscapeLayout,
-    cytoscapeLayoutSpacing,
-    theme,
-    setCurrentPackage,
-  ]);
+  }, [cyInstance]);
 
-  // Theme live update: Restyle without re-creating the instance
+  /** 8) Theme + layout-style live update */
   useEffect(() => {
     if (!cyInstance || !filteredElements || !cyRef.current) return;
-    cyInstance.style([...getCommonStyle(filteredElements, theme)]).update();
+
+    const getLayoutStyle =
+      cytoscapeLayout === 'breadthfirst'
+        ? getBreadthfirstStyle
+        : cytoscapeLayout === 'circle'
+          ? getCircleStyle
+          : cytoscapeLayout === 'elk'
+            ? getElkStyle
+            : cytoscapeLayout === 'grid'
+              ? getGridStyle
+              : getConcentricStyle;
+
+    cyInstance.style([...getCommonStyle(filteredElements, theme), ...getLayoutStyle()]).update();
+
     cyRef.current.style.background = getCanvasBg(theme);
-  }, [cyInstance, filteredElements, theme]);
+  }, [cyInstance, filteredElements, theme, cytoscapeLayout]);
 
   return { cyRef, cyInstance };
 }

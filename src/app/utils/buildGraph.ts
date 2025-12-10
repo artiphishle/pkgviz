@@ -32,7 +32,14 @@ export function buildGraph(dir: IDirectory) {
         const pkg = currentPath ? `${currentPath}.${key}` : key;
 
         nodes.push({
-          data: { id: pkg, path: pkg, parent: currentPath, label: key, isIntrinsic: true },
+          data: {
+            id: pkg,
+            path: pkg,
+            parent: currentPath,
+            label: key,
+            name: key.split('.').pop() || key,
+            isIntrinsic: true,
+          },
           group: 'nodes',
         });
 
@@ -81,7 +88,13 @@ export function buildGraph(dir: IDirectory) {
 
       // Add vendor node: 'isIntrinsic' is not set (vendor package)
       rawElements.nodes.push({
-        data: { id: parent ? id.split('.').pop() : id, label: id, path: id, parent },
+        data: {
+          id: parent ? id.split('.').pop() : id,
+          label: id,
+          path: id,
+          parent,
+          name: id.split('.').pop() || id,
+        },
         group: 'nodes',
       });
     });

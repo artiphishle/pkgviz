@@ -43,7 +43,7 @@ export const getCytoscapeLayoutSpacing = () => {
     process.env.NEXT_PUBLIC_SETTINGS_LAYOUT_SPACING
   );
 
-  return isNaN(Number(env)) ? 0.6 : Number(env);
+  return isNaN(Number(env)) ? 1 : Number(env);
 };
 
 /**
@@ -68,6 +68,5 @@ export const getSubPackageDepth = () => {
     process.env.NEXT_PUBLIC_SETTINGS_SUBPACKAGE_DEPTH
   );
 
-  console.log('ENV HERE?', env === 'string' && env.length ? parseInt(env) : 1);
   return typeof env === 'string' && env.length ? parseInt(env) : 1;
 };

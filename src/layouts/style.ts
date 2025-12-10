@@ -1,4 +1,4 @@
-import type { ElementsDefinition, StylesheetJson } from 'cytoscape';
+import type { ElementsDefinition, NodeSingular, StylesheetJson } from 'cytoscape';
 
 import { getWeightBuckets } from '@/layouts/getWeightBuckets';
 
@@ -43,6 +43,7 @@ export const getCanvasBg = (theme: ThemeKey) => palette[theme].canvasBg;
 export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey): StylesheetJson {
   const colors = palette[theme];
   const { thresholds } = getWeightBuckets(3, 'linear', filteredElements);
+  console.log('filtered', filteredElements);
 
   return [
     {
@@ -52,11 +53,15 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         'background-color': colors.nodeBg,
         'border-color': colors.nodeBorder,
         color: colors.nodeText,
-        label: 'data(label)',
+        label: 'data(name)',
         'text-valign': 'center',
         'text-halign': 'center',
-        width: 'label',
-        height: 'label',
+        width: (node: NodeSingular) => {
+          return node.data('name').length * 7;
+        },
+        height: (node: NodeSingular) => {
+          return node.height() / 2 + 10;
+        },
         padding: '8px 8px',
         'border-width': 1,
         'font-size': '14px',
@@ -78,24 +83,22 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
       },
     },
     {
-      selector: 'node:selected.hushed',
-      style: { 'background-opacity': 1, opacity: 1 },
-    },
-    {
       selector: 'node:parent, node:parent:selected',
       style: {
-        'background-opacity': 0.1,
+        'background-opacity': 0.3,
         'background-color': colors.selectedFill,
         color: colors.nodeText,
-        'border-width': 1,
+        'border-width': 2,
         'border-color': colors.nodeBorder,
         'text-valign': 'top',
-        'text-margin-y': 20,
+        'text-margin-y': -5,
         padding: '10px',
         'padding-top': '20px',
         'text-halign': 'center',
         'font-size': 14,
         'font-weight': 'bold',
+        'font-style': 'italic',
+        label: 'data(name)',
       },
     },
     {

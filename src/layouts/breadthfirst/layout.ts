@@ -14,11 +14,11 @@ export const layout: BreadthFirstLayoutOptions = {
   boundingBox: undefined, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
   circle: false, // put depths in concentric circles if true, put depths top down if false
   depthSort: undefined, // a sorting function to order nodes at equal depth. e.g. function(a, b){ return a.data('weight') - b.data('weight') }
-  directed: false, // whether the tree is directed downwards (or edges can point in any direction if false)
-  // direction: 'downward', // determines the direction in which the tree structure is drawn.  The possible values are 'downward', 'upward', 'rightward', or 'leftward'.
+  directed: true, // whether the tree is directed downwards (or edges can point in any direction if false)
+  direction: 'downward', // determines the direction in which the tree structure is drawn.  The possible values are 'downward', 'upward', 'rightward', or 'leftward'.
   fit: true, // whether to fit the viewport to the graph
-  grid: false, // whether to create an even grid into which the DAG is placed (circle:false only)
-  nodeDimensionsIncludeLabels: true, // Excludes the label when calculating node bounding boxes for the layout algorithm
+  grid: true, // whether to create an even grid into which the DAG is placed (circle:false only)
+  nodeDimensionsIncludeLabels: false, // Excludes the label when calculating node bounding boxes for the layout algorithm
   padding: 30, // padding on fit
   roots: undefined, // the roots of the trees
   // spacingFactor: 1.75, // positive spacing factor, larger => more space between nodes (N.B. n/a if causes overlap)

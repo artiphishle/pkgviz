@@ -11,10 +11,10 @@ type ElkLayoutOptions = cytoscape.BaseLayoutOptions &
     readonly animationEasing: string | undefined;
     readonly fit: boolean;
     readonly nodeDimensionsIncludeLabels: boolean;
-    readonly padding: number;
     readonly nodeLayoutOptions?: (node: cytoscape.NodeSingular) => Record<string, unknown> | void;
     readonly elk: Record<string, unknown>;
     readonly priority: (edge: cytoscape.EdgeSingular) => number | null;
+    readonly padding?: number;
   };
 
 /***
@@ -33,8 +33,7 @@ export const layout: ElkLayoutOptions = {
     'elk.direction': 'DOWN',
     'elk.hierarchyHandling': 'INCLUDE_CHILDREN',
   },
-
-  animate: false, // Whether to transition the node positions
+  animate: true, // Whether to transition the node positions
   animateFilter: function (/* node, i */) {
     return true;
   }, // Whether to animate specific nodes when animation is on; non-animated nodes immediately go to their final positions
