@@ -6,7 +6,7 @@ import type {
 } from '@/app/api/fs/types/index';
 
 import fs from 'node:fs/promises';
-import path from 'node:path';
+import { posix } from 'node:path';
 import ts from 'typescript';
 import { extractTypeScriptPackageFromImport } from '@/app/utils/parser/typescript/extractTypeScriptPackageFromImport';
 import { parseProjectPath } from '@/contexts/parseEnv';
@@ -30,7 +30,7 @@ function extractImports(content: string, filename: string): ImportDefinition[] {
       if (specifier.startsWith('./') || specifier.startsWith('../'))
         return {
           isIntrinsic: true,
-          resolvedPath: path.resolve(curDir, specifier).slice(root.length + 1),
+          resolvedPath: posix.resolve(curDir, specifier).slice(root.length + 1),
         };
 
       if (specifier.startsWith('@/'))
@@ -60,7 +60,7 @@ function extractClassName(content: string, fileName: string): string {
     return classMatch[1];
   }
   /*** @todo Don't return this fallback, search for functional wrapper instead */
-  return path.basename(fileName, '.ts');
+  return posix.basename(fileName, '.ts');
 }
 
 /**
@@ -118,7 +118,7 @@ function extractMethodCalls(content: string): MethodCall[] {
  */
 export async function parseFile(fullPath: string, projectRoot: string): Promise<IFile> {
   const content = await fs.readFile(fullPath, 'utf-8');
-  const relativePath = path.relative(projectRoot, fullPath);
+  const relativePath = posix.relative(projectRoot, fullPath);
   const segments = relativePath.split('/');
   const segmentedPath = segments.slice(0, -1);
 

@@ -2,7 +2,7 @@
 import type { IDirectory } from '@/app/api/fs/types/index';
 
 import { existsSync, readdirSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { posix } from 'node:path';
 import { detectLanguage } from '@/app/utils/detectLanguage';
 import { ELanguage } from '@/app/utils/detectLanguage.types';
 import { parseJavaFile } from '@/app/utils/parser/java/parseJavaFile';
@@ -15,7 +15,7 @@ const JAVA_ROOT = 'src/main/java';
  * Returns whether Java file structure is valid
  */
 function isValidJavaFileStructure(dir: string) {
-  const srcMainJavaDir = resolve(dir, JAVA_ROOT);
+  const srcMainJavaDir = posix.resolve(dir, JAVA_ROOT);
   if (!existsSync(srcMainJavaDir)) throw new Error(`Missing dir: ${JAVA_ROOT}'`);
 
   return true;
@@ -28,9 +28,9 @@ export async function resolveRoot(dir: string, detectedLanguage: ELanguage) {
   switch (detectedLanguage) {
     case ELanguage.Java:
       if (!isValidJavaFileStructure(dir)) console.error('Failed to find:', JAVA_ROOT);
-      return resolve(dir, JAVA_ROOT);
+      return posix.resolve(dir, JAVA_ROOT);
     case ELanguage.TypeScript:
-      return resolve(dir);
+      return posix.resolve(dir);
     default:
       throw new Error(`Invalid file structure for ${detectedLanguage}`);
   }
@@ -65,7 +65,7 @@ export async function readDirRecursively(
   for (const entry of entries) {
     if (ignores.includes(entry.name)) continue;
 
-    const fullPath = join(dir, entry.name);
+    const fullPath = posix.join(dir, entry.name);
 
     // Directory: Recursively continue to read
     if (entry.isDirectory())

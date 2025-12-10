@@ -5,7 +5,7 @@
  * @example './components/Button' => './components'
  */
 export function extractTypeScriptPackageFromImport(imp: string): string {
-  const segments = imp.split('/'); // Split by '/'
+  const segments = imp.split('/');
   const pathSegments = segments.slice(0, -1).join('/'); // Remove file name
   const replacedAlias = pathSegments.startsWith('@/')
     ? pathSegments.replace(/^@/, 'src')

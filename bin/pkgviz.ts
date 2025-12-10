@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 import { existsSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
+import { posix } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as net from 'node:net';
 import { toPosix } from '@/utils/toPosix';
@@ -104,11 +104,11 @@ async function findFreePort(preferred?: number): Promise<number> {
 function resolvePackageRoot(): string {
   // bin is at <pkgRoot>/bin/pkgviz.ts; step up to package root
   const here = fileURLToPath(new URL(import.meta.url));
-  return resolve(dirname(here), '..');
+  return posix.resolve(posix.dirname(here), '..');
 }
 
 function resolveNextBin(pkgRoot: string): string {
-  const local = resolve(
+  const local = posix.resolve(
     pkgRoot,
     'node_modules',
     '.bin',
@@ -152,7 +152,7 @@ async function main() {
   const port = await findFreePort(opts.port);
   const pkgRoot = resolvePackageRoot(); // The packaged Next app root
   const nextBin = resolveNextBin(pkgRoot);
-  const hasBuild = existsSync(resolve(pkgRoot, '.next'));
+  const hasBuild = existsSync(posix.resolve(pkgRoot, '.next'));
   const mode = opts.prod || hasBuild ? 'start' : 'dev';
 
   const env = {
@@ -205,8 +205,8 @@ async function main() {
   const data = await waitForJson(apiUrl, opts.waitMs, opts.verbose);
 
   // write to caller's directory
-  const outPath = resolve(callerRoot, opts.out);
-  await mkdir(dirname(outPath), { recursive: true });
+  const outPath = posix.resolve(callerRoot, opts.out);
+  await mkdir(posix.dirname(outPath), { recursive: true });
   const body = opts.pretty ? JSON.stringify(data, null, 2) : JSON.stringify(data);
   await writeFile(outPath, body, 'utf8');
   console.log(`✓ audit.json written → ${outPath}`);
