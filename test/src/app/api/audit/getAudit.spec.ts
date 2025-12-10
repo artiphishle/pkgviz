@@ -1,6 +1,6 @@
 import type { IFile } from '@/app/api/fs/types/index';
 
-import { resolve } from 'node:path';
+import { posix } from 'node:path';
 import { describe, it } from 'node:test';
 import { expect } from '@artiphishle/testosterone/src/matchers';
 import { ELanguage } from '@/app/utils/detectLanguage.types';
@@ -9,7 +9,7 @@ import { getAudit } from '@/app/api/audit/getAudit';
 describe('[getAudit]', () => {
   // Test: Audit output contains 'App.java' which is matched correctly, also audit.meta is correct
   it('generates correct Audit (App.java & meta property)', async () => {
-    process.env.NEXT_PUBLIC_PROJECT_PATH = resolve(process.cwd(), 'examples/java/my-app');
+    process.env.NEXT_PUBLIC_PROJECT_PATH = posix.resolve(process.cwd(), 'examples/java/my-app');
 
     const audit = await getAudit();
     const appJava = {
@@ -36,7 +36,7 @@ describe('[getAudit]', () => {
         },
       ],
       package: 'com.example.myapp',
-      path: 'examples/java/my-app/src/main/java/com/example/myapp/App.java',
+      path: 'com/example/myapp/App.java',
     };
     // any ok. Avoid cyclic type: Java package nesting can contain unknown length of sub packages
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
