@@ -1,8 +1,10 @@
 import type { LayoutOptions } from 'cytoscape';
+
 import React, { createContext, use, type PropsWithChildren } from 'react';
 import {
   getCytoscapeLayout,
   getCytoscapeLayoutSpacing,
+  getShowCompoundNodes,
   getShowVendorPackages,
   getSubPackageDepth,
 } from '@/contexts/parseEnv';
@@ -16,6 +18,10 @@ export const SettingsProvider = ({ children }: PropsWithChildren) => {
   const [maxSubPackageDepth, setMaxSubPackageDepth] = useLocalStorage<number>(
     'maxSubPackageDepth',
     1
+  );
+  const [showCompoundNodes, setShowCompoundNodes] = useLocalStorage<boolean>(
+    'showCompoundNodes',
+    getShowCompoundNodes()
   );
   const [showVendorPackages, setShowVendorPackages] = useLocalStorage<boolean>(
     'showVendorPackages',
@@ -35,6 +41,7 @@ export const SettingsProvider = ({ children }: PropsWithChildren) => {
   );
 
   const toggleShowVendorPackages = () => setShowVendorPackages(prev => !prev);
+  const toggleShowCompoundNodes = () => setShowCompoundNodes(prev => !prev);
 
   return (
     <SettingsContext
@@ -42,12 +49,14 @@ export const SettingsProvider = ({ children }: PropsWithChildren) => {
         cytoscapeLayout,
         cytoscapeLayoutSpacing,
         maxSubPackageDepth,
+        showCompoundNodes,
         showVendorPackages,
         subPackageDepth,
         setCytoscapeLayout,
         setCytoscapeLayoutSpacing,
         setMaxSubPackageDepth,
         setSubPackageDepth,
+        toggleShowCompoundNodes,
         toggleShowVendorPackages,
       }}
     >
@@ -68,10 +77,12 @@ interface ISettingsContext {
   readonly cytoscapeLayoutSpacing: number;
   readonly maxSubPackageDepth: number;
   readonly subPackageDepth: number;
+  readonly showCompoundNodes: boolean;
   readonly showVendorPackages: boolean;
   readonly setCytoscapeLayout: (layout: LayoutOptions['name']) => void;
   readonly setCytoscapeLayoutSpacing: (layoutSpacing: number) => void;
   readonly setMaxSubPackageDepth: (depth: number) => void;
   readonly setSubPackageDepth: (depth: number) => void;
+  readonly toggleShowCompoundNodes: () => void;
   readonly toggleShowVendorPackages: () => void;
 }

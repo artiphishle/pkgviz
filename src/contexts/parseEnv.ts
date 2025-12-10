@@ -47,6 +47,19 @@ export const getCytoscapeLayoutSpacing = () => {
 };
 
 /**
+ * Whether to show compound nodes
+ * @default true
+ */
+export const getShowCompoundNodes = () => {
+  const env = parseEnv(
+    'NEXT_PUBLIC_SETTINGS_SHOW_COMPOUNDNODES',
+    process.env.NEXT_PUBLIC_SETTINGS_SHOW_COMPOUNDNODES
+  );
+
+  return env === false ? false : true;
+};
+
+/**
  * Whether to show vendor packages
  * @default false
  */

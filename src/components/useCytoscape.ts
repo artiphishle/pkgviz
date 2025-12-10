@@ -24,6 +24,7 @@ import { hasChildren } from '@/utils/hasChildren';
 import { filterEmptyPackages } from '@/utils/filter/filterEmptyPackages';
 import { LAYOUTS } from '@/layouts/constants';
 import { filterSubPackagesByDepth, getMaxDepth } from '@/utils/filter/filterSubPackagesFromDepth';
+import { toggleCompoundNodes } from '@/utils/filter/toggleCompoundNodes';
 
 export function useCytoscape(
   elements: ElementsDefinition | null,
@@ -46,6 +47,7 @@ export function useCytoscape(
   const {
     cytoscapeLayout,
     cytoscapeLayoutSpacing,
+    showCompoundNodes,
     showVendorPackages,
     subPackageDepth,
     setMaxSubPackageDepth,
@@ -58,7 +60,11 @@ export function useCytoscape(
   useEffect(() => {
     if (!elements) return;
 
-    const afterPkgFilter = filterByPackagePrefix(elements, currentPackage.replace(/\//g, '.'));
+    const afterCompoundNodeFilter = toggleCompoundNodes(elements, showCompoundNodes);
+    const afterPkgFilter = filterByPackagePrefix(
+      afterCompoundNodeFilter,
+      currentPackage.replace(/\//g, '.')
+    );
     const afterSubPkgFilter = filterSubPackagesByDepth(afterPkgFilter, true, subPackageDepth);
 
     const afterVendorPkgFilter = showVendorPackages

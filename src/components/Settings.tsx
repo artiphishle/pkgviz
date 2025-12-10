@@ -13,11 +13,13 @@ const Settings: React.FC = () => {
     cytoscapeLayout,
     cytoscapeLayoutSpacing,
     maxSubPackageDepth,
+    showCompoundNodes,
     showVendorPackages,
     subPackageDepth,
     setCytoscapeLayout,
     setCytoscapeLayoutSpacing,
     setSubPackageDepth,
+    toggleShowCompoundNodes,
     toggleShowVendorPackages,
   } = useSettings();
 
@@ -60,6 +62,18 @@ const Settings: React.FC = () => {
             toggleShowVendorPackages();
           }}
           value={showVendorPackages}
+        />
+      </Setting>
+
+      {/* Whether to show compound nodes */}
+      <Setting>
+        <Switch
+          id="switch-show-compound-nodes"
+          label={t('settings.showCompoundNodes')}
+          onToggle={() => {
+            toggleShowCompoundNodes();
+          }}
+          value={showCompoundNodes}
         />
       </Setting>
 

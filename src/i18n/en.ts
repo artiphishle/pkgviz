@@ -7,6 +7,7 @@ const en: ILanguage = {
 
   // Settings
   'settings.title': 'Settings',
+  'settings.showCompoundNodes': 'Show Compound Nodes',
   'settings.showVendorPackages': 'Show Vendor',
   'settings.subPackageDepth': 'Subpackage depth',
   'settings.audit': 'Audit',
