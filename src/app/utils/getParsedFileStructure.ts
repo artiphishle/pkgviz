@@ -42,11 +42,17 @@ export async function resolveRoot(dir: string, detectedLanguage: ELanguage) {
 export async function readDirRecursively(
   dir: string,
   result: IDirectory = {},
-  projectRoot = dir,
+  projectRoot: string,
   language: ELanguage
 ) {
+  // Validate dir is inside projectRoot
+  const resolvedDir = posix.resolve(dir);
+  const resolvedRoot = posix.resolve(projectRoot);
+  if (!resolvedDir.startsWith(resolvedRoot)) {
+    throw new Error(`Path traversal detected: ${dir} is outside of project root ${projectRoot}`);
+  }
   // 1. Read current directory
-  const entries = readdirSync(dir, { withFileTypes: true });
+  const entries = readdirSync(resolvedDir, { withFileTypes: true });
   const ignores = [
     '@types',
     '.cache',
@@ -65,11 +71,11 @@ export async function readDirRecursively(
   for (const entry of entries) {
     if (ignores.includes(entry.name)) continue;
 
-    const fullPath = posix.join(dir, entry.name);
+    const fullPath = posix.resolve(dir, entry.name);
 
     // Directory: Recursively continue to read
     if (entry.isDirectory())
-      result[entry.name] = await readDirRecursively(fullPath, {}, '', language);
+      result[entry.name] = await readDirRecursively(fullPath, {}, projectRoot, language);
 
     // File: Parse file according to detected project language
     switch (language) {
@@ -82,13 +88,19 @@ export async function readDirRecursively(
       // TypeScript
       case ELanguage.TypeScript:
         if (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx')) {
-          result[entry.name] = await parseTypeScriptFile(fullPath, parseProjectPath());
+          result[entry.name] = await parseTypeScriptFile(fullPath, projectRoot);
         }
         break;
     }
   }
 
   return result;
+  // Normalize user input and validate it's inside the working directory
+  const userPath = posix.resolve(dir);
+  const baseRoot = posix.resolve(parseProjectPath());
+  if (!userPath.startsWith(baseRoot)) {
+    throw new Error(`Specified dir (${dir}) is outside of allowed root (${baseRoot})`);
+  }
 }
 
 /**
@@ -96,16 +108,16 @@ export async function readDirRecursively(
  */
 export async function getParsedFileStructure(dir: string = parseProjectPath()) {
   // 1. Detect language & filter non-supported
-  const detectedLanguage = (await detectLanguage(dir)).language;
+  const detectedLanguage = (await detectLanguage(userPath)).language;
   console.log('1. Detected language:', detectedLanguage);
 
   if (![ELanguage.Java, ELanguage.TypeScript].includes(detectedLanguage))
     throw new Error("Supported language is 'Java' & 'TypeScript'. More to follow.");
 
   // 2. Get validated root directory by detectedLanguage
-  const rootDir = await resolveRoot(dir, detectedLanguage);
+  const rootDir = await resolveRoot(userPath, detectedLanguage);
   console.log('2. rootDir:', rootDir);
 
-  // 3. Read directory recursively
-  return await readDirRecursively(rootDir, {}, '', detectedLanguage);
+  // 3. Read directory recursively (pass resolved root as both dir and projectRoot)
+  return await readDirRecursively(rootDir, {}, rootDir, detectedLanguage);
 }
