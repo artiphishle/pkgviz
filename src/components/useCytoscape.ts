@@ -19,7 +19,6 @@ import cytoscape, {
 } from 'cytoscape';
 import { useSettings } from '@/contexts/SettingsContext';
 import { filterByPackagePrefix } from '@/utils/filter/filterByPackagePrefix';
-// import { filterSubPackages } from '@/utils/filter/filterSubPackages';
 import { filterVendorPackages } from '@/utils/filter/filterVendorPackages';
 import { hasChildren } from '@/utils/hasChildren';
 import { filterEmptyPackages } from '@/utils/filter/filterEmptyPackages';
@@ -37,7 +36,6 @@ export function useCytoscape(
   const {
     cytoscapeLayout,
     cytoscapeLayoutSpacing,
-    showSubPackages,
     showVendorPackages,
     subPackageDepth,
     setMaxSubPackageDepth,
@@ -51,9 +49,7 @@ export function useCytoscape(
 
     const afterPkgFilter = filterByPackagePrefix(elements, currentPackage.replace(/\//g, '.'));
     console.log('afterPkgFilter', afterPkgFilter);
-    const afterSubPkgFilter = showSubPackages
-      ? afterPkgFilter
-      : filterSubPackagesByDepth(afterPkgFilter, true, subPackageDepth);
+    const afterSubPkgFilter = filterSubPackagesByDepth(afterPkgFilter, false, subPackageDepth);
 
     const afterVendorPkgFilter = showVendorPackages
       ? afterSubPkgFilter
@@ -86,7 +82,6 @@ export function useCytoscape(
     elements,
     currentPackage,
     setCurrentPackage,
-    showSubPackages,
     showVendorPackages,
     subPackageDepth,
     setMaxSubPackageDepth,

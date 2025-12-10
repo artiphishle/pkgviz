@@ -3,7 +3,6 @@ import React, { createContext, use, type PropsWithChildren } from 'react';
 import {
   getCytoscapeLayout,
   getCytoscapeLayoutSpacing,
-  getShowSubPackages,
   getShowVendorPackages,
   getSubPackageDepth,
 } from '@/contexts/parseEnv';
@@ -18,17 +17,13 @@ export const SettingsProvider = ({ children }: PropsWithChildren) => {
     'maxSubPackageDepth',
     1
   );
-  const [showSubPackages, setShowSubPackages] = useLocalStorage<boolean>(
-    'showSubPackages',
-    getShowSubPackages()
-  );
   const [showVendorPackages, setShowVendorPackages] = useLocalStorage<boolean>(
     'showVendorPackages',
     getShowVendorPackages()
   );
   const [subPackageDepth, setSubPackageDepth] = useLocalStorage<number>(
-    'showVendorPackages',
-    getSubPackageDepth()
+    'subPackageDepth',
+    getSubPackageDepth() || 1
   );
   const [cytoscapeLayout, setCytoscapeLayout] = useLocalStorage<LayoutOptions['name']>(
     'cytoscapeLayout',
@@ -39,7 +34,6 @@ export const SettingsProvider = ({ children }: PropsWithChildren) => {
     getCytoscapeLayoutSpacing()
   );
 
-  const toggleShowSubPackages = () => setShowSubPackages(prev => !prev);
   const toggleShowVendorPackages = () => setShowVendorPackages(prev => !prev);
 
   return (
@@ -48,14 +42,12 @@ export const SettingsProvider = ({ children }: PropsWithChildren) => {
         cytoscapeLayout,
         cytoscapeLayoutSpacing,
         maxSubPackageDepth,
-        showSubPackages,
         showVendorPackages,
         subPackageDepth,
         setCytoscapeLayout,
         setCytoscapeLayoutSpacing,
         setMaxSubPackageDepth,
         setSubPackageDepth,
-        toggleShowSubPackages,
         toggleShowVendorPackages,
       }}
     >
@@ -75,13 +67,11 @@ interface ISettingsContext {
   readonly cytoscapeLayout: LayoutOptions['name'];
   readonly cytoscapeLayoutSpacing: number;
   readonly maxSubPackageDepth: number;
-  readonly showSubPackages: boolean;
   readonly subPackageDepth: number;
   readonly showVendorPackages: boolean;
   readonly setCytoscapeLayout: (layout: LayoutOptions['name']) => void;
   readonly setCytoscapeLayoutSpacing: (layoutSpacing: number) => void;
   readonly setMaxSubPackageDepth: (depth: number) => void;
   readonly setSubPackageDepth: (depth: number) => void;
-  readonly toggleShowSubPackages: () => void;
   readonly toggleShowVendorPackages: () => void;
 }

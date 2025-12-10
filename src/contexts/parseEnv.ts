@@ -47,18 +47,6 @@ export const getCytoscapeLayoutSpacing = () => {
 };
 
 /**
- * Whether to show sub packages
- * @default true
- */
-export const getShowSubPackages = () => {
-  const env = parseEnv(
-    'NEXT_PUBLIC_SETTINGS_SHOW_SUBPACKAGES',
-    process.env.NEXT_PUBLIC_SETTINGS_SHOW_SUBPACKAGES
-  );
-  return env === 'false' ? false : true;
-};
-
-/**
  * Whether to show vendor packages
  * @default false
  */
@@ -80,5 +68,6 @@ export const getSubPackageDepth = () => {
     process.env.NEXT_PUBLIC_SETTINGS_SUBPACKAGE_DEPTH
   );
 
+  console.log('ENV HERE?', env === 'string' && env.length ? parseInt(env) : 1);
   return typeof env === 'string' && env.length ? parseInt(env) : 1;
 };
