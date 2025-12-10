@@ -31,5 +31,5 @@
     ".next/types/**/*.ts",
     "src/app/api/fs/getGraph"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules","examples"]
 }

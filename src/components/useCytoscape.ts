@@ -97,6 +97,7 @@ export function useCytoscape(
     elements,
     currentPackage,
     setCurrentPackage,
+    showCompoundNodes,
     showVendorPackages,
     subPackageDepth,
     setMaxSubPackageDepth,
