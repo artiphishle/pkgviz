@@ -39,7 +39,8 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "typescript": "^5.9.3",
-    "xml-js": "^1.6.11"
+    "xml-js": "^1.6.11",
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
