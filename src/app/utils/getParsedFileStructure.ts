@@ -8,6 +8,7 @@ import { ELanguage } from '@/app/utils/detectLanguage.types';
 import { parseJavaFile } from '@/app/utils/parser/java/parseJavaFile';
 import { parseFile as parseTypeScriptFile } from '@/app/utils/parser/typescript/parseFile';
 import { parseProjectPath } from '@/contexts/parseEnv';
+import { toPosix } from '@/utils/toPosix';
 
 const JAVA_ROOT = 'src/main/java';
 
@@ -17,7 +18,7 @@ const JAVA_ROOT = 'src/main/java';
 export async function resolveRoot(dir: string, detectedLanguage: ELanguage) {
   switch (detectedLanguage) {
     case ELanguage.Java: {
-      const javaRoot = path.resolve(dir, JAVA_ROOT);
+      const javaRoot = toPosix(path.resolve(dir, JAVA_ROOT));
       if (!existsSync(javaRoot)) {
         console.error('Failed to find:', JAVA_ROOT);
         throw new Error(`Invalid Java project structure. Missing ${JAVA_ROOT}`);
@@ -27,7 +28,7 @@ export async function resolveRoot(dir: string, detectedLanguage: ELanguage) {
 
     case ELanguage.TypeScript:
       // Normalize to an absolute project root
-      return path.resolve(dir);
+      return toPosix(path.resolve(dir));
 
     default:
       throw new Error(`Invalid file structure for ${detectedLanguage}`);
