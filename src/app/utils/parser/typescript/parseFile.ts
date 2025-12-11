@@ -120,14 +120,10 @@ function extractMethodCalls(content: string): MethodCall[] {
 export async function parseFile(fullPath: string, projectRoot: string): Promise<IFile> {
   const posixFullPath = toPosix(fullPath);
   const content = await fs.readFile(posixFullPath, 'utf-8');
-  const relativePath = relative(projectRoot, posixFullPath);
+  const relativePath = toPosix(relative(projectRoot, posixFullPath));
   const segments = relativePath.split('/');
   const segmentedPath = segments.slice(0, -1);
-  console.log(
-    'ADAM says to Fabio please: relativePath & segmentedPath',
-    relativePath,
-    segmentedPath
-  );
+  console.log('rel/seg:', relativePath, segmentedPath);
 
   return {
     className: extractClassName(content, fullPath),
