@@ -1,15 +1,15 @@
 import type { IFile } from '@/app/api/fs/types/index';
 
-import { posix } from 'node:path';
 import { describe, it } from 'node:test';
 import { expect } from '@artiphishle/testosterone/src/matchers';
 import { ELanguage } from '@/app/utils/detectLanguage.types';
 import { getAudit } from '@/app/api/audit/getAudit';
+import { resolve } from 'node:path';
 
 describe('[getAudit]', () => {
   // Test: Audit output contains 'App.java' which is matched correctly, also audit.meta is correct
   it('generates correct Audit (App.java & meta property)', async () => {
-    process.env.NEXT_PUBLIC_PROJECT_PATH = posix.resolve(process.cwd(), 'examples/java/my-app');
+    process.env.NEXT_PUBLIC_PROJECT_PATH = resolve(process.cwd(), 'examples/java/my-app');
 
     const audit = await getAudit();
     const appJava = {

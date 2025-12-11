@@ -6,10 +6,10 @@ import type {
 } from '@/app/api/fs/types/index';
 
 import fs from 'node:fs/promises';
-import { posix } from 'node:path';
 import ts from 'typescript';
 import { extractTypeScriptPackageFromImport } from '@/app/utils/parser/typescript/extractTypeScriptPackageFromImport';
 import { parseProjectPath } from '@/contexts/parseEnv';
+import { basename, relative, resolve } from 'node:path';
 
 /**
  * Extracts import statements from TypeScript code.
@@ -30,7 +30,7 @@ function extractImports(content: string, filename: string): ImportDefinition[] {
       if (specifier.startsWith('./') || specifier.startsWith('../'))
         return {
           isIntrinsic: true,
-          resolvedPath: posix.resolve(curDir, specifier).slice(root.length + 1),
+          resolvedPath: resolve(curDir, specifier).slice(root.length + 1),
         };
 
       if (specifier.startsWith('@/'))
@@ -60,7 +60,7 @@ function extractClassName(content: string, fileName: string): string {
     return classMatch[1];
   }
   /*** @todo Don't return this fallback, search for functional wrapper instead */
-  return posix.basename(fileName, '.ts');
+  return basename(fileName, '.ts');
 }
 
 /**
@@ -118,15 +118,15 @@ function extractMethodCalls(content: string): MethodCall[] {
  */
 export async function parseFile(fullPath: string, projectRoot: string): Promise<IFile> {
   // Validate that fullPath is inside projectRoot
-  const resolvedPath = posix.resolve(fullPath);
-  const resolvedRoot = posix.resolve(projectRoot);
+  const resolvedPath = resolve(fullPath);
+  const resolvedRoot = resolve(projectRoot);
   if (!resolvedPath.startsWith(resolvedRoot)) {
     throw new Error(
       `Path traversal detected: ${fullPath} is outside of project root ${projectRoot}`
     );
   }
   const content = await fs.readFile(resolvedPath, 'utf-8');
-  const relativePath = posix.relative(projectRoot, fullPath);
+  const relativePath = relative(projectRoot, fullPath);
   const segments = relativePath.split('/');
   const segmentedPath = segments.slice(0, -1);
 
