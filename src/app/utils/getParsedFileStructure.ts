@@ -2,7 +2,7 @@
 import type { IDirectory } from '@/app/api/fs/types/index';
 
 import { existsSync, readdirSync } from 'node:fs';
-import { posix } from 'node:path';
+import path from 'node:path';
 import { detectLanguage } from '@/app/utils/detectLanguage';
 import { ELanguage } from '@/app/utils/detectLanguage.types';
 import { parseJavaFile } from '@/app/utils/parser/java/parseJavaFile';
@@ -12,25 +12,23 @@ import { parseProjectPath } from '@/contexts/parseEnv';
 const JAVA_ROOT = 'src/main/java';
 
 /**
- * Returns whether Java file structure is valid
- */
-function isValidJavaFileStructure(dir: string) {
-  const srcMainJavaDir = posix.resolve(dir, JAVA_ROOT);
-  if (!existsSync(srcMainJavaDir)) throw new Error(`Missing dir: ${JAVA_ROOT}'`);
-
-  return true;
-}
-
-/**
  * Returns resolved root
  */
 export async function resolveRoot(dir: string, detectedLanguage: ELanguage) {
   switch (detectedLanguage) {
-    case ELanguage.Java:
-      if (!isValidJavaFileStructure(dir)) console.error('Failed to find:', JAVA_ROOT);
-      return posix.resolve(dir, JAVA_ROOT);
+    case ELanguage.Java: {
+      const javaRoot = path.resolve(dir, JAVA_ROOT);
+      if (!existsSync(javaRoot)) {
+        console.error('Failed to find:', JAVA_ROOT);
+        throw new Error(`Invalid Java project structure. Missing ${JAVA_ROOT}`);
+      }
+      return javaRoot;
+    }
+
     case ELanguage.TypeScript:
-      return posix.resolve(dir);
+      // Normalize to an absolute project root
+      return path.resolve(dir);
+
     default:
       throw new Error(`Invalid file structure for ${detectedLanguage}`);
   }
@@ -44,15 +42,19 @@ export async function readDirRecursively(
   result: IDirectory = {},
   projectRoot: string,
   language: ELanguage
-) {
-  // Validate dir is inside projectRoot
-  const resolvedDir = posix.resolve(dir);
-  const resolvedRoot = posix.resolve(projectRoot);
-  if (!resolvedDir.startsWith(resolvedRoot)) {
+): Promise<IDirectory> {
+  const resolvedRoot = path.resolve(projectRoot);
+  const resolvedDir = path.resolve(dir);
+
+  // Validate dir is inside projectRoot (avoid path traversal / accidental escapes)
+  const relative = path.relative(resolvedRoot, resolvedDir);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) {
     throw new Error(`Path traversal detected: ${dir} is outside of project root ${projectRoot}`);
   }
+
   // 1. Read current directory
   const entries = readdirSync(resolvedDir, { withFileTypes: true });
+
   const ignores = [
     '@types',
     '.cache',
@@ -71,18 +73,21 @@ export async function readDirRecursively(
   for (const entry of entries) {
     if (ignores.includes(entry.name)) continue;
 
-    const fullPath = posix.resolve(dir, entry.name);
+    const fullPath = path.resolve(resolvedDir, entry.name);
 
     // Directory: Recursively continue to read
-    if (entry.isDirectory())
+    if (entry.isDirectory()) {
       result[entry.name] = await readDirRecursively(fullPath, {}, projectRoot, language);
+      continue;
+    }
 
     // File: Parse file according to detected project language
     switch (language) {
       // Java
       case ELanguage.Java:
-        if (entry.name.endsWith('.java'))
+        if (entry.name.endsWith('.java')) {
           result[entry.name] = await parseJavaFile(fullPath, projectRoot);
+        }
         break;
 
       // TypeScript
@@ -95,12 +100,6 @@ export async function readDirRecursively(
   }
 
   return result;
-  // Normalize user input and validate it's inside the working directory
-  const userPath = posix.resolve(dir);
-  const baseRoot = posix.resolve(parseProjectPath());
-  if (!userPath.startsWith(baseRoot)) {
-    throw new Error(`Specified dir (${dir}) is outside of allowed root (${baseRoot})`);
-  }
 }
 
 /**
@@ -113,8 +112,9 @@ export async function getParsedFileStructure() {
   const detectedLanguage = (await detectLanguage(projectPath)).language;
   console.log('1. Detected language:', detectedLanguage);
 
-  if (![ELanguage.Java, ELanguage.TypeScript].includes(detectedLanguage))
+  if (![ELanguage.Java, ELanguage.TypeScript].includes(detectedLanguage)) {
     throw new Error("Supported language is 'Java' & 'TypeScript'. More to follow.");
+  }
 
   // 2. Get validated root directory by detectedLanguage
   const rootDir = await resolveRoot(projectPath, detectedLanguage);
