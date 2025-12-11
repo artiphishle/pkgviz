@@ -1,3 +1,5 @@
+import { toPosix } from '@/utils/toPosix';
+
 /**
  * Extracts the package path from an import string.
  * @example 'lodash/debounce'     => 'lodash'
@@ -5,7 +7,7 @@
  * @example './components/Button' => './components'
  */
 export function extractTypeScriptPackageFromImport(imp: string): string {
-  const segments = imp.split('/');
+  const segments = toPosix(imp).split('/');
   const pathSegments = segments.slice(0, -1).join('/'); // Remove file name
   const replacedAlias = pathSegments.startsWith('@/')
     ? pathSegments.replace(/^@/, 'src')

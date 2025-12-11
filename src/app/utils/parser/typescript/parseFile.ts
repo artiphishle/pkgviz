@@ -10,6 +10,7 @@ import ts from 'typescript';
 import { extractTypeScriptPackageFromImport } from '@/app/utils/parser/typescript/extractTypeScriptPackageFromImport';
 import { parseProjectPath } from '@/contexts/parseEnv';
 import { basename, relative, resolve } from 'node:path';
+import { toPosix } from '@/utils/toPosix';
 
 /**
  * Extracts import statements from TypeScript code.
@@ -21,7 +22,7 @@ function extractImports(content: string, filename: string): ImportDefinition[] {
   sourceFile.forEachChild(node => {
     if (!ts.isImportDeclaration(node)) return;
 
-    const fullPath = filename.split('/').slice(0, -1).join('/');
+    const fullPath = toPosix(filename).split('/').slice(0, -1).join('/');
     const moduleSpecifier = (node.moduleSpecifier as ts.StringLiteral).text;
 
     function resolveImportPath(curDir: string, specifier: string) {
