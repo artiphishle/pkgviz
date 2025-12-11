@@ -8,6 +8,7 @@
         "cytoscape": "^3.33.1",
         "cytoscape-elk": "^2.3.0",
         "fp-ts": "^2.16.11",
+        "lodash": "^4.17.21",
         "lucide-react": "^0.487.0",
         "meta": "^2.2.25",
         "next": "15.4.8",
