@@ -4,10 +4,38 @@ import { ELanguage, type ILanguageDetectionResult } from '@/app/utils/detectLang
 import fs from 'node:fs';
 import path from 'node:path';
 
+
+// Define a safe root directory (could be more specific in real code)
+const SAFE_ROOT = process.cwd();
+
+function sanitizeAndValidateDirectoryPath(userInputPath: string): string {
+  // Avoid empty input
+  if (!userInputPath) throw new Error("Empty directory path.");
+
+  // Normalize and resolve the path
+  let resolvedPath = path.resolve(SAFE_ROOT, userInputPath);
+
+  // Optionally resolve symlinks. Wrap in try/catch for robustness.
+  try {
+    resolvedPath = fs.realpathSync(resolvedPath);
+  } catch (e) {
+    throw new Error(`Unable to resolve path: ${userInputPath}`);
+  }
+
+  if (!resolvedPath.startsWith(SAFE_ROOT)) {
+    throw new Error("Attempt to access directory outside the safe root.");
+  }
+
+  return resolvedPath;
+}
+
 export async function detectLanguage(directoryPath: string): Promise<ILanguageDetectionResult> {
+  // Validate and sanitize directoryPath
+  const safeDirectoryPath = sanitizeAndValidateDirectoryPath(directoryPath);
+
   // Check if directory exists
-  if (!fs.existsSync(directoryPath) || !fs.statSync(directoryPath).isDirectory()) {
-    throw new Error(`Directory does not exist: ${directoryPath}`);
+  if (!fs.existsSync(safeDirectoryPath) || !fs.statSync(safeDirectoryPath).isDirectory()) {
+    throw new Error(`Directory does not exist: ${safeDirectoryPath}`);
   }
 
   const files = fs.readdirSync(directoryPath);
@@ -93,17 +121,20 @@ export async function detectLanguage(directoryPath: string): Promise<ILanguageDe
 }
 
 export async function isJavaScriptRoot(directoryPath: string): Promise<boolean> {
-  const files = fs.readdirSync(directoryPath);
+  const safeDirectoryPath = sanitizeAndValidateDirectoryPath(directoryPath);
+  const files = fs.readdirSync(safeDirectoryPath);
   return files.includes('package.json') && !files.includes('tsconfig.json');
 }
 
 export async function isTypeScriptRoot(directoryPath: string): Promise<boolean> {
-  const files = fs.readdirSync(directoryPath);
+  const safeDirectoryPath = sanitizeAndValidateDirectoryPath(directoryPath);
+  const files = fs.readdirSync(safeDirectoryPath);
   return files.includes('tsconfig.json') && files.includes('package.json');
 }
 
 export async function isJavaRoot(directoryPath: string): Promise<boolean> {
-  const files = fs.readdirSync(directoryPath);
+  const safeDirectoryPath = sanitizeAndValidateDirectoryPath(directoryPath);
+  const files = fs.readdirSync(safeDirectoryPath);
   return (
     files.includes('pom.xml') ||
     /*** @todo Files ending in .java doesn't make a folder a project root */
