@@ -43,7 +43,6 @@ export const getCanvasBg = (theme: ThemeKey) => palette[theme].canvasBg;
 export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey): StylesheetJson {
   const colors = palette[theme];
   const { thresholds } = getWeightBuckets(3, 'linear', filteredElements);
-  console.log('filtered', filteredElements);
 
   return [
     {

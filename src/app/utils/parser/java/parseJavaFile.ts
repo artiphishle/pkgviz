@@ -3,7 +3,6 @@ import type { IFile, MethodCall, MethodDefinition } from '@/app/api/fs/types/ind
 
 import fs from 'node:fs';
 import path from 'node:path';
-import _ from 'lodash';
 import { getIntrinsicPackagesRecursive } from '@/app/utils/parser/java/getIntrinsicPackagesRecursive';
 import { extractJavaPackageFromImport } from '@/app/utils/parser/java/extractJavaPackageFromImport';
 
@@ -26,12 +25,8 @@ function extractImports(content: string): string[] {
  * Extracts the class name from the content and filename fallback.
  */
 function extractClassName(content: string, fileName: string): string {
-  const safeFileName = _.escapeRegExp(fileName);
-  const classPattern = new RegExp(
-    `(?:public\\s+)?(class|interface|enum|record)\\s+${safeFileName}\\b`
-  );
+  const classPattern = new RegExp(`(?:public\\s+)?(class|interface|enum|record)\\s+${fileName}\\b`);
   const classNameMatch = content.match(classPattern);
-
   if (classNameMatch) return fileName;
 
   const fallback = content.match(/(?:public\s+)?(class|interface|enum|record)\s+([A-Za-z0-9_]+)/);
