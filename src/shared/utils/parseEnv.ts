@@ -1,5 +1,3 @@
-import { toPosix } from '@/shared/utils/toPosix';
-
 /**
  * Parses an environment variable value into the appropriate type.
  * @example 'true'  => true
@@ -13,13 +11,6 @@ export const parseEnv = (name: string, value: string | undefined) => {
   if (value === 'false') return false;
   if (!isNaN(Number(value))) return Number(value);
   return value;
-};
-
-export const parseProjectPath = () => {
-  const projectPath = process.env.NEXT_PUBLIC_PROJECT_PATH;
-  if (!projectPath) throw new Error('Missing ENV: NEXT_PUBLIC_PROJECT_PATH');
-
-  return toPosix(projectPath);
 };
 
 /**

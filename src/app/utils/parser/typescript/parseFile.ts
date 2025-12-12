@@ -4,8 +4,8 @@ import fs from 'node:fs/promises';
 import { basename, relative, resolve } from 'node:path';
 import ts from 'typescript';
 import { extractTypeScriptPackageFromImport } from '@/app/utils/parser/typescript/extractTypeScriptPackageFromImport';
-import { parseProjectPath } from '@/contexts/parseEnv';
 import { toPosix } from '@/shared/utils/toPosix';
+import { parseProjectPath } from '@/shared/utils/parseProjectPath';
 
 /**
  * Extracts import statements from TypeScript code.
@@ -118,7 +118,6 @@ export async function parseFile(fullPath: string, projectRoot: string): Promise<
   const relativePath = toPosix(relative(projectRoot, posixFullPath));
   const segments = relativePath.split('/');
   const segmentedPath = segments.slice(0, -1);
-  console.log('rel/seg:', relativePath, segmentedPath);
 
   return {
     className: extractClassName(content, fullPath),

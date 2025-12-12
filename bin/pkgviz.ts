@@ -3,7 +3,6 @@ import { existsSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import * as net from 'node:net';
-import { toPosix } from '../src/shared/utils/toPosix';
 import { dirname, resolve } from 'node:path';
 
 interface Opts {
@@ -148,7 +147,7 @@ function openBrowser(url: string) {
 
 async function main() {
   const opts = parseArgs(process.argv);
-  const callerRoot = toPosix(process.cwd()); // The project being analyzed
+  const callerRoot = process.cwd(); // The project being analyzed
   const port = await findFreePort(opts.port);
   const pkgRoot = resolvePackageRoot(); // The packaged Next app root
   const nextBin = resolveNextBin(pkgRoot);

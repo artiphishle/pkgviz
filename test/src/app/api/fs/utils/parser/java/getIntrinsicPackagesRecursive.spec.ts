@@ -2,7 +2,7 @@ import { resolve } from 'node:path';
 import { describe, it } from 'node:test';
 import { expect } from '@artiphishle/testosterone/src/matchers';
 import { getIntrinsicPackagesRecursive } from '@/app/utils/parser/java/getIntrinsicPackagesRecursive';
-import { parseProjectPath } from '@/contexts/parseEnv';
+import { parseProjectPath } from '@/shared/utils/parseProjectPath';
 
 describe('[getIntrinsicPackagesRecursive]', () => {
   it('Finds "com" package and all sub packages', async () => {

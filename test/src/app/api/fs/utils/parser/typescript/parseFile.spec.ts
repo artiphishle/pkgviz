@@ -2,7 +2,7 @@ import { resolve } from 'node:path';
 import { describe, it } from 'node:test';
 import { expect } from '@artiphishle/testosterone/src/matchers';
 import { parseFile } from '@/app/utils/parser/typescript/parseFile';
-import { parseProjectPath } from '@/contexts/parseEnv';
+import { parseProjectPath } from '@/shared/utils/parseProjectPath';
 
 describe('[TypeScript: parseFile]', () => {
   it('parses a .ts/.tsx file correctly', async () => {

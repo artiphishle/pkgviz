@@ -7,7 +7,7 @@ import {
   getShowCompoundNodes,
   getShowVendorPackages,
   getSubPackageDepth,
-} from '@/contexts/parseEnv';
+} from '@/shared/utils/parseEnv';
 import { useLocalStorage } from '@/store/useLocalStorage';
 
 // Settings context

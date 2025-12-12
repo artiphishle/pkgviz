@@ -1,9 +1,9 @@
 'use server';
 import { NextResponse } from 'next/server';
 import { relative } from 'node:path';
-import { detectLanguage } from '@/app/utils/detectLanguage';
+import { detectLanguage } from '@/shared/utils/detectLanguage';
 import { resolveRoot } from '@/app/utils/getParsedFileStructure';
-import { parseProjectPath } from '@/contexts/parseEnv';
+import { parseProjectPath } from '@/shared/utils/parseProjectPath';
 
 export async function GET() {
   const projectRoot = parseProjectPath();

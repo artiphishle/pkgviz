@@ -1,8 +1,8 @@
+import { resolve } from 'node:path';
 import { describe, it } from 'node:test';
 import { expect } from '@artiphishle/testosterone/src/matchers';
 import { parseFile } from '@/app/utils/parser/typescript/parseFile';
-import { resolve } from 'node:path';
-import { parseProjectPath } from '@/contexts/parseEnv';
+import { parseProjectPath } from '@/shared/utils/parseProjectPath';
 
 describe('[parseFile]', () => {
   it('should parse a TS file and extract metadata', async () => {

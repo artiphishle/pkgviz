@@ -1,10 +1,8 @@
 'use server';
-import { parseProjectPath } from '@/contexts/parseEnv';
 import { readdirSync } from 'node:fs';
 import { relative, resolve } from 'node:path';
-
-// Put to constants (also in other file)
-const JAVA_ROOT = 'src/main/java';
+import { parseProjectPath } from '@/shared/utils/parseProjectPath';
+import { JAVA_ROOT } from '@/shared/constants';
 
 export async function getIntrinsicPackagesRecursive(
   root: string = parseProjectPath(),

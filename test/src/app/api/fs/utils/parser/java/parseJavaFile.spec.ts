@@ -2,7 +2,7 @@ import { resolve } from 'node:path';
 import { describe, it } from 'node:test';
 import { expect } from '@artiphishle/testosterone/src/matchers';
 import { parseJavaFile } from '@/app/utils/parser/java/parseJavaFile';
-import { parseProjectPath } from '@/contexts/parseEnv';
+import { parseProjectPath } from '@/shared/utils/parseProjectPath';
 
 describe('[parseJavaFile]', () => {
   it('parses a .java file correctly', async () => {

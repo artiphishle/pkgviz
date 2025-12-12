@@ -2,20 +2,18 @@
 import type { LanguageDetectionResult, ParsedDirectory } from '@/shared/types';
 
 import { getParsedFileStructure } from '@/app/utils/getParsedFileStructure';
-import { detectLanguage } from '@/app/utils/detectLanguage';
+import { detectLanguage } from '@/shared/utils/detectLanguage';
 import { getPackageCyclesWithMembers, PackageCycleDetail } from '@/app/utils/markCyclicPackages';
 import { buildGraph } from '@/app/utils/buildGraph';
-import { parseProjectPath } from '@/contexts/parseEnv';
+import { parseProjectPath } from '@/shared/utils/parseProjectPath';
+import { getProjectName } from '@/shared/utils/getProjectName';
 
 /**
  * Returns audit for JSON or XML exports
  */
 export async function getAudit() {
   const projectPath = parseProjectPath();
-  const projectName = projectPath.split('/').pop();
-  if (!projectName) {
-    throw new Error('Invalid .env: NEXT_PUBLIC_PROJECT_PATH');
-  }
+  const projectName = getProjectName();
   const timeStart = Date.now();
   const language = await detectLanguage(projectPath);
   const files = await getParsedFileStructure();

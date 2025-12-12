@@ -1,14 +1,12 @@
 import { describe, it } from 'node:test';
 import { expect } from '@artiphishle/testosterone/src/matchers';
-import { parseEnv } from '@/contexts/parseEnv';
+import { parseEnv } from '@/shared/utils/parseEnv';
 
 describe('[parseEnv]', () => {
-  // Parse '' to undefined
   it('parses "" correctly to undefined', () => {
     process.env.NEXT_PUBLIC_TEST = '';
 
     const result = parseEnv('test', process.env.NEXT_PUBLIC_TEST);
-
     expect(result).toBeUndefined();
   });
 
@@ -17,25 +15,21 @@ describe('[parseEnv]', () => {
     process.env.NEXT_PUBLIC_TEST = 'false';
 
     const result = parseEnv('test', process.env.NEXT_PUBLIC_TEST);
-
     expect(result).toBe(false);
   });
 
   // Parse 'true' to boolean
-  it('Parse "true" correctly to boolean', () => {
+  it('parses "true" correctly to boolean', () => {
     process.env.NEXT_PUBLIC_TEST = 'true';
 
     const result = parseEnv('test', process.env.NEXT_PUBLIC_TEST);
-
     expect(result).toBe(true);
   });
 
-  // Throw error if not supported value
-  it.skip('Throw error if not parseable', () => {
-    process.env.NEXT_PUBLIC_TEST = 'invalid';
+  it('parses a number correctly', () => {
+    process.env.NEXT_PUBLIC_TEST = '123';
 
-    const willThrow = () => parseEnv('test', process.env.NEXT_PUBLIC_TEST);
-
-    expect(willThrow).toThrow('Invalid ENV value for: test');
+    const result = parseEnv('test', process.env.NEXT_PUBLIC_TEST);
+    expect(result).toBe(123);
   });
 });

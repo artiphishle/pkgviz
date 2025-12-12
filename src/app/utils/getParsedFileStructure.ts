@@ -4,10 +4,10 @@ import { Language, type ParsedDirectory } from '@/shared/types';
 import { existsSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { toPosix } from '@/shared/utils/toPosix';
-import { detectLanguage } from '@/app/utils/detectLanguage';
+import { detectLanguage } from '@/shared/utils/detectLanguage';
 import { parseJavaFile } from '@/app/utils/parser/java/parseJavaFile';
 import { parseFile as parseTypeScriptFile } from '@/app/utils/parser/typescript/parseFile';
-import { parseProjectPath } from '@/contexts/parseEnv';
+import { parseProjectPath } from '@/shared/utils/parseProjectPath';
 import { JAVA_ROOT } from '@/shared/constants';
 
 /**
