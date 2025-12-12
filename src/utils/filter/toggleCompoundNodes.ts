@@ -29,7 +29,9 @@ export function toggleCompoundNodes(
     if (show) {
       node.data.name = node.data.idInactive.split('.').pop();
     } else {
-      node.data.name = node.data.idInactive.replace(currentPackage + '.', '');
+      node.data.name = node.data.idInactive.slice(
+        currentPackage.length ? currentPackage.length + 1 : 0
+      );
     }
     return node;
   });
