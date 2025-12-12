@@ -12,9 +12,8 @@ export function toggleCompoundNodes(
   show: boolean,
   currentPackage: string
 ): ElementsDefinition {
-  console.log('CURRENT:', currentPackage);
   const updatedNodes = nodes.map(node => {
-    if (!node.data.nameInactive) node.data.nameInactive = node.data.name;
+    if (!node.data.idInactive) node.data.idInactive = node.data.id;
     // ACTIVE Compound Nodes
     if (show && node.data.parentInactive) {
       node.data.parent = node.data.parentInactive;
@@ -28,9 +27,9 @@ export function toggleCompoundNodes(
 
   const labelledNodes = updatedNodes.map(node => {
     if (show) {
-      node.data.name = node.data.nameInactive.replace(`${currentPackage}.`, '');
+      node.data.name = node.data.idInactive.split('.').pop();
     } else {
-      node.data.name = node.data.nameInactive;
+      node.data.name = node.data.idInactive.replace(currentPackage + '.', '');
     }
     return node;
   });
