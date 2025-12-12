@@ -1,4 +1,4 @@
-import type { ParsedDirectory, ParsedFile } from '@/app/api/fs/types/index';
+import type { ParsedDirectory, ParsedFile } from '@/shared/types';
 
 import { resolve } from 'node:path';
 import { describe, it } from 'node:test';
@@ -19,13 +19,12 @@ function collectFilesFromDirectory(dir: ParsedDirectory): ParsedFile[] {
       }
     }
   }
-
   traverse(dir);
+
   return files;
 }
 
 describe('[findEntryPoint]', () => {
-  // Test: Finds first public static void main
   it('Finds first public static void main', async () => {
     process.env.NEXT_PUBLIC_PROJECT_PATH = resolve(process.cwd(), 'examples/java/my-app');
 

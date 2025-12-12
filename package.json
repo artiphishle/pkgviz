@@ -5,6 +5,7 @@
   },
   "files": [
     "/bin",
+    "/src/shared/utils/toPosix.ts",
     ".next"
   ],
   "type": "module",

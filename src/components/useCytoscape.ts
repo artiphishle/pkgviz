@@ -8,7 +8,7 @@ import {
   getConcentricStyle,
   getElkStyle,
   getGridStyle,
-} from '@/layouts/index';
+} from '@/layouts';
 
 import cytoscape, {
   Core,

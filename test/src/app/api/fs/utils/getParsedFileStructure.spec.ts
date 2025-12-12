@@ -1,18 +1,16 @@
-import type { ParsedDirectory } from '@/app/api/fs/types/index';
+import type { ParsedDirectory } from '@/shared/types';
 
 import { resolve } from 'node:path';
 import { describe, it } from 'node:test';
 import { expect } from '@artiphishle/testosterone/src/matchers';
 import { getParsedFileStructure } from '@/app/utils/getParsedFileStructure';
-import { parseProjectPath } from '@/contexts/parseEnv';
 
 describe('[getParsedFileStructure]', () => {
   // Test reading a Java project structure recursively
   it('reads .java project structure correctly', async () => {
     process.env.NEXT_PUBLIC_PROJECT_PATH = resolve(process.cwd(), 'examples/java/my-app');
-    const projectPath = parseProjectPath();
 
-    const parsedFileStructure = await getParsedFileStructure(projectPath);
+    const parsedFileStructure = await getParsedFileStructure();
     const comExampleMyapp = (
       (parsedFileStructure.com as ParsedDirectory).example as ParsedDirectory
     ).myapp as ParsedDirectory;
