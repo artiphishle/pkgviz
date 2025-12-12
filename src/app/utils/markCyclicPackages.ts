@@ -1,16 +1,16 @@
 import type { ElementsDefinition } from 'cytoscape';
-import type { IDirectory, IFile } from '@/app/api/fs/types/index';
+import type { ParsedDirectory, ParsedFile } from '@/shared/types';
 
-/** Collect all files from your IDirectory tree. */
-function collectFiles(root: IDirectory): IFile[] {
-  const files: IFile[] = [];
-  const walk = (dir: IDirectory) => {
+/** Collect all files from your ParsedDirectory tree. */
+function collectFiles(root: ParsedDirectory): ParsedFile[] {
+  const files: ParsedFile[] = [];
+  const walk = (dir: ParsedDirectory) => {
     for (const key in dir) {
       const entry = (dir as Record<string, unknown>)[key];
       if (entry && typeof entry === 'object' && 'path' in entry && 'package' in entry) {
-        files.push(entry as IFile);
+        files.push(entry as ParsedFile);
       } else if (entry && typeof entry === 'object') {
-        walk(entry as IDirectory);
+        walk(entry as ParsedDirectory);
       }
     }
   };
@@ -19,7 +19,7 @@ function collectFiles(root: IDirectory): IFile[] {
 }
 
 /** Build per-edge evidence: key "from->to" → list of ImportEvidence. */
-function buildEdgeEvidence(dir: IDirectory): Map<string, ImportEvidence[]> {
+function buildEdgeEvidence(dir: ParsedDirectory): Map<string, ImportEvidence[]> {
   const files = collectFiles(dir);
   const map = new Map<string, ImportEvidence[]>();
 
@@ -135,7 +135,7 @@ function findOneCycleInScc(
  * and attach **member evidence** (files/imports) per cycle edge.
  */
 export function getPackageCyclesWithMembers(
-  dir: IDirectory,
+  dir: ParsedDirectory,
   graph: ElementsDefinition
 ): {
   cycles: PackageCycleDetail[];
@@ -183,7 +183,7 @@ export function getPackageCyclesWithMembers(
  */
 export function markCyclicPackagesWithEvidence(
   elements: ElementsDefinition,
-  dir: IDirectory
+  dir: ParsedDirectory
 ): ElementsDefinition {
   const { cycles, packageSet } = getPackageCyclesWithMembers(dir, elements);
 
@@ -247,7 +247,7 @@ export function markCyclicPackagesWithEvidence(
  * Convenience that only returns the set of cyclic packages (no evidence)
  */
 export function getCyclicPackageSet(
-  dir: IDirectory,
+  dir: ParsedDirectory,
   graph: ElementsDefinition
 ): Set<TUniquePackageName> {
   const { packageSet } = getPackageCyclesWithMembers(dir, graph);
@@ -257,8 +257,8 @@ export function getCyclicPackageSet(
 type TUniquePackageName = string;
 
 interface ImportEvidence {
-  readonly filePath: string; // IFile.path (relative to project)
-  readonly fileClass: string; // IFile.className
+  readonly filePath: string; // ParsedFile.path (relative to project)
+  readonly fileClass: string; // ParsedFile.className
   readonly importName: string; // IJavaImport.name
   readonly isIntrinsic?: boolean; // IJavaImport.isIntrinsic
 }

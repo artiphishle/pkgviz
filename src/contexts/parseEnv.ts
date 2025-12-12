@@ -1,13 +1,17 @@
-import { toPosix } from '@/utils/toPosix';
+import { toPosix } from '@/shared/utils/toPosix';
 
 /**
- * Parse ENV variable
- * @todo Support more than boolean as soon as needed
+ * Parses an environment variable value into the appropriate type.
+ * @example 'true'  => true
+ * @example 'false' => false
+ * @example '123'   => 123
+ * @example 'text'  => 'text'
  */
 export const parseEnv = (name: string, value: string | undefined) => {
   if (!value) return undefined;
   if (value === 'true') return true;
   if (value === 'false') return false;
+  if (!isNaN(Number(value))) return Number(value);
   return value;
 };
 
@@ -19,8 +23,10 @@ export const parseProjectPath = () => {
 };
 
 /**
- * Which Cytoscape layout to use
- * @default concentric
+ * Determines the active Cytoscape layout
+ * @default 'concentric'
+ * @todo Create enum for the layouts
+ * @returns 'grid' | 'circle' | 'elk' | 'concentric'
  */
 export const getCytoscapeLayout = () => {
   const env = parseEnv('NEXT_PUBLIC_SETTINGS_LAYOUT', process.env.NEXT_PUBLIC_SETTINGS_LAYOUT);
@@ -34,8 +40,11 @@ export const getCytoscapeLayout = () => {
 };
 
 /**
- * Which Cytoscape layout spacing to use
+ * Determines the active Cytoscape layout spacing.
+ * @returns number
  * @default 1
+ * @min 0.1
+ * @max 1
  */
 export const getCytoscapeLayoutSpacing = () => {
   const env = parseEnv(
@@ -47,8 +56,9 @@ export const getCytoscapeLayoutSpacing = () => {
 };
 
 /**
- * Whether to show compound nodes
+ * Determines whether to show compound nodes.
  * @default true
+ * @returns boolean
  */
 export const getShowCompoundNodes = () => {
   const env = parseEnv(
@@ -60,8 +70,9 @@ export const getShowCompoundNodes = () => {
 };
 
 /**
- * Whether to show vendor packages
+ * Determines whether to show vendor packages.
  * @default false
+ * @returns boolean
  */
 export const getShowVendorPackages = () => {
   const env = parseEnv(
@@ -73,7 +84,11 @@ export const getShowVendorPackages = () => {
 };
 
 /**
- * How many subpackage levels to show
+ * Determines how many subpackage levels to show.
+ * @default 1
+ * @min 1
+ * @max {automatic based on package depth}
+ * @returns number
  */
 export const getSubPackageDepth = () => {
   const env = parseEnv(

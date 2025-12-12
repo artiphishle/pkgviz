@@ -60,7 +60,11 @@ export function useCytoscape(
   useEffect(() => {
     if (!elements) return;
 
-    const afterCompoundNodeFilter = toggleCompoundNodes(elements, showCompoundNodes);
+    const afterCompoundNodeFilter = toggleCompoundNodes(
+      elements,
+      showCompoundNodes,
+      currentPackage
+    );
     const afterPkgFilter = filterByPackagePrefix(
       afterCompoundNodeFilter,
       currentPackage.replace(/\//g, '.')
@@ -199,7 +203,7 @@ export function useCytoscape(
       cyInstance.add(filteredElements);
     });
 
-    // mark parents + dblclick handler based on latest elementsRef
+    // Mark parents + dblclick handler based on latest elementsRef
     cyInstance.nodes().forEach(node => {
       const rawNode = filteredElementsRef.current?.nodes.find(
         elm => elm.data.id === node.data().id

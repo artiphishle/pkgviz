@@ -1,4 +1,4 @@
-import { ConcentricLayoutOptions } from 'cytoscape';
+import type { ConcentricLayoutOptions, NodeSingular } from 'cytoscape';
 
 export const layout: ConcentricLayoutOptions = {
   name: 'concentric',
@@ -6,4 +6,5 @@ export const layout: ConcentricLayoutOptions = {
   avoidOverlap: true,
   fit: true,
   padding: 30,
+  sort: (a: NodeSingular, b: NodeSingular) => a.data('id').localeCompare(b.data('id')),
 };

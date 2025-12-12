@@ -15,9 +15,12 @@ const palette = {
 
     nodeBg: '#E8F1FF',
     nodeBorder: '#0B5FFF',
+    nodeBorderVendor: '#E2D5FF',
+    nodeBgVendor: '#D1C4FF',
     nodeText: '#0B5FFF',
 
     selectedFill: '#0B5FFF',
+    selectedFillVendor: '#a025aa',
     selectedRing: '#0B5FFF',
     selectedText: '#FFF',
   },
@@ -29,10 +32,13 @@ const palette = {
     weightXl: '#C0C0C0',
 
     nodeBg: '#1E2533',
+    nodeBgVendor: '#241431',
     nodeBorder: '#2A3A4A',
+    nodeBorderVendor: '#351542',
     nodeText: '#E8F0FF',
 
     selectedFill: '#2E6FFF',
+    selectedFillVendor: '#4E25AA',
     selectedRing: '#BBD3FF',
     selectedText: '#FFFFFF',
   },
@@ -67,6 +73,12 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         'overlay-opacity': 0, // avoid gray overlay
       },
     },
+    {
+      selector: 'node.isVendor',
+      style: {
+        'background-color': colors.nodeBgVendor,
+      },
+    },
     { selector: 'node.packageCycle', style: { 'border-color': '#d80303', 'border-width': 3 } },
     { selector: 'node.isParent', style: { 'font-weight': 'bold' } },
     {
@@ -80,6 +92,10 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         opacity: 1,
         'overlay-opacity': 0,
       },
+    },
+    {
+      selector: 'node.isVendor:selected',
+      style: { 'background-color': colors.selectedFillVendor },
     },
     {
       selector: 'node:parent, node:parent:selected',
@@ -98,6 +114,13 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         'font-weight': 'bold',
         'font-style': 'italic',
         label: 'data(name)',
+      },
+    },
+    {
+      selector: 'node:parent.isVendor, node:parent.isVendor:selected',
+      style: {
+        'background-color': colors.nodeBgVendor,
+        'border-color': colors.nodeBorderVendor,
       },
     },
     {

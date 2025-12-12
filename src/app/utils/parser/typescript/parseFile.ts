@@ -1,16 +1,11 @@
-import type {
-  IFile,
-  MethodCall,
-  MethodDefinition,
-  ImportDefinition,
-} from '@/app/api/fs/types/index';
+import type { ParsedFile, MethodCall, MethodDefinition, ImportDefinition } from '@/shared/types';
 
 import fs from 'node:fs/promises';
+import { basename, relative, resolve } from 'node:path';
 import ts from 'typescript';
 import { extractTypeScriptPackageFromImport } from '@/app/utils/parser/typescript/extractTypeScriptPackageFromImport';
 import { parseProjectPath } from '@/contexts/parseEnv';
-import { basename, relative, resolve } from 'node:path';
-import { toPosix } from '@/utils/toPosix';
+import { toPosix } from '@/shared/utils/toPosix';
 
 /**
  * Extracts import statements from TypeScript code.
@@ -117,7 +112,7 @@ function extractMethodCalls(content: string): MethodCall[] {
 /**
  * Parses a TypeScript file and returns metadata useful for diagram generation.
  */
-export async function parseFile(fullPath: string, projectRoot: string): Promise<IFile> {
+export async function parseFile(fullPath: string, projectRoot: string): Promise<ParsedFile> {
   const posixFullPath = toPosix(fullPath);
   const content = await fs.readFile(posixFullPath, 'utf-8');
   const relativePath = toPosix(relative(projectRoot, posixFullPath));

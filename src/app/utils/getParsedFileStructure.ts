@@ -1,23 +1,21 @@
 'use server';
-import type { IDirectory } from '@/app/api/fs/types/index';
+import { Language, type ParsedDirectory } from '@/shared/types';
 
 import { existsSync, readdirSync } from 'node:fs';
 import path from 'node:path';
+import { toPosix } from '@/shared/utils/toPosix';
 import { detectLanguage } from '@/app/utils/detectLanguage';
-import { ELanguage } from '@/app/utils/detectLanguage.types';
 import { parseJavaFile } from '@/app/utils/parser/java/parseJavaFile';
 import { parseFile as parseTypeScriptFile } from '@/app/utils/parser/typescript/parseFile';
 import { parseProjectPath } from '@/contexts/parseEnv';
-import { toPosix } from '@/utils/toPosix';
-
-const JAVA_ROOT = 'src/main/java';
+import { JAVA_ROOT } from '@/shared/constants';
 
 /**
  * Returns resolved root
  */
-export async function resolveRoot(dir: string, detectedLanguage: ELanguage) {
+export async function resolveRoot(dir: string, detectedLanguage: Language) {
   switch (detectedLanguage) {
-    case ELanguage.Java: {
+    case Language.Java: {
       const javaRoot = toPosix(path.resolve(dir, JAVA_ROOT));
       if (!existsSync(javaRoot)) {
         console.error('Failed to find:', JAVA_ROOT);
@@ -26,7 +24,7 @@ export async function resolveRoot(dir: string, detectedLanguage: ELanguage) {
       return javaRoot;
     }
 
-    case ELanguage.TypeScript:
+    case Language.TypeScript:
       // Normalize to an absolute project root
       return toPosix(path.resolve(dir));
 
@@ -40,10 +38,10 @@ export async function resolveRoot(dir: string, detectedLanguage: ELanguage) {
  */
 export async function readDirRecursively(
   dir: string,
-  result: IDirectory = {},
+  result: ParsedDirectory = {},
   projectRoot: string,
-  language: ELanguage
-): Promise<IDirectory> {
+  language: Language
+): Promise<ParsedDirectory> {
   const resolvedRoot = path.resolve(projectRoot);
   const resolvedDir = path.resolve(dir);
 
@@ -85,14 +83,14 @@ export async function readDirRecursively(
     // File: Parse file according to detected project language
     switch (language) {
       // Java
-      case ELanguage.Java:
+      case Language.Java:
         if (entry.name.endsWith('.java')) {
           result[entry.name] = await parseJavaFile(fullPath, projectRoot);
         }
         break;
 
       // TypeScript
-      case ELanguage.TypeScript:
+      case Language.TypeScript:
         if (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx')) {
           result[entry.name] = await parseTypeScriptFile(fullPath, projectRoot);
         }
@@ -113,7 +111,7 @@ export async function getParsedFileStructure() {
   const detectedLanguage = (await detectLanguage(projectPath)).language;
   console.log('1. Detected language:', detectedLanguage);
 
-  if (![ELanguage.Java, ELanguage.TypeScript].includes(detectedLanguage)) {
+  if (![Language.Java, Language.TypeScript].includes(detectedLanguage)) {
     throw new Error("Supported language is 'Java' & 'TypeScript'. More to follow.");
   }
 

@@ -1,11 +1,11 @@
-import { GridLayoutOptions } from 'cytoscape';
+import type { GridLayoutOptions, NodeSingular } from 'cytoscape';
 
 export const layout: GridLayoutOptions = {
   name: 'grid',
   // fit: true,
   // padding: 30, // Add some space around the graph
-  // avoidOverlap: true,
+  avoidOverlap: true,
 
   // Sort nodes alphabetically by their ID
-  // sort: (a: NodeSingular, b: NodeSingular) => a.data('id').localeCompare(b.data('id')),
+  sort: (a: NodeSingular, b: NodeSingular) => a.data('id').localeCompare(b.data('id')),
 };

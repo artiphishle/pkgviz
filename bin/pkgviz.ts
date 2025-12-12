@@ -3,7 +3,7 @@ import { existsSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import * as net from 'node:net';
-import { toPosix } from '@/utils/toPosix';
+import { toPosix } from '@/shared/utils/toPosix';
 import { dirname, resolve } from 'node:path';
 
 interface Opts {

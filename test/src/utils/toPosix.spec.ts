@@ -1,6 +1,5 @@
 import { describe, it } from 'node:test';
-
-import { toPosix } from '@/utils/toPosix';
+import { toPosix } from '@/shared/utils/toPosix';
 import { expect } from '@artiphishle/testosterone/src/matchers';
 
 describe('[toPosix]', () => {

@@ -43,7 +43,7 @@ export const layout: ElkLayoutOptions = {
   fit: true, // Whether to fit
   nodeDimensionsIncludeLabels: false, // Boolean which changes whether label dimensions are included when calculating node dimensions
   nodeLayoutOptions: undefined, // Per-node options function
-  padding: 20, // Padding on fit
+  // padding: 20, // Padding on fit
   transform: function (_node, pos) {
     return pos;
   }, // A function that applies a transform to the final node position

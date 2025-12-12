@@ -1,10 +1,9 @@
-import type { IFile } from '@/app/api/fs/types/index';
+import { Language, type ParsedFile } from '@/shared/types';
 
+import { resolve } from 'node:path';
 import { describe, it } from 'node:test';
 import { expect } from '@artiphishle/testosterone/src/matchers';
-import { ELanguage } from '@/app/utils/detectLanguage.types';
 import { getAudit } from '@/app/api/audit/getAudit';
-import { resolve } from 'node:path';
 
 describe('[getAudit]', () => {
   // Test: Audit output contains 'App.java' which is matched correctly, also audit.meta is correct
@@ -40,7 +39,7 @@ describe('[getAudit]', () => {
     };
     // any ok. Avoid cyclic type: Java package nesting can contain unknown length of sub packages
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const auditAppJava = (audit.files.com as any).example.myapp['App.java'] as IFile;
+    const auditAppJava = (audit.files.com as any).example.myapp['App.java'] as ParsedFile;
 
     // audit.files > File 'App.java'
     expect(auditAppJava.className).toBe(appJava.className);
@@ -63,7 +62,7 @@ describe('[getAudit]', () => {
     expect(auditAppJava.path).toBe(appJava.path);
 
     // audit.meta
-    expect(audit.meta.language.language).toBe(ELanguage.Java);
+    expect(audit.meta.language.language).toBe(Language.Java);
     expect(audit.meta.projectName).toBe('my-app');
     expect(typeof audit.meta.timeStart).toBe('number');
     expect(typeof audit.meta.timeEnd).toBe('number');

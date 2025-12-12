@@ -1,4 +1,4 @@
-import { toPosix } from '@/utils/toPosix';
+import { toPosix } from '@/shared/utils/toPosix';
 
 /**
  * Extracts the package path from an import string.

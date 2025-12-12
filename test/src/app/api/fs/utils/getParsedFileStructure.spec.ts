@@ -1,4 +1,4 @@
-import type { IDirectory } from '@/app/api/fs/types/index';
+import type { ParsedDirectory } from '@/app/api/fs/types/index';
 
 import { resolve } from 'node:path';
 import { describe, it } from 'node:test';
@@ -13,12 +13,13 @@ describe('[getParsedFileStructure]', () => {
     const projectPath = parseProjectPath();
 
     const parsedFileStructure = await getParsedFileStructure(projectPath);
-    const comExampleMyapp = ((parsedFileStructure.com as IDirectory).example as IDirectory)
-      .myapp as IDirectory;
-    const comExampleMyappA = comExampleMyapp.a as IDirectory;
-    const comExampleMyappB = comExampleMyapp.b as IDirectory;
-    const comExampleMyappC = comExampleMyapp.c as IDirectory;
-    const comExampleMyappD = comExampleMyapp.d as IDirectory;
+    const comExampleMyapp = (
+      (parsedFileStructure.com as ParsedDirectory).example as ParsedDirectory
+    ).myapp as ParsedDirectory;
+    const comExampleMyappA = comExampleMyapp.a as ParsedDirectory;
+    const comExampleMyappB = comExampleMyapp.b as ParsedDirectory;
+    const comExampleMyappC = comExampleMyapp.c as ParsedDirectory;
+    const comExampleMyappD = comExampleMyapp.d as ParsedDirectory;
 
     expect(comExampleMyapp['App.java'].className).toBe('App');
     expect(comExampleMyappA['A.java'].className).toBe('A');

@@ -1,4 +1,4 @@
-import type { IDirectory, IFile } from '@/app/api/fs/types/index';
+import type { ParsedDirectory, ParsedFile } from '@/app/api/fs/types/index';
 
 import { resolve } from 'node:path';
 import { describe, it } from 'node:test';
@@ -6,16 +6,16 @@ import { expect } from '@artiphishle/testosterone/src/matchers';
 import { getParsedFileStructure } from '@/app/utils/getParsedFileStructure';
 import { findEntryPoint } from '@/app/utils/parser/java/findEntryPoint';
 
-function collectFilesFromDirectory(dir: IDirectory): IFile[] {
-  const files: IFile[] = [];
+function collectFilesFromDirectory(dir: ParsedDirectory): ParsedFile[] {
+  const files: ParsedFile[] = [];
 
-  function traverse(current: IDirectory) {
+  function traverse(current: ParsedDirectory) {
     for (const key in current) {
       const entry = current[key];
       if ('path' in entry && 'package' in entry) {
-        files.push(entry as IFile);
+        files.push(entry as ParsedFile);
       } else {
-        traverse(entry as IDirectory);
+        traverse(entry as ParsedDirectory);
       }
     }
   }

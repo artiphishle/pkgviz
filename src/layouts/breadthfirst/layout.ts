@@ -19,7 +19,7 @@ export const layout: BreadthFirstLayoutOptions = {
   fit: true, // whether to fit the viewport to the graph
   grid: true, // whether to create an even grid into which the DAG is placed (circle:false only)
   nodeDimensionsIncludeLabels: false, // Excludes the label when calculating node bounding boxes for the layout algorithm
-  padding: 30, // padding on fit
+  // padding: 30, // padding on fit
   roots: undefined, // the roots of the trees
   // spacingFactor: 1.75, // positive spacing factor, larger => more space between nodes (N.B. n/a if causes overlap)
   ready: undefined, // callback on layoutready

@@ -9,7 +9,7 @@ import Loader from '@/components/Loader';
 import Settings from '@/components/Settings';
 import { Cytoscape } from '@/components/Cytoscape';
 import { SettingsProvider } from '@/contexts/SettingsContext';
-import { getJson } from '@/utils/getJson';
+import { getJsonAsync } from '@/shared/utils/getJsonAsync';
 
 export default function HomeScreen() {
   const [currentPackage, setCurrentPackage] = useState<string>('');
@@ -17,7 +17,7 @@ export default function HomeScreen() {
 
   /** @todo Don't generate the graph on every page reload */
   useEffect(() => {
-    if (!packageGraph) getJson<ElementsDefinition>(API_GET_GRAPH).then(setPackageGraph);
+    if (!packageGraph) getJsonAsync<ElementsDefinition>(API_GET_GRAPH).then(setPackageGraph);
   }, [packageGraph]);
 
   return (

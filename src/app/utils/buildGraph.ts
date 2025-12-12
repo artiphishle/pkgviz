@@ -4,7 +4,7 @@ import type {
   ElementsDefinition,
   NodeDefinition,
 } from 'cytoscape';
-import type { IDirectory, IFile } from '@/app/api/fs/types/index';
+import type { ParsedDirectory, ParsedFile } from '@/shared/types';
 
 /**
  * Builds a weighted dependency graph based on package-level imports.
@@ -13,19 +13,19 @@ import type { IDirectory, IFile } from '@/app/api/fs/types/index';
  * - Adds vendor nodes for any edge endpoints not present as intrinsic nodes
  * - Sanitizes: skips empty package ids and self-edges
  */
-export function buildGraph(dir: IDirectory) {
+export function buildGraph(dir: ParsedDirectory) {
   /**
    * Build graph (nodes/edges) recursively
    */
   function buildGraphRecursively(
-    currentDir: IDirectory,
+    currentDir: ParsedDirectory,
     currentPath = '',
     nodes: NodeDefinition[] = [],
     edges: Map<string, EdgeDefinition> = new Map()
   ) {
     Object.keys(currentDir).forEach(key => {
-      const dirOrFile = (currentDir as Record<string, IDirectory | IFile>)[key];
-      const isDirectory = !(dirOrFile as IFile)?.className;
+      const dirOrFile = (currentDir as Record<string, ParsedDirectory | ParsedFile>)[key];
+      const isDirectory = !(dirOrFile as ParsedFile)?.className;
 
       // 1) Add directory as a node
       if (isDirectory) {
@@ -44,11 +44,11 @@ export function buildGraph(dir: IDirectory) {
         });
 
         // Recurse into subdirectories
-        return buildGraphRecursively(dirOrFile as IDirectory, pkg, nodes, edges);
+        return buildGraphRecursively(dirOrFile as ParsedDirectory, pkg, nodes, edges);
       }
 
       // 2) Aggregate file imports as weighted package edges (package perspective)
-      const file = dirOrFile as IFile;
+      const file = dirOrFile as ParsedFile;
       const source = file.package?.trim();
       if (!source) return; // skip empty/default package ids
 
@@ -96,6 +96,7 @@ export function buildGraph(dir: IDirectory) {
           name: id.split('.').pop() || id,
         },
         group: 'nodes',
+        classes: 'isVendor',
       });
     });
   });

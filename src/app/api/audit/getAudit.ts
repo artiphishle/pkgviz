@@ -1,6 +1,5 @@
 'use server';
-import type { IDirectory } from '@/app/api/fs/types/index';
-import type { ILanguageDetectionResult } from '@/app/utils/detectLanguage.types';
+import type { LanguageDetectionResult, ParsedDirectory } from '@/shared/types';
 
 import { getParsedFileStructure } from '@/app/utils/getParsedFileStructure';
 import { detectLanguage } from '@/app/utils/detectLanguage';
@@ -45,7 +44,7 @@ export async function getAudit() {
 interface AuditMeta {
   timeEnd: number;
   readonly timeStart: number;
-  readonly language: ILanguageDetectionResult;
+  readonly language: LanguageDetectionResult;
   readonly projectName: string;
 }
 
@@ -54,5 +53,5 @@ export interface Audit {
     readonly cyclicPackages: PackageCycleDetail[];
   };
   readonly meta: AuditMeta;
-  readonly files: IDirectory;
+  readonly files: ParsedDirectory;
 }

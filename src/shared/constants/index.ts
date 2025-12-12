@@ -1,0 +1,7 @@
+////////////////////////////////////////////////////////////////////////////
+// Shared Constants
+
+/**
+ * Java source root directory
+ */
+export const JAVA_ROOT = 'src/main/java';

@@ -1,5 +1,5 @@
 'use server';
-import type { IFile, MethodCall, MethodDefinition } from '@/app/api/fs/types/index';
+import type { ParsedFile, MethodCall, MethodDefinition } from '@/shared/types';
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -101,7 +101,7 @@ export async function parseJavaFile(fullPath: string, projectRoot: string) {
   const calls = extractMethodCalls(content);
   const relativePath = path.relative(projectRoot, fullPath);
 
-  const file: IFile = {
+  const file: ParsedFile = {
     className,
     package: pkg,
     imports,

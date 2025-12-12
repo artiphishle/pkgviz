@@ -1,40 +1,40 @@
 'use server';
-import { ELanguage, type ILanguageDetectionResult } from '@/app/utils/detectLanguage.types';
+import { Language, type LanguageDetectionResult } from '@/shared/types';
 
 import fs from 'node:fs';
 import path from 'node:path';
 
-export async function detectLanguage(directoryPath: string): Promise<ILanguageDetectionResult> {
+export async function detectLanguage(directoryPath: string): Promise<LanguageDetectionResult> {
   // Check if directory exists
   if (!fs.existsSync(directoryPath) || !fs.statSync(directoryPath).isDirectory()) {
     throw new Error(`Directory does not exist: ${directoryPath}`);
   }
 
   const files = fs.readdirSync(directoryPath);
-  const indicators: Record<ELanguage, string[]> = {
-    [ELanguage.JavaScript]: [],
-    [ELanguage.TypeScript]: [],
-    [ELanguage.Java]: [],
-    [ELanguage.Unknown]: [],
+  const indicators: Record<Language, string[]> = {
+    [Language.JavaScript]: [],
+    [Language.TypeScript]: [],
+    [Language.Java]: [],
+    [Language.Unknown]: [],
   };
 
   // Check for JavaScript indicators
   if (files.includes('package.json') && !files.includes('tsconfig.json')) {
-    indicators[ELanguage.JavaScript].push('package.json without tsconfig.json');
+    indicators[Language.JavaScript].push('package.json without tsconfig.json');
   }
   if (files.some(file => file.endsWith('.js') || file.endsWith('.jsx'))) {
-    indicators[ELanguage.JavaScript].push('.js/.jsx files');
+    indicators[Language.JavaScript].push('.js/.jsx files');
   }
   if (files.includes('node_modules')) {
-    indicators[ELanguage.JavaScript].push('node_modules directory');
+    indicators[Language.JavaScript].push('node_modules directory');
   }
 
   // Check for TypeScript indicators
   if (files.includes('tsconfig.json')) {
-    indicators[ELanguage.TypeScript].push('tsconfig.json');
+    indicators[Language.TypeScript].push('tsconfig.json');
   }
   if (files.some(file => file.endsWith('.ts') || file.endsWith('.tsx'))) {
-    indicators[ELanguage.TypeScript].push('.ts/.tsx files');
+    indicators[Language.TypeScript].push('.ts/.tsx files');
   }
   if (files.includes('package.json')) {
     try {
@@ -42,7 +42,7 @@ export async function detectLanguage(directoryPath: string): Promise<ILanguageDe
         fs.readFileSync(path.join(directoryPath, 'package.json'), 'utf8')
       );
       if (packageJson.dependencies?.typescript || packageJson.devDependencies?.typescript) {
-        indicators[ELanguage.TypeScript].push('typescript dependency');
+        indicators[Language.TypeScript].push('typescript dependency');
       }
     } catch (error) {
       console.error(error);
@@ -51,33 +51,33 @@ export async function detectLanguage(directoryPath: string): Promise<ILanguageDe
 
   // Check for Java indicators
   if (files.includes('pom.xml')) {
-    indicators[ELanguage.Java].push('pom.xml');
+    indicators[Language.Java].push('pom.xml');
   }
   if (files.includes('build.gradle') || files.includes('build.gradle.kts')) {
-    indicators[ELanguage.Java].push('gradle build file');
+    indicators[Language.Java].push('gradle build file');
   }
   if (files.some(file => file.endsWith('.java'))) {
-    indicators[ELanguage.Java].push('.java files');
+    indicators[Language.Java].push('.java files');
   }
   if (files.includes('.mvn') || files.includes('mvnw') || files.includes('mvnw.cmd')) {
-    indicators[ELanguage.Java].push('Maven wrapper');
+    indicators[Language.Java].push('Maven wrapper');
   }
 
   // Determine the most likely language
   const counts = {
-    [ELanguage.JavaScript]: indicators[ELanguage.JavaScript].length,
-    [ELanguage.TypeScript]: indicators[ELanguage.TypeScript].length,
-    [ELanguage.Java]: indicators[ELanguage.Java].length,
-    [ELanguage.Unknown]: 0,
+    [Language.JavaScript]: indicators[Language.JavaScript].length,
+    [Language.TypeScript]: indicators[Language.TypeScript].length,
+    [Language.Java]: indicators[Language.Java].length,
+    [Language.Unknown]: 0,
   };
 
-  let detectedLanguage = ELanguage.Unknown;
+  let detectedLanguage = Language.Unknown;
   let maxCount = 0;
 
   for (const [language, count] of Object.entries(counts)) {
     if (count > maxCount) {
       maxCount = count;
-      detectedLanguage = language as ELanguage;
+      detectedLanguage = language as Language;
     }
   }
 
