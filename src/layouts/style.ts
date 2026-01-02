@@ -139,7 +139,7 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
     {
       selector: 'edge.hushed',
       style: {
-        opacity: 0.1, // affects the entire edge (incl. arrows)
+        opacity: 0.04,
       },
     },
     {
