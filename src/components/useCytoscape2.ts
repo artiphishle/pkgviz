@@ -1,16 +1,6 @@
 'use client';
 import { useTheme } from 'next-themes';
 import { useCallback, useEffect, useRef, useState } from 'react';
-
-import cytoscape, {
-  Core,
-  LayoutOptions,
-  type ElementsDefinition,
-  type NodeDefinition,
-  type Layouts,
-} from 'cytoscape';
-
-import { useSettings } from '@/contexts/SettingsContext';
 import { getStyle as getCommonStyle, getCanvasBg } from '@/layouts/style';
 import {
   getBreadthfirstStyle,
@@ -19,14 +9,22 @@ import {
   getElkStyle,
   getGridStyle,
 } from '@/layouts';
-import { LAYOUTS } from '@/layouts/constants';
 
+import cytoscape, {
+  Core,
+  LayoutOptions,
+  type ElementsDefinition,
+  type NodeDefinition,
+  type Layouts,
+} from 'cytoscape';
+import { useSettings } from '@/contexts/SettingsContext';
 import { filterByPackagePrefix } from '@/utils/filter/filterByPackagePrefix';
 import { filterVendorPackages } from '@/utils/filter/filterVendorPackages';
+import { hasChildren } from '@/utils/hasChildren';
 import { filterEmptyPackages } from '@/utils/filter/filterEmptyPackages';
+import { LAYOUTS } from '@/layouts/constants';
 import { filterSubPackagesByDepth, getMaxDepth } from '@/utils/filter/filterSubPackagesFromDepth';
 import { toggleCompoundNodes } from '@/utils/filter/toggleCompoundNodes';
-import { hasChildren } from '@/utils/hasChildren';
 
 export function useCytoscape(
   elements: ElementsDefinition | null,
@@ -37,7 +35,7 @@ export function useCytoscape(
   const [filteredElements, setFilteredElements] = useState<ElementsDefinition | null>(null);
   const [cyInstance, setCyInstance] = useState<Core | null>(null);
 
-  // Keep the running layout so we can stop it on swap
+  // keep the running layout so we can stop it on swap
   const layoutRef = useRef<Layouts | null>(null);
 
   // refs for latest data so event handlers don't need to be re-created
@@ -125,6 +123,7 @@ export function useCytoscape(
   /** 3) run (or re-run) layout safely; stop any previous instance */
   const runLayoutSafe = useCallback(
     (cy: Core, name: LayoutOptions['name']) => {
+      // stop previous layout if any
       try {
         layoutRef.current?.stop();
       } catch {
@@ -154,33 +153,23 @@ export function useCytoscape(
     [makeLayoutOpts]
   );
 
-  /**
-   * 4) Init Cytoscape ONCE
-   * STEP 1 CHANGE:
-   * - this effect used to depend on [theme] -> it destroyed/recreated cy when theme changes
-   * - now it runs only once ([]), and theming is handled by effect (8)
-   */
+  // Init Cytoscape ONCE (do not depend on cyInstance / filters / spacing / layout)
   useEffect(() => {
     if (!cyRef.current) return;
 
     const cy = cytoscape({
       container: cyRef.current,
-      elements: [], // add data in a separate effect
+      elements: [], // we'll add data in a separate effect
       hideEdgesOnViewport: true,
       minZoom: 0.01,
       maxZoom: 2,
       selectionType: 'additive',
-
-      // IMPORTANT: initial style can be anything; effect (8) will apply the real theme+layout style
-      style: getCommonStyle({ nodes: [], edges: [] } as ElementsDefinition, 'light'),
-
+      style: getCommonStyle({ nodes: [], edges: [] } as ElementsDefinition, theme),
       userPanningEnabled: true,
     });
 
     setCyInstance(cy);
-
-    // background also gets updated in effect (8), but set a sane initial value
-    cyRef.current.style.background = getCanvasBg('light');
+    cyRef.current.style.background = getCanvasBg(theme);
 
     const handleResize = () => {
       if (cy.destroyed()) return;
@@ -196,14 +185,14 @@ export function useCytoscape(
         // ignore
       }
       layoutRef.current = null;
-
       observer.disconnect();
-
-      // still destroying on unmount for now (step 2 would be recycling via unmount/mount)
       cy.destroy();
       setCyInstance(null);
     };
-  }, []);
+
+    // IMPORTANT: we do NOT include cyInstance or settings here, otherwise
+    // this effect would loop. We handle updates in other effects.
+  }, [theme]); // or [] if you don't care about initial theme here
 
   /** 5) When data (filteredElements) changes: update graph + rerun layout */
   useEffect(() => {
@@ -266,7 +255,7 @@ export function useCytoscape(
 
       const fe = filteredElementsRef.current;
       const el = elementsRef.current;
-      const rawNode = fe?.nodes.find(n => n.data.id === node.data().id) as
+      const rawNode = fe?.nodes.find(elm => elm.data.id === node.data().id) as
         | NodeDefinition
         | undefined;
 
@@ -334,6 +323,7 @@ export function useCytoscape(
               : getConcentricStyle;
 
     cyInstance.style([...getCommonStyle(filteredElements, theme), ...getLayoutStyle()]).update();
+
     cyRef.current.style.background = getCanvasBg(theme);
   }, [cyInstance, filteredElements, theme, cytoscapeLayout]);
 
