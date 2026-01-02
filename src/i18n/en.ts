@@ -22,6 +22,7 @@ const en: ILanguage = {
   concentric: 'Concentric',
   elk: 'Elk: Layered',
   grid: 'Grid',
+  uml: 'UML',
 };
 
 export default en;

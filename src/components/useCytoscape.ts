@@ -8,6 +8,7 @@ import {
   getConcentricStyle,
   getElkStyle,
   getGridStyle,
+  getUmlStyle,
 } from '@/layouts';
 
 import cytoscape, {
@@ -25,6 +26,7 @@ import { filterEmptyPackages } from '@/utils/filter/filterEmptyPackages';
 import { LAYOUTS } from '@/layouts/constants';
 import { filterSubPackagesByDepth, getMaxDepth } from '@/utils/filter/filterSubPackagesFromDepth';
 import { toggleCompoundNodes } from '@/utils/filter/toggleCompoundNodes';
+import { cyNodeDef } from '@/layouts/uml/layout';
 
 export function useCytoscape(
   elements: ElementsDefinition | null,
@@ -107,6 +109,24 @@ export function useCytoscape(
     setMaxSubPackageDepth,
   ]);
 
+  function cyNodeDef(label, rp) {
+    const id = `n${cy.nodes().length}`;
+    const div = document.createElement('div');
+    div.innerHTML = `node ${id}`;
+    div.classList = 'my-cy-node';
+    div.style.width = `${Math.floor(Math.random() * 40) + 60}px`;
+    div.style.height = `${Math.floor(Math.random() * 30) + 50}px`;
+
+    return {
+      data: {
+        id: id,
+        label: label || `n${cy.nodes().length}`,
+        dom: div,
+      },
+      renderedPosition: rp,
+    };
+  }
+
   /** 2) Helper for layout options */
   const makeLayoutOpts = useCallback(
     (name: LayoutOptions['name']): LayoutOptions & { [k: string]: unknown } => ({
@@ -145,6 +165,7 @@ export function useCytoscape(
           if (cy.destroyed()) return;
           cy.fit(undefined, 50);
         };
+
         cy.one('layoutstop', onStop);
 
         layout.run();
@@ -169,6 +190,9 @@ export function useCytoscape(
     });
 
     setCyInstance(cy);
+    cy.domNode();
+    cy.add(cyNodeDef());
+    cy.layout();
     cyRef.current.style.background = getCanvasBg(theme);
 
     const handleResize = () => {
@@ -320,7 +344,9 @@ export function useCytoscape(
             ? getElkStyle
             : cytoscapeLayout === 'grid'
               ? getGridStyle
-              : getConcentricStyle;
+              : cytoscapeLayout === 'uml'
+                ? getUmlStyle
+                : getConcentricStyle;
 
     cyInstance.style([...getCommonStyle(filteredElements, theme), ...getLayoutStyle()]).update();
 

@@ -30,6 +30,8 @@
   "dependencies": {
     "@artiphishle/testosterone": "^0.2.7",
     "cytoscape": "^3.33.1",
+    "cytoscape-cose-bilkent": "^4.1.0",
+    "cytoscape-dom-node": "^1.2.0",
     "cytoscape-elk": "^2.3.0",
     "fp-ts": "^2.16.11",
     "lucide-react": "^0.487.0",

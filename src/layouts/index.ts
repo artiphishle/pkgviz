@@ -12,3 +12,6 @@ export { getStyle as getElkStyle } from '@/layouts/elk/style';
 
 export { layout as gridLayout } from '@/layouts/grid/layout';
 export { getStyle as getGridStyle } from '@/layouts/grid/style';
+
+export { layout as umlLayout } from '@/layouts/uml/layout';
+export { getStyle as getUmlStyle } from '@/layouts/uml/style';

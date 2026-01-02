@@ -6,7 +6,8 @@ import {
   concentricLayout,
   elkLayout,
   gridLayout,
-} from '@/layouts/index';
+  umlLayout,
+} from '@/layouts';
 
 export const LAYOUTS: Record<LayoutOptions['name'], LayoutOptions> = {
   breadthfirst: breadthfirstLayout,
@@ -14,4 +15,5 @@ export const LAYOUTS: Record<LayoutOptions['name'], LayoutOptions> = {
   concentric: concentricLayout,
   elk: elkLayout,
   grid: gridLayout,
+  uml: umlLayout,
 } as const;

@@ -121,7 +121,7 @@ const Settings: React.FC = () => {
             >
               <Select.Viewport className="p-1">
                 <Select.Group>
-                  {['breadthfirst', 'circle', 'concentric', 'elk', 'grid'].map(layout => (
+                  {['breadthfirst', 'circle', 'concentric', 'elk', 'grid', 'uml'].map(layout => (
                     <Select.Item
                       key={layout}
                       value={layout}
