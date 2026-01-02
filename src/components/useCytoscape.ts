@@ -1,14 +1,6 @@
 'use client';
 import { useTheme } from 'next-themes';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { getStyle as getCommonStyle, getCanvasBg } from '@/layouts/style';
-import {
-  getBreadthfirstStyle,
-  getCircleStyle,
-  getConcentricStyle,
-  getElkStyle,
-  getGridStyle,
-} from '@/layouts';
 
 import cytoscape, {
   Core,
@@ -17,14 +9,24 @@ import cytoscape, {
   type NodeDefinition,
   type Layouts,
 } from 'cytoscape';
+
 import { useSettings } from '@/contexts/SettingsContext';
+import { getStyle as getCommonStyle, getCanvasBg } from '@/layouts/style';
+import {
+  getBreadthfirstStyle,
+  getCircleStyle,
+  getConcentricStyle,
+  getElkStyle,
+  getGridStyle,
+} from '@/layouts';
+import { LAYOUTS } from '@/layouts/constants';
+
 import { filterByPackagePrefix } from '@/utils/filter/filterByPackagePrefix';
 import { filterVendorPackages } from '@/utils/filter/filterVendorPackages';
-import { hasChildren } from '@/utils/hasChildren';
 import { filterEmptyPackages } from '@/utils/filter/filterEmptyPackages';
-import { LAYOUTS } from '@/layouts/constants';
 import { filterSubPackagesByDepth, getMaxDepth } from '@/utils/filter/filterSubPackagesFromDepth';
 import { toggleCompoundNodes } from '@/utils/filter/toggleCompoundNodes';
+import { hasChildren } from '@/utils/hasChildren';
 
 export function useCytoscape(
   elements: ElementsDefinition | null,
@@ -35,10 +37,10 @@ export function useCytoscape(
   const [filteredElements, setFilteredElements] = useState<ElementsDefinition | null>(null);
   const [cyInstance, setCyInstance] = useState<Core | null>(null);
 
-  // keep the running layout so we can stop it on swap
+  // Keep the running layout so we can stop it on swap
   const layoutRef = useRef<Layouts | null>(null);
 
-  // refs for latest data so event handlers don't need to be re-created
+  // Refs for latest data so event handlers don't need to be re-created
   const elementsRef = useRef<ElementsDefinition | null>(null);
   const filteredElementsRef = useRef<ElementsDefinition | null>(null);
   elementsRef.current = elements;
@@ -65,10 +67,12 @@ export function useCytoscape(
       showCompoundNodes,
       currentPackage
     );
+
     const afterPkgFilter = filterByPackagePrefix(
       afterCompoundNodeFilter,
       currentPackage.replace(/\//g, '.')
     );
+
     const afterSubPkgFilter = filterSubPackagesByDepth(afterPkgFilter, true, subPackageDepth);
 
     const afterVendorPkgFilter = showVendorPackages
@@ -120,14 +124,13 @@ export function useCytoscape(
     [cytoscapeLayoutSpacing]
   );
 
-  /** 3) run (or re-run) layout safely; stop any previous instance */
+  /** 3) Run (or re-run) layout safely; stop any previous instance */
   const runLayoutSafe = useCallback(
     (cy: Core, name: LayoutOptions['name']) => {
-      // stop previous layout if any
       try {
         layoutRef.current?.stop();
       } catch {
-        // ignore
+        // Ignore
       }
       layoutRef.current = null;
 
@@ -153,23 +156,23 @@ export function useCytoscape(
     [makeLayoutOpts]
   );
 
-  // Init Cytoscape ONCE (do not depend on cyInstance / filters / spacing / layout)
+  /** 4) Init Cytoscape ONCE (step 1 already applied: [] deps) */
   useEffect(() => {
     if (!cyRef.current) return;
 
     const cy = cytoscape({
       container: cyRef.current,
-      elements: [], // we'll add data in a separate effect
+      elements: [],
       hideEdgesOnViewport: true,
       minZoom: 0.01,
       maxZoom: 2,
       selectionType: 'additive',
-      style: getCommonStyle({ nodes: [], edges: [] } as ElementsDefinition, theme),
+      style: getCommonStyle({ nodes: [], edges: [] } as ElementsDefinition, 'light'),
       userPanningEnabled: true,
     });
 
     setCyInstance(cy);
-    cyRef.current.style.background = getCanvasBg(theme);
+    cyRef.current.style.background = getCanvasBg('light');
 
     const handleResize = () => {
       if (cy.destroyed()) return;
@@ -182,19 +185,22 @@ export function useCytoscape(
       try {
         layoutRef.current?.stop();
       } catch {
-        // ignore
+        // Ignore
       }
       layoutRef.current = null;
+
       observer.disconnect();
       cy.destroy();
       setCyInstance(null);
     };
+  }, []);
 
-    // IMPORTANT: we do NOT include cyInstance or settings here, otherwise
-    // this effect would loop. We handle updates in other effects.
-  }, [theme]); // or [] if you don't care about initial theme here
-
-  /** 5) When data (filteredElements) changes: update graph + rerun layout */
+  /**
+   * 5) Data Update
+   * - This effect updates the elements and node classes/handlers
+   * - It DOES NOT run layout anymore
+   * - Layout runs only in effect (6) => avoids double layout runs
+   */
   useEffect(() => {
     if (!cyInstance || !filteredElements || cyInstance.destroyed()) return;
 
@@ -219,11 +225,18 @@ export function useCytoscape(
       node.addClass('isParent');
       node.on('dblclick', () => setCurrentPackage(node.id().replace(/\./g, '/')));
     });
+  }, [cyInstance, filteredElements, setCurrentPackage]);
 
-    runLayoutSafe(cyInstance, cytoscapeLayout as LayoutOptions['name']);
-  }, [cyInstance, filteredElements, cytoscapeLayout, runLayoutSafe, setCurrentPackage]);
-
-  /** 6) If only layout / spacing changes: rerun layout on existing graph */
+  /**
+   * 6) Single Layout Trigger
+   *
+   * Runs when:
+   * - filteredElements changes (new data)
+   * - layout name changes
+   * - spacing changes
+   *
+   * - This is now the ONLY place that calls runLayoutSafe
+   */
   useEffect(() => {
     if (!cyInstance || !filteredElements || cyInstance.destroyed()) return;
     runLayoutSafe(cyInstance, cytoscapeLayout as LayoutOptions['name']);
@@ -255,7 +268,7 @@ export function useCytoscape(
 
       const fe = filteredElementsRef.current;
       const el = elementsRef.current;
-      const rawNode = fe?.nodes.find(elm => elm.data.id === node.data().id) as
+      const rawNode = fe?.nodes.find(n => n.data.id === node.data().id) as
         | NodeDefinition
         | undefined;
 
@@ -323,7 +336,6 @@ export function useCytoscape(
               : getConcentricStyle;
 
     cyInstance.style([...getCommonStyle(filteredElements, theme), ...getLayoutStyle()]).update();
-
     cyRef.current.style.background = getCanvasBg(theme);
   }, [cyInstance, filteredElements, theme, cytoscapeLayout]);
 
