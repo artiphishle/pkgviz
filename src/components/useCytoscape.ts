@@ -40,7 +40,7 @@ export function useCytoscape(
   // Keep the running layout so we can stop it on swap
   const layoutRef = useRef<Layouts | null>(null);
 
-  // refs for latest data so event handlers don't need to be re-created
+  // Refs for latest data so event handlers don't need to be re-created
   const elementsRef = useRef<ElementsDefinition | null>(null);
   const filteredElementsRef = useRef<ElementsDefinition | null>(null);
   elementsRef.current = elements;
@@ -67,10 +67,12 @@ export function useCytoscape(
       showCompoundNodes,
       currentPackage
     );
+
     const afterPkgFilter = filterByPackagePrefix(
       afterCompoundNodeFilter,
       currentPackage.replace(/\//g, '.')
     );
+
     const afterSubPkgFilter = filterSubPackagesByDepth(afterPkgFilter, true, subPackageDepth);
 
     const afterVendorPkgFilter = showVendorPackages
@@ -122,13 +124,13 @@ export function useCytoscape(
     [cytoscapeLayoutSpacing]
   );
 
-  /** 3) run (or re-run) layout safely; stop any previous instance */
+  /** 3) Run (or re-run) layout safely; stop any previous instance */
   const runLayoutSafe = useCallback(
     (cy: Core, name: LayoutOptions['name']) => {
       try {
         layoutRef.current?.stop();
       } catch {
-        // ignore
+        // Ignore
       }
       layoutRef.current = null;
 
@@ -154,32 +156,22 @@ export function useCytoscape(
     [makeLayoutOpts]
   );
 
-  /**
-   * 4) Init Cytoscape ONCE
-   * STEP 1 CHANGE:
-   * - this effect used to depend on [theme] -> it destroyed/recreated cy when theme changes
-   * - now it runs only once ([]), and theming is handled by effect (8)
-   */
+  /** 4) Init Cytoscape ONCE (step 1 already applied: [] deps) */
   useEffect(() => {
     if (!cyRef.current) return;
 
     const cy = cytoscape({
       container: cyRef.current,
-      elements: [], // add data in a separate effect
+      elements: [],
       hideEdgesOnViewport: true,
       minZoom: 0.01,
       maxZoom: 2,
       selectionType: 'additive',
-
-      // IMPORTANT: initial style can be anything; effect (8) will apply the real theme+layout style
       style: getCommonStyle({ nodes: [], edges: [] } as ElementsDefinition, 'light'),
-
       userPanningEnabled: true,
     });
 
     setCyInstance(cy);
-
-    // background also gets updated in effect (8), but set a sane initial value
     cyRef.current.style.background = getCanvasBg('light');
 
     const handleResize = () => {
@@ -193,19 +185,22 @@ export function useCytoscape(
       try {
         layoutRef.current?.stop();
       } catch {
-        // ignore
+        // Ignore
       }
       layoutRef.current = null;
 
       observer.disconnect();
-
-      // still destroying on unmount for now (step 2 would be recycling via unmount/mount)
       cy.destroy();
       setCyInstance(null);
     };
   }, []);
 
-  /** 5) When data (filteredElements) changes: update graph + rerun layout */
+  /**
+   * 5) Data Update
+   * - This effect updates the elements and node classes/handlers
+   * - It DOES NOT run layout anymore
+   * - Layout runs only in effect (6) => avoids double layout runs
+   */
   useEffect(() => {
     if (!cyInstance || !filteredElements || cyInstance.destroyed()) return;
 
@@ -230,11 +225,18 @@ export function useCytoscape(
       node.addClass('isParent');
       node.on('dblclick', () => setCurrentPackage(node.id().replace(/\./g, '/')));
     });
+  }, [cyInstance, filteredElements, setCurrentPackage]);
 
-    runLayoutSafe(cyInstance, cytoscapeLayout as LayoutOptions['name']);
-  }, [cyInstance, filteredElements, cytoscapeLayout, runLayoutSafe, setCurrentPackage]);
-
-  /** 6) If only layout / spacing changes: rerun layout on existing graph */
+  /**
+   * 6) Single Layout Trigger
+   *
+   * Runs when:
+   * - filteredElements changes (new data)
+   * - layout name changes
+   * - spacing changes
+   *
+   * - This is now the ONLY place that calls runLayoutSafe
+   */
   useEffect(() => {
     if (!cyInstance || !filteredElements || cyInstance.destroyed()) return;
     runLayoutSafe(cyInstance, cytoscapeLayout as LayoutOptions['name']);
