@@ -5,6 +5,7 @@
  * List of supported coding languages
  */
 export enum Language {
+  Cpp = 'cpp',
   JavaScript = 'javascript',
   TypeScript = 'typescript',
   Java = 'java',

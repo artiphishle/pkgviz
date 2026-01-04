@@ -15,6 +15,7 @@ export async function detectLanguage(directoryPath: string): Promise<LanguageDet
     [Language.JavaScript]: [],
     [Language.TypeScript]: [],
     [Language.Java]: [],
+    [Language.Cpp]: [],
     [Language.Unknown]: [],
   };
 
@@ -63,11 +64,32 @@ export async function detectLanguage(directoryPath: string): Promise<LanguageDet
     indicators[Language.Java].push('Maven wrapper');
   }
 
+  // Check for C++ indicators
+  if (files.includes('CMakeLists.txt')) {
+    indicators[Language.Cpp].push('CMakeLists.txt');
+  }
+  if (files.includes('Makefile')) {
+    indicators[Language.Cpp].push('Makefile');
+  }
+  if (files.some(file => file.endsWith('.cpp') || file.endsWith('.cc') || file.endsWith('.cxx'))) {
+    indicators[Language.Cpp].push('.cpp/.cc/.cxx files');
+  }
+  if (files.some(file => file.endsWith('.h') || file.endsWith('.hpp') || file.endsWith('.hxx'))) {
+    indicators[Language.Cpp].push('.h/.hpp/.hxx header files');
+  }
+  if (files.includes('conanfile.txt') || files.includes('conanfile.py')) {
+    indicators[Language.Cpp].push('Conan package manager');
+  }
+  if (files.includes('vcpkg.json')) {
+    indicators[Language.Cpp].push('vcpkg package manager');
+  }
+
   // Determine the most likely language
   const counts = {
     [Language.JavaScript]: indicators[Language.JavaScript].length,
     [Language.TypeScript]: indicators[Language.TypeScript].length,
     [Language.Java]: indicators[Language.Java].length,
+    [Language.Cpp]: indicators[Language.Cpp].length,
     [Language.Unknown]: 0,
   };
 
@@ -106,9 +128,17 @@ export async function isJavaRoot(directoryPath: string): Promise<boolean> {
   const files = fs.readdirSync(directoryPath);
   return (
     files.includes('pom.xml') ||
-    /*** @todo Files ending in .java doesn't make a folder a project root */
     files.some(file => file.endsWith('.java')) ||
     files.includes('build.gradle') ||
     files.includes('build.gradle.kts')
+  );
+}
+
+export async function isCppRoot(directoryPath: string): Promise<boolean> {
+  const files = fs.readdirSync(directoryPath);
+  return (
+    files.includes('CMakeLists.txt') ||
+    files.includes('Makefile') ||
+    files.some(file => file.endsWith('.cpp') || file.endsWith('.cc') || file.endsWith('.cxx'))
   );
 }
