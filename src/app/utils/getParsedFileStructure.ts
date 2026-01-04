@@ -7,6 +7,7 @@ import { toPosix } from '@/shared/utils/toPosix';
 import { detectLanguage } from '@/shared/utils/detectLanguage';
 import { parseJavaFile } from '@/app/utils/parser/java/parseJavaFile';
 import { parseFile as parseTypeScriptFile } from '@/app/utils/parser/typescript/parseFile';
+import { parseCppFile } from '@/app/utils/parser/cpp/parseCppFile';
 import { parseProjectPath } from '@/shared/utils/parseProjectPath';
 import { JAVA_ROOT } from '@/shared/constants';
 
@@ -26,6 +27,14 @@ export async function resolveRoot(dir: string, detectedLanguage: Language) {
 
     case Language.TypeScript:
       // Normalize to an absolute project root
+      return toPosix(path.resolve(dir));
+
+    case Language.Cpp:
+      // For C++, look for src directory or use project root
+      const cppSrcRoot = toPosix(path.resolve(dir, 'src'));
+      if (existsSync(cppSrcRoot)) {
+        return cppSrcRoot;
+      }
       return toPosix(path.resolve(dir));
 
     default:
@@ -95,6 +104,20 @@ export async function readDirRecursively(
           result[entry.name] = await parseTypeScriptFile(fullPath, projectRoot);
         }
         break;
+
+      // C++
+      case Language.Cpp:
+        if (
+          entry.name.endsWith('.cpp') ||
+          entry.name.endsWith('.cc') ||
+          entry.name.endsWith('.cxx') ||
+          entry.name.endsWith('.h') ||
+          entry.name.endsWith('.hpp') ||
+          entry.name.endsWith('.hxx')
+        ) {
+          result[entry.name] = await parseCppFile(fullPath, projectRoot);
+        }
+        break;
     }
   }
 
@@ -111,8 +134,8 @@ export async function getParsedFileStructure() {
   const detectedLanguage = (await detectLanguage(projectPath)).language;
   console.log('1. Detected language:', detectedLanguage);
 
-  if (![Language.Java, Language.TypeScript].includes(detectedLanguage)) {
-    throw new Error("Supported language is 'Java' & 'TypeScript'. More to follow.");
+  if (![Language.Java, Language.TypeScript, Language.Cpp].includes(detectedLanguage)) {
+    throw new Error("Supported language is 'Java', 'TypeScript' & 'C++'. More to follow.");
   }
 
   // 2. Get validated root directory by detectedLanguage
