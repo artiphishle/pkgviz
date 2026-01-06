@@ -8,6 +8,7 @@ import { detectLanguage } from '@/shared/utils/detectLanguage';
 import { parseJavaFile } from '@/app/utils/parser/java/parseJavaFile';
 import { parseFile as parseTypeScriptFile } from '@/app/utils/parser/typescript/parseFile';
 import { parseCppFile } from '@/app/utils/parser/cpp/parseCppFile';
+import { parsePythonFile } from '@/app/utils/parser/python/parseFile';
 import { parseProjectPath } from '@/shared/utils/parseProjectPath';
 import { JAVA_ROOT } from '@/shared/constants';
 
@@ -34,6 +35,19 @@ export async function resolveRoot(dir: string, detectedLanguage: Language) {
       const cppSrcRoot = toPosix(path.resolve(dir, 'src'));
       if (existsSync(cppSrcRoot)) {
         return cppSrcRoot;
+      }
+      return toPosix(path.resolve(dir));
+
+    case Language.Python:
+      // For Python, look for src directory or use project root
+      const pythonSrcRoot = toPosix(path.resolve(dir, 'src'));
+      if (existsSync(pythonSrcRoot)) {
+        return pythonSrcRoot;
+      }
+      // Also check for common Python app structure
+      const appRoot = toPosix(path.resolve(dir, 'app'));
+      if (existsSync(appRoot)) {
+        return appRoot;
       }
       return toPosix(path.resolve(dir));
 
@@ -118,6 +132,13 @@ export async function readDirRecursively(
           result[entry.name] = await parseCppFile(fullPath, projectRoot);
         }
         break;
+
+      // Python
+      case Language.Python:
+        if (entry.name.endsWith('.py')) {
+          result[entry.name] = await parsePythonFile(fullPath, projectRoot);
+        }
+        break;
     }
   }
 
@@ -134,8 +155,12 @@ export async function getParsedFileStructure() {
   const detectedLanguage = (await detectLanguage(projectPath)).language;
   console.log('1. Detected language:', detectedLanguage);
 
-  if (![Language.Java, Language.TypeScript, Language.Cpp].includes(detectedLanguage)) {
-    throw new Error("Supported language is 'Java', 'TypeScript' & 'C++'. More to follow.");
+  if (
+    ![Language.Java, Language.TypeScript, Language.Cpp, Language.Python].includes(detectedLanguage)
+  ) {
+    throw new Error(
+      "Supported language is 'Java', 'TypeScript', 'C++' & 'Python'. More to follow."
+    );
   }
 
   // 2. Get validated root directory by detectedLanguage

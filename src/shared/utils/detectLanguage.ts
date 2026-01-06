@@ -16,6 +16,7 @@ export async function detectLanguage(directoryPath: string): Promise<LanguageDet
     [Language.TypeScript]: [],
     [Language.Java]: [],
     [Language.Cpp]: [],
+    [Language.Python]: [], // Added Python indicators
     [Language.Unknown]: [],
   };
 
@@ -84,12 +85,38 @@ export async function detectLanguage(directoryPath: string): Promise<LanguageDet
     indicators[Language.Cpp].push('vcpkg package manager');
   }
 
+  if (files.includes('requirements.txt')) {
+    indicators[Language.Python].push('requirements.txt');
+  }
+  if (files.includes('setup.py') || files.includes('setup.cfg')) {
+    indicators[Language.Python].push('setup.py/setup.cfg');
+  }
+  if (files.includes('pyproject.toml')) {
+    indicators[Language.Python].push('pyproject.toml');
+  }
+  if (files.includes('Pipfile') || files.includes('Pipfile.lock')) {
+    indicators[Language.Python].push('Pipfile');
+  }
+  if (files.includes('poetry.lock')) {
+    indicators[Language.Python].push('poetry.lock');
+  }
+  if (files.some(file => file.endsWith('.py'))) {
+    indicators[Language.Python].push('.py files');
+  }
+  if (files.includes('__pycache__') || files.some(file => file === '__init__.py')) {
+    indicators[Language.Python].push('Python cache/module markers');
+  }
+  if (files.includes('venv') || files.includes('.venv') || files.includes('env')) {
+    indicators[Language.Python].push('virtual environment');
+  }
+
   // Determine the most likely language
   const counts = {
     [Language.JavaScript]: indicators[Language.JavaScript].length,
     [Language.TypeScript]: indicators[Language.TypeScript].length,
     [Language.Java]: indicators[Language.Java].length,
     [Language.Cpp]: indicators[Language.Cpp].length,
+    [Language.Python]: indicators[Language.Python].length, // Added to counts
     [Language.Unknown]: 0,
   };
 
@@ -140,5 +167,15 @@ export async function isCppRoot(directoryPath: string): Promise<boolean> {
     files.includes('CMakeLists.txt') ||
     files.includes('Makefile') ||
     files.some(file => file.endsWith('.cpp') || file.endsWith('.cc') || file.endsWith('.cxx'))
+  );
+}
+
+export async function isPythonRoot(directoryPath: string): Promise<boolean> {
+  const files = fs.readdirSync(directoryPath);
+  return (
+    files.includes('requirements.txt') ||
+    files.includes('setup.py') ||
+    files.includes('pyproject.toml') ||
+    files.some(file => file.endsWith('.py'))
   );
 }
