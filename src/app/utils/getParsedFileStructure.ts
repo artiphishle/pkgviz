@@ -10,6 +10,7 @@ import { parseFile as parseTypeScriptFile } from '@/app/utils/parser/typescript/
 import { parseCppFile } from '@/app/utils/parser/cpp/parseCppFile';
 import { parsePythonFile } from '@/app/utils/parser/python/parseFile';
 import { parseDelphiFile } from '@/app/utils/parser/delphi/parseFile';
+import { parseKotlinFile } from '@/app/utils/parser/kotlin/parseFile';
 import { parseProjectPath } from '@/shared/utils/parseProjectPath';
 import { JAVA_ROOT } from '@/shared/constants';
 
@@ -62,6 +63,19 @@ export async function resolveRoot(dir: string, detectedLanguage: Language) {
       const sourceRoot = toPosix(path.resolve(dir, 'Source'));
       if (existsSync(sourceRoot)) {
         return sourceRoot;
+      }
+      return toPosix(path.resolve(dir));
+
+    case Language.Kotlin:
+      // For Kotlin, look for src/main/kotlin directory (Gradle/Maven structure)
+      const kotlinSrcRoot = toPosix(path.resolve(dir, 'src/main/kotlin'));
+      if (existsSync(kotlinSrcRoot)) {
+        return kotlinSrcRoot;
+      }
+      // Fallback to src directory
+      const kotlinAltSrcRoot = toPosix(path.resolve(dir, 'src'));
+      if (existsSync(kotlinAltSrcRoot)) {
+        return kotlinAltSrcRoot;
       }
       return toPosix(path.resolve(dir));
 
@@ -164,6 +178,13 @@ export async function readDirRecursively(
           result[entry.name] = await parseDelphiFile(fullPath, projectRoot);
         }
         break;
+
+      // Kotlin
+      case Language.Kotlin:
+        if (entry.name.endsWith('.kt') || entry.name.endsWith('.kts')) {
+          result[entry.name] = await parseKotlinFile(fullPath, projectRoot);
+        }
+        break;
     }
   }
 
@@ -181,12 +202,17 @@ export async function getParsedFileStructure() {
   console.log('1. Detected language:', detectedLanguage);
 
   if (
-    ![Language.Java, Language.TypeScript, Language.Cpp, Language.Python, Language.Delphi].includes(
-      detectedLanguage
-    )
+    ![
+      Language.Java,
+      Language.TypeScript,
+      Language.Cpp,
+      Language.Python,
+      Language.Delphi,
+      Language.Kotlin,
+    ].includes(detectedLanguage)
   ) {
     throw new Error(
-      "Supported language is 'Java', 'TypeScript', 'C++', 'Python' & 'Delphi'. More to follow."
+      "Supported language is 'Java', 'TypeScript', 'C++', 'Python', 'Delphi' & 'Kotlin'. More to follow."
     );
   }
 

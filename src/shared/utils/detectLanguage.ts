@@ -18,6 +18,7 @@ export async function detectLanguage(directoryPath: string): Promise<LanguageDet
     [Language.Cpp]: [],
     [Language.Python]: [],
     [Language.Delphi]: [],
+    [Language.Kotlin]: [],
     [Language.Unknown]: [],
   };
 
@@ -132,6 +133,37 @@ export async function detectLanguage(directoryPath: string): Promise<LanguageDet
     indicators[Language.Delphi].push('Delphi platform directories');
   }
 
+  // Check for Kotlin indicators
+  if (files.includes('build.gradle.kts')) {
+    indicators[Language.Kotlin].push('build.gradle.kts');
+  }
+  if (files.some(file => file.endsWith('.kt') || file.endsWith('.kts'))) {
+    indicators[Language.Kotlin].push('.kt/.kts files');
+  }
+  if (files.includes('build.gradle')) {
+    try {
+      const buildGradle = fs.readFileSync(path.join(directoryPath, 'build.gradle'), 'utf8');
+      if (buildGradle.includes('kotlin') || buildGradle.includes('org.jetbrains.kotlin')) {
+        indicators[Language.Kotlin].push('Kotlin plugin in Gradle');
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+  if (files.includes('pom.xml')) {
+    try {
+      const pomXml = fs.readFileSync(path.join(directoryPath, 'pom.xml'), 'utf8');
+      if (pomXml.includes('kotlin-maven-plugin') || pomXml.includes('kotlin-stdlib')) {
+        indicators[Language.Kotlin].push('Kotlin plugin in Maven');
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+  if (files.includes('settings.gradle.kts')) {
+    indicators[Language.Kotlin].push('settings.gradle.kts');
+  }
+
   // Determine the most likely language
   const counts = {
     [Language.JavaScript]: indicators[Language.JavaScript].length,
@@ -140,6 +172,7 @@ export async function detectLanguage(directoryPath: string): Promise<LanguageDet
     [Language.Cpp]: indicators[Language.Cpp].length,
     [Language.Python]: indicators[Language.Python].length,
     [Language.Delphi]: indicators[Language.Delphi].length,
+    [Language.Kotlin]: indicators[Language.Kotlin].length, // Added Kotlin to counts
     [Language.Unknown]: 0,
   };
 
@@ -208,5 +241,15 @@ export async function isDelphiRoot(directoryPath: string): Promise<boolean> {
   return (
     files.some(file => file.endsWith('.dpr') || file.endsWith('.dproj')) ||
     files.some(file => file.endsWith('.pas') || file.endsWith('.pp'))
+  );
+}
+
+export async function isKotlinRoot(directoryPath: string): Promise<boolean> {
+  const files = fs.readdirSync(directoryPath);
+  return (
+    files.includes('build.gradle.kts') ||
+    files.some(file => file.endsWith('.kt')) ||
+    (files.includes('build.gradle') &&
+      fs.readFileSync(path.join(directoryPath, 'build.gradle'), 'utf8').includes('kotlin'))
   );
 }

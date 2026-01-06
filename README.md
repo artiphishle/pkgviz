@@ -14,6 +14,7 @@ Supported and auto-detected projectlanguages:
 - Delphi
 - Java
 - JavaScript
+- Kotlin
 - TypeScript
 - Python
 
@@ -23,9 +24,9 @@ Make sure to have Bun & Node installed, check `package.json` for allowed version
 
 ## Quickstart
 
-### NPX / BUNX
+### BUNX
 
-The `npx` or `bunx` script will create a `audit.json` in your project root:
+The `bunx` script will create a `audit.json` in your project root:
 
 ```bash
 # Run from the project root you want to analyze
@@ -38,7 +39,7 @@ bunx pkgviz
 To show the graph visualization in the browser:
 
 ```bash
-# 1. Install dependencies (bun/yarn/pnpm/npm)
+# 1. Install dependencies
 bun install
 
 # 2. Create your .env file
@@ -63,7 +64,7 @@ Run `bunx pkgviz` from any project root (Java & TypeScript, more to follow) and 
 ## Test
 
 ```bash
-# Run tests (bun/yarn/pnpm/npm)
+# Run tests
 bun run test
 
 # Print Coverage to stdout
