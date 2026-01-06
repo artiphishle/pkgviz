@@ -1,23 +1,23 @@
 'use client';
 import type { ElementsDefinition } from 'cytoscape';
 
-import React, { useEffect, useState } from 'react';
-import { API_GET_GRAPH } from '@/app/api/constants';
+import { useEffect, useState } from 'react';
+import { getGraphAction } from '@/app/actions/graph.actions';
 import Breadcrumb from '@/components/Breadcrumb';
 import Header from '@/components/Header';
 import Loader from '@/components/Loader';
 import Settings from '@/components/Settings';
 import { Cytoscape } from '@/components/Cytoscape';
 import { SettingsProvider } from '@/contexts/SettingsContext';
-import { getJsonAsync } from '@/shared/utils/getJsonAsync';
 
 export default function HomeScreen() {
   const [currentPackage, setCurrentPackage] = useState<string>('');
   const [packageGraph, setPackageGraph] = useState<ElementsDefinition | null>(null);
 
-  /** @todo Don't generate the graph on every page reload */
   useEffect(() => {
-    if (!packageGraph) getJsonAsync<ElementsDefinition>(API_GET_GRAPH).then(setPackageGraph);
+    if (!packageGraph) {
+      getGraphAction().then(setPackageGraph);
+    }
   }, [packageGraph]);
 
   return (
