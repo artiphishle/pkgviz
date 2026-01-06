@@ -16,7 +16,8 @@ export async function detectLanguage(directoryPath: string): Promise<LanguageDet
     [Language.TypeScript]: [],
     [Language.Java]: [],
     [Language.Cpp]: [],
-    [Language.Python]: [], // Added Python indicators
+    [Language.Python]: [],
+    [Language.Delphi]: [],
     [Language.Unknown]: [],
   };
 
@@ -85,6 +86,7 @@ export async function detectLanguage(directoryPath: string): Promise<LanguageDet
     indicators[Language.Cpp].push('vcpkg package manager');
   }
 
+  // Check for Python indicators
   if (files.includes('requirements.txt')) {
     indicators[Language.Python].push('requirements.txt');
   }
@@ -110,13 +112,34 @@ export async function detectLanguage(directoryPath: string): Promise<LanguageDet
     indicators[Language.Python].push('virtual environment');
   }
 
+  // Check for Delphi indicators
+  if (files.some(file => file.endsWith('.dpr') || file.endsWith('.dproj'))) {
+    indicators[Language.Delphi].push('.dpr/.dproj project files');
+  }
+  if (files.some(file => file.endsWith('.pas') || file.endsWith('.pp'))) {
+    indicators[Language.Delphi].push('.pas/.pp unit files');
+  }
+  if (files.some(file => file.endsWith('.dfm') || file.endsWith('.fmx'))) {
+    indicators[Language.Delphi].push('.dfm/.fmx form files');
+  }
+  if (files.some(file => file.endsWith('.dpk'))) {
+    indicators[Language.Delphi].push('.dpk package files');
+  }
+  if (files.some(file => file.endsWith('.dcu') || file.endsWith('.dcu'))) {
+    indicators[Language.Delphi].push('compiled unit files');
+  }
+  if (files.includes('Win32') || files.includes('Win64')) {
+    indicators[Language.Delphi].push('Delphi platform directories');
+  }
+
   // Determine the most likely language
   const counts = {
     [Language.JavaScript]: indicators[Language.JavaScript].length,
     [Language.TypeScript]: indicators[Language.TypeScript].length,
     [Language.Java]: indicators[Language.Java].length,
     [Language.Cpp]: indicators[Language.Cpp].length,
-    [Language.Python]: indicators[Language.Python].length, // Added to counts
+    [Language.Python]: indicators[Language.Python].length,
+    [Language.Delphi]: indicators[Language.Delphi].length,
     [Language.Unknown]: 0,
   };
 
@@ -177,5 +200,13 @@ export async function isPythonRoot(directoryPath: string): Promise<boolean> {
     files.includes('setup.py') ||
     files.includes('pyproject.toml') ||
     files.some(file => file.endsWith('.py'))
+  );
+}
+
+export async function isDelphiRoot(directoryPath: string): Promise<boolean> {
+  const files = fs.readdirSync(directoryPath);
+  return (
+    files.some(file => file.endsWith('.dpr') || file.endsWith('.dproj')) ||
+    files.some(file => file.endsWith('.pas') || file.endsWith('.pp'))
   );
 }
