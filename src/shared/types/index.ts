@@ -7,6 +7,7 @@
 export enum Language {
   Cpp = 'cpp',
   JavaScript = 'javascript',
+  Python = 'python',
   TypeScript = 'typescript',
   Java = 'java',
   Unknown = 'unknown',
