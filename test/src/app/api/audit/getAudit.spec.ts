@@ -1,16 +1,20 @@
 import { Language, type ParsedFile } from '@/shared/types';
 
 import { resolve } from 'node:path';
-import { describe, it } from 'node:test';
+import { describe, it, beforeEach } from 'node:test';
 import { expect } from '@artiphishle/testosterone/src/matchers';
-import { getAudit } from '@/app/api/audit/getAudit';
+import { getAuditAction } from '@/app/actions/audit.actions';
 
-describe('[getAudit]', () => {
+describe('[getAuditAction]', () => {
+  beforeEach(() => {
+    // keep tests deterministic; set path fresh for each test
+    process.env.NEXT_PUBLIC_PROJECT_PATH = resolve(process.cwd(), 'examples/java/my-app');
+  });
+
   // Test: Audit output contains 'App.java' which is matched correctly, also audit.meta is correct
   it('generates correct Audit (App.java & meta property)', async () => {
-    process.env.NEXT_PUBLIC_PROJECT_PATH = resolve(process.cwd(), 'examples/java/my-app');
+    const audit = await getAuditAction();
 
-    const audit = await getAudit();
     const appJava = {
       calls: [
         {
@@ -37,6 +41,7 @@ describe('[getAudit]', () => {
       package: 'com.example.myapp',
       path: 'com/example/myapp/App.java',
     };
+
     // any ok. Avoid cyclic type: Java package nesting can contain unknown length of sub packages
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const auditAppJava = (audit.files.com as any).example.myapp['App.java'] as ParsedFile;

@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.6.1 (alpha)
+
+- Replace api routes with server actions
+
 ## v0.6.0 (alpha)
 
 - Add Delphi support

@@ -2,11 +2,12 @@
 import dynamic from 'next/dynamic';
 import { ChevronDownIcon, DownloadIcon } from 'lucide-react';
 import { Select, Slider } from 'radix-ui';
-import React from 'react';
+import type React from 'react';
 import Setting from '@/components/Setting';
 import Switch from '@/components/Switch';
 import { useSettings } from '@/contexts/SettingsContext';
 import { t } from '@/i18n/i18n';
+import { downloadAuditJsonAction, downloadAuditXmlAction } from '@/app/actions/audit.actions';
 
 const Settings: React.FC = () => {
   const {
@@ -23,6 +24,28 @@ const Settings: React.FC = () => {
     toggleShowVendorPackages,
   } = useSettings();
 
+  const handleDownloadJson = async () => {
+    const { data, filename } = await downloadAuditJsonAction();
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadXml = async () => {
+    const { data, filename } = await downloadAuditXmlAction();
+    const blob = new Blob([data], { type: 'application/xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="md:pt-14 border-r bg-neutral-100 border-r-neutral-200 dark:border-r-neutral-800 dark:bg-neutral-950">
       {/* Audit Download */}
@@ -30,25 +53,23 @@ const Settings: React.FC = () => {
       <div>
         {/* JSON Audit Download */}
         <Setting>
-          <a
-            className="flex flex-row items-center content-start text-xs"
-            href="/api/audit/json"
-            download
+          <button
+            onClick={handleDownloadJson}
+            className="flex flex-row items-center content-start text-xs cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
           >
             <DownloadIcon size={8} className="mr-1" />
             <span>JSON</span>
-          </a>
+          </button>
         </Setting>
         {/* XML Audit Download */}
         <Setting>
-          <a
-            className="flex flex-row items-center content-start text-xs"
-            href="/api/audit/xml"
-            download
+          <button
+            onClick={handleDownloadXml}
+            className="flex flex-row items-center content-start text-xs cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
           >
             <DownloadIcon size={8} className="mr-1" />
             <span>XML</span>
-          </a>
+          </button>
         </Setting>
       </div>
 
@@ -117,7 +138,7 @@ const Settings: React.FC = () => {
               side="bottom"
               align="start"
               sideOffset={6}
-              className="z-50 min-w-[--radix-select-trigger-width] rounded-md border bg-white dark:bg-neutral-900 shadow-md"
+              className="z-50 min-w-(--radix-select-trigger-width) rounded-md border bg-white dark:bg-neutral-900 shadow-md"
             >
               <Select.Viewport className="p-1">
                 <Select.Group>
