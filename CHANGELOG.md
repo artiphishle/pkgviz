@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.6.2 (alpha)
+
+- `npx` fix (only `bunx` supported before
+
 ## v0.6.1 (alpha)
 
 - Replace api routes with server actions

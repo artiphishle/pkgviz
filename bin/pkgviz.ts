@@ -1,10 +1,10 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 import { existsSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import * as net from 'node:net';
 import { dirname, resolve } from 'node:path';
-import { spawn } from 'child_process'; // Declare Bun variable
+import { spawn } from 'child_process';
 import { getAuditAction } from '../src/app/actions/audit.actions';
 
 interface Opts {

@@ -14,7 +14,7 @@
     "bun": ">=1.2.18",
     "npm": ">=10.9.2"
   },
-  "version": "0.6.1",
+  "version": "0.6.2",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
