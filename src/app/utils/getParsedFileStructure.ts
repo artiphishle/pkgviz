@@ -9,6 +9,7 @@ import { parseJavaFile } from '@/app/utils/parser/java/parseJavaFile';
 import { parseFile as parseTypeScriptFile } from '@/app/utils/parser/typescript/parseFile';
 import { parseCppFile } from '@/app/utils/parser/cpp/parseCppFile';
 import { parsePythonFile } from '@/app/utils/parser/python/parseFile';
+import { parseDelphiFile } from '@/app/utils/parser/delphi/parseFile';
 import { parseProjectPath } from '@/shared/utils/parseProjectPath';
 import { JAVA_ROOT } from '@/shared/constants';
 
@@ -48,6 +49,19 @@ export async function resolveRoot(dir: string, detectedLanguage: Language) {
       const appRoot = toPosix(path.resolve(dir, 'app'));
       if (existsSync(appRoot)) {
         return appRoot;
+      }
+      return toPosix(path.resolve(dir));
+
+    case Language.Delphi:
+      // For Delphi, look for common source directories
+      const delphiSrcRoot = toPosix(path.resolve(dir, 'src'));
+      if (existsSync(delphiSrcRoot)) {
+        return delphiSrcRoot;
+      }
+      // Also check for Source directory (common in Delphi projects)
+      const sourceRoot = toPosix(path.resolve(dir, 'Source'));
+      if (existsSync(sourceRoot)) {
+        return sourceRoot;
       }
       return toPosix(path.resolve(dir));
 
@@ -139,6 +153,17 @@ export async function readDirRecursively(
           result[entry.name] = await parsePythonFile(fullPath, projectRoot);
         }
         break;
+
+      // Delphi
+      case Language.Delphi:
+        if (
+          entry.name.endsWith('.pas') ||
+          entry.name.endsWith('.pp') ||
+          entry.name.endsWith('.dpr')
+        ) {
+          result[entry.name] = await parseDelphiFile(fullPath, projectRoot);
+        }
+        break;
     }
   }
 
@@ -156,10 +181,12 @@ export async function getParsedFileStructure() {
   console.log('1. Detected language:', detectedLanguage);
 
   if (
-    ![Language.Java, Language.TypeScript, Language.Cpp, Language.Python].includes(detectedLanguage)
+    ![Language.Java, Language.TypeScript, Language.Cpp, Language.Python, Language.Delphi].includes(
+      detectedLanguage
+    )
   ) {
     throw new Error(
-      "Supported language is 'Java', 'TypeScript', 'C++' & 'Python'. More to follow."
+      "Supported language is 'Java', 'TypeScript', 'C++', 'Python' & 'Delphi'. More to follow."
     );
   }
 

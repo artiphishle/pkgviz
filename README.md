@@ -8,11 +8,34 @@ Tool to visualize packages and their dependencies between each other. This proje
 Good software architecture starts with matching functional requirements to code structure.
 Visualizing and showing the dependencies of packages in your project is the first step to regain control of your project.
 
+Supported and auto-detected projectlanguages:
+
+- C++
+- Delphi
+- Java
+- JavaScript
+- TypeScript
+- Python
+
 ## Prerequisites
 
 Make sure to have Bun & Node installed, check `package.json` for allowed versions
 
 ## Quickstart
+
+### NPX / BUNX
+
+The `npx` or `bunx` script will create a `audit.json` in your project root:
+
+```bash
+# Run from the project root you want to analyze
+bunx pkgviz
+
+```
+
+### Browser Visualization
+
+To show the graph visualization in the browser:
 
 ```bash
 # 1. Install dependencies (bun/yarn/pnpm/npm)

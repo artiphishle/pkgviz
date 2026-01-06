@@ -6,6 +6,7 @@
  */
 export enum Language {
   Cpp = 'cpp',
+  Delphi = 'delphi',
   JavaScript = 'javascript',
   Python = 'python',
   TypeScript = 'typescript',

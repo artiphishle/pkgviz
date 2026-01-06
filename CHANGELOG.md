@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.6.0 (alpha)
+
+- Add Delphi support
+
 ## v0.5.0 (alpha)
 
 - Add Python support
