@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.7.0 (alpha)
+
+- Add Kotlin support
+
 ## v0.6.0 (alpha)
 
 - Add Delphi support
