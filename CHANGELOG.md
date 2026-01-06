@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.5.0 (alpha)
+
+- Add Python support
+
 ## v0.4.0 (alpha)
 
 - Add C++ support
