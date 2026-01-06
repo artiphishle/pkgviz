@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.7.1 (alpha)
+## v0.7.2 (alpha)
 
 - Add Kotlin support
 
