@@ -5,8 +5,7 @@
   },
   "files": [
     "/bin",
-    "/src/app/actions/audit.actions.ts",
-    "/src/shared/utils/toPosix.ts",
+    "/src",
     ".next"
   ],
   "type": "module",
@@ -15,7 +14,7 @@
     "bun": ">=1.2.18",
     "npm": ">=10.9.2"
   },
-  "version": "0.7.2",
+  "version": "0.7.3",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
