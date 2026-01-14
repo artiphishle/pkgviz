@@ -1,8 +1,6 @@
+import { describe,expect,it,resolve, } from '@artiphishle/testosterone';
 import { Language } from '@/shared/types';
 
-import { resolve } from 'node:path';
-import { describe, it } from 'node:test';
-import { expect } from '@artiphishle/testosterone/src/matchers';
 import { detectLanguage, isJavaRoot, isTypeScriptRoot } from '@/shared/utils/detectLanguage';
 import { parseProjectPath } from '@/shared/utils/parseProjectPath';
 

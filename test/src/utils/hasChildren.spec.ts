@@ -1,8 +1,6 @@
 import { hasChildren } from '@/utils/hasChildren';
 import { NodeDefinition } from 'cytoscape';
-import { resolve } from 'node:path';
-import { describe, it } from 'node:test';
-import { expect } from '@artiphishle/testosterone/src/matchers';
+import { describe, expect, it, resolve } from '@artiphishle/testosterone';
 
 describe('[hasChildren]', () => {
   it('returns correct children count of a node', async () => {

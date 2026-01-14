@@ -1,6 +1,4 @@
-import { resolve } from 'node:path';
-import { describe, it } from 'node:test';
-import { expect } from '@artiphishle/testosterone/src/matchers';
+import { describe,expect,it,resolve, } from '@artiphishle/testosterone';
 import { parseJavaFile } from '@/app/utils/parser/java/parseJavaFile';
 import { parseProjectPath } from '@/shared/utils/parseProjectPath';
 

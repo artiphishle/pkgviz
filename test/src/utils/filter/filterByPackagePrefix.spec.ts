@@ -1,5 +1,4 @@
-import { describe, it } from 'node:test';
-import { expect } from '@artiphishle/testosterone/src/matchers';
+import { describe,expect,it, } from '@artiphishle/testosterone';
 import { filterByPackagePrefix } from '@/utils/filter/filterByPackagePrefix';
 
 describe('[filterByPackagePrefix]', () => {

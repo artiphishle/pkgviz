@@ -1,6 +1,4 @@
-import { describe, it } from 'node:test';
-import { expect } from '@artiphishle/testosterone/src/matchers';
-import { resolve } from 'node:path';
+import { describe,expect,it,resolve, } from '@artiphishle/testosterone';
 import { extractTypeScriptPackageFromImport } from '@/app/utils/parser/typescript/extractTypeScriptPackageFromImport';
 
 describe('[extractTypeScriptPackageFromImport]', () => {

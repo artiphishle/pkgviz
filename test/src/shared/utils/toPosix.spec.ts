@@ -1,6 +1,5 @@
-import { describe, it } from 'node:test';
+import { describe,expect,it, } from '@artiphishle/testosterone';
 import { toPosix } from '@/shared/utils/toPosix';
-import { expect } from '@artiphishle/testosterone/src/matchers';
 
 describe('[toPosix]', () => {
   it('should convert Windows paths to POSIX format', () => {
