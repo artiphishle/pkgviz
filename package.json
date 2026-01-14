@@ -24,11 +24,12 @@
     "lint": "next lint",
     "format:check": "prettier --check .",
     "format:write": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md,yml,yaml,mjs,cjs,html,css,scss,mdx}\"",
-    "test": "npx @artiphishle/testosterone@0.2.8",
+    "test": "npx @artiphishle/testosterone@0.3.0",
     "test:cov": "c8 --reporter=text --reporter=text-summary tsx --test",
     "test:cov:html": "c8 --report-dir=./test/coverage --reporter=html tsx --test"
   },
   "dependencies": {
+    "@artiphishle/testosterone": "^0.3.0",
     "cytoscape": "^3.33.1",
     "cytoscape-elk": "^2.3.0",
     "fp-ts": "^2.16.11",

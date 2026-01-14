@@ -1,10 +1,11 @@
 {
   "lockfileVersion": 1,
+  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "pkgviz",
       "dependencies": {
-        "@artiphishle/testosterone": "^0.2.7",
+        "@artiphishle/testosterone": "^0.3.0",
         "cytoscape": "^3.33.1",
         "cytoscape-elk": "^2.3.0",
         "fp-ts": "^2.16.11",
@@ -41,7 +42,7 @@
   "packages": {
     "@alloc/quick-lru": ["@alloc/quick-lru@5.2.0", "", {}, "sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw=="],
 
-    "@artiphishle/testosterone": ["@artiphishle/testosterone@0.2.7", "", { "dependencies": { "@types/jsdom": "^21.1.7", "chalk": "^5.4.1", "commander": "^13.1.0", "glob": "^11.0.1", "jsdom": "^26.1.0", "react": "^19.2.0", "react-dom": "^19.2.0" }, "bin": { "testosterone": "src/index.ts" } }, "sha512-N2zitpT6h7a0Sg5hdl2NlnrjeK4ROCtqow4rKlIWioGAapZ3Ky0tcxSc7KKjE0X1KJ6DeUNLDBy8EXrxJJQe+g=="],
+    "@artiphishle/testosterone": ["@artiphishle/testosterone@0.3.0", "", { "dependencies": { "@types/jsdom": "^21.1.7", "c8": "^10.1.3", "chalk": "^5.4.1", "commander": "^13.1.0", "glob": "^11.0.1", "jsdom": "^26.1.0", "tsx": "^4.19.3" }, "peerDependencies": { "@types/react": ">=18", "@types/react-dom": ">=18", "react": ">=18", "react-dom": ">=18" }, "optionalPeers": ["@types/react", "@types/react-dom", "react", "react-dom"], "bin": { "testosterone": "src/index.ts" } }, "sha512-xhXpLqCUylHg5+SSuP9Ro62VKk4xK/OOlWEID/7x8HIILC2GXA+ofcuOi9kW+J7zw2ulJFPJnB5cVIy0gAQ1Ww=="],
 
     "@asamuzakjp/css-color": ["@asamuzakjp/css-color@3.2.0", "", { "dependencies": { "@csstools/css-calc": "^2.1.3", "@csstools/css-color-parser": "^3.0.9", "@csstools/css-parser-algorithms": "^3.0.4", "@csstools/css-tokenizer": "^3.0.3", "lru-cache": "^10.4.3" } }, "sha512-K1A6z8tS3XsmCMM86xoWdn7Fkdn9m6RSVtocUrJYIwZnFVkng/PvkEoWtOWmP+Scc6saYWHWZYbndEEXxl24jw=="],
 
