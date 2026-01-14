@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.7.7 (alpha)
+
+- Improve testing engine
+
 ## v0.7.4 (alpha)
 
 - Add Kotlin support

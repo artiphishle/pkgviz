@@ -7,11 +7,11 @@ import cytoscape from 'cytoscape';
 import ZoomInput from '@/components/ZoomInput';
 
 describe('Components', () => {
-  it('renders the ZoomInput', () => {
+  it('renders the ZoomInput', async () => {
     process.env.NEXT_PUBLIC_PROJECT_PATH = resolve(process.cwd(), 'examples/java/my-app');
 
     const cyInstance = cytoscape();
-    const { getByText } = render(<ZoomInput cyInstance={cyInstance} />);
+    const { getByText } = await render(<ZoomInput cyInstance={cyInstance} />);
 
     expect(getByText('Zoom')).toBeDefined();
   });

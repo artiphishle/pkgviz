@@ -6,10 +6,10 @@ import { render } from '@artiphishle/testosterone/src/react/render';
 import Switch from '@/components/Switch';
 
 describe('Components', () => {
-  it('renders the Switch', () => {
+  it('renders the Switch', async () => {
     process.env.NEXT_PUBLIC_PROJECT_PATH = resolve(process.cwd(), 'examples/java/my-app');
 
-    const { getByText } = render(
+    const { getByText } = await render(
       <Switch id="test" label="Test Switch" value={false} onToggle={() => {}} />
     );
 
