@@ -110,13 +110,11 @@ export async function readDirRecursively(
     '.cache',
     '.git',
     '.github',
-    '.meta',
     '.next',
-    '.vscode',
+    'dist',
     'coverage',
     'examples',
     'node_modules',
-    'packages',
     'test',
   ];
 
