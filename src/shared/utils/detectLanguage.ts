@@ -15,6 +15,17 @@ function safeReadFileSync(baseDir: string, filePath: string): string {
   return fs.readFileSync(resolvedFilePath, 'utf8');
 }
 
+function safeResolveDir(baseDir: string, directoryPath: string): string {
+  const resolvedBaseDir = path.resolve(baseDir);
+  const resolvedDirectoryPath = path.resolve(baseDir, directoryPath);
+
+  if (!resolvedDirectoryPath.startsWith(resolvedBaseDir + path.sep)) {
+    throw new Error(`Path traversal attempt: ${directoryPath}`);
+  }
+
+  return resolvedDirectoryPath;
+}
+
 function safeReadDirSync(baseDir: string, dirPath: string): string[] {
   const resolvedBaseDir = path.resolve(baseDir);
   const resolvedDirPath = path.resolve(baseDir, dirPath);
@@ -357,7 +368,7 @@ export async function isJavaRoot(directoryPath: string): Promise<boolean> {
 }
 
 export async function isCppRoot(directoryPath: string): Promise<boolean> {
-  const resolvedPath = path.resolve(directoryPath);
+  const resolvedPath = safeResolveDir(process.cwd(), directoryPath);
   if (!fs.existsSync(resolvedPath) || !fs.statSync(resolvedPath).isDirectory()) {
     return false;
   }
@@ -370,7 +381,7 @@ export async function isCppRoot(directoryPath: string): Promise<boolean> {
 }
 
 export async function isPythonRoot(directoryPath: string): Promise<boolean> {
-  const resolvedPath = path.resolve(directoryPath);
+  const resolvedPath = safeResolveDir(process.cwd(), directoryPath);
   if (!fs.existsSync(resolvedPath) || !fs.statSync(resolvedPath).isDirectory()) {
     return false;
   }
@@ -384,7 +395,7 @@ export async function isPythonRoot(directoryPath: string): Promise<boolean> {
 }
 
 export async function isDelphiRoot(directoryPath: string): Promise<boolean> {
-  const resolvedPath = path.resolve(directoryPath);
+  const resolvedPath = safeResolveDir(process.cwd(), directoryPath);
   if (!fs.existsSync(resolvedPath) || !fs.statSync(resolvedPath).isDirectory()) {
     return false;
   }
@@ -396,14 +407,14 @@ export async function isDelphiRoot(directoryPath: string): Promise<boolean> {
 }
 
 export async function isKotlinRoot(directoryPath: string): Promise<boolean> {
-  const resolvedPath = path.resolve(directoryPath);
+  const resolvedPath = safeResolveDir(process.cwd(), directoryPath);
   if (!fs.existsSync(resolvedPath) || !fs.statSync(resolvedPath).isDirectory()) {
     return false;
   }
   const files = safeReadDirSync(resolvedPath, '.');
   return (
     files.includes('build.gradle.kts') ||
-    files.some(file => file.endsWith('.kt')) ||
+    files.some(file => file.endswith('.kt')) ||
     (files.includes('build.gradle') &&
       safeReadFileSync(resolvedPath, 'build.gradle').includes('kotlin'))
   );
