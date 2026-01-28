@@ -4,74 +4,58 @@ import { Language, type LanguageDetectionResult } from '@/shared/types';
 import fs from 'node:fs';
 import path from 'node:path';
 
-export async function detectLanguage(directoryPath: string): Promise<LanguageDetectionResult> {
-  // Check if directory exists
-  if (!fs.existsSync(directoryPath) || !fs.statSync(directoryPath).isDirectory()) {
-    throw new Error(`Directory does not exist: ${directoryPath}`);
+function findFilesRecursively(
+  directoryPath: string,
+  depth: number = 3,
+  currentDepth: number = 0
+): string[] {
+  if (currentDepth >= depth) {
+    return [];
   }
 
-  const files = fs.readdirSync(directoryPath);
-  const indicators: Record<Language, string[]> = {
-    [Language.JavaScript]: [],
-    [Language.TypeScript]: [],
-    [Language.Java]: [],
-    [Language.Cpp]: [],
-    [Language.Python]: [],
-    [Language.Delphi]: [],
-    [Language.Kotlin]: [],
-    [Language.Unknown]: [],
-  };
+  let filesAndDirs: string[] = [];
+  const items = fs.readdirSync(directoryPath);
 
+  for (const item of items) {
+    const itemPath = path.join(directoryPath, item);
+    filesAndDirs.push(itemPath);
+    const stat = fs.statSync(itemPath);
+
+    if (stat.isDirectory()) {
+      filesAndDirs = filesAndDirs.concat(findFilesRecursively(itemPath, depth, currentDepth + 1));
+    }
+  }
+
+  return filesAndDirs;
+}
+
+function isJavaScriptProject(
+  files: string[],
+  indicators: Record<Language, string[]>
+): void {
   // Check for JavaScript indicators
-  if (files.includes('package.json') && !files.includes('tsconfig.json')) {
+  if (
+    files.some(file => path.basename(file) === 'package.json') &&
+    !files.some(
+      file => path.basename(file).startsWith('tsconfig') && path.basename(file).endsWith('.json')
+    )
+  ) {
     indicators[Language.JavaScript].push('package.json without tsconfig.json');
   }
   if (files.some(file => file.endsWith('.js') || file.endsWith('.jsx'))) {
     indicators[Language.JavaScript].push('.js/.jsx files');
   }
-  if (files.includes('node_modules')) {
+  if (files.some(file => path.basename(file) === 'node_modules')) {
     indicators[Language.JavaScript].push('node_modules directory');
   }
+}
 
-  // Check for TypeScript indicators
-  if (files.includes('tsconfig.json')) {
-    indicators[Language.TypeScript].push('tsconfig.json');
-  }
-  if (files.some(file => file.endsWith('.ts') || file.endsWith('.tsx'))) {
-    indicators[Language.TypeScript].push('.ts/.tsx files');
-  }
-  if (files.includes('package.json')) {
-    try {
-      const packageJson = JSON.parse(
-        fs.readFileSync(path.join(directoryPath, 'package.json'), 'utf8')
-      );
-      if (packageJson.dependencies?.typescript || packageJson.devDependencies?.typescript) {
-        indicators[Language.TypeScript].push('typescript dependency');
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
-  // Check for Java indicators
-  if (files.includes('pom.xml')) {
-    indicators[Language.Java].push('pom.xml');
-  }
-  if (files.includes('build.gradle') || files.includes('build.gradle.kts')) {
-    indicators[Language.Java].push('gradle build file');
-  }
-  if (files.some(file => file.endsWith('.java'))) {
-    indicators[Language.Java].push('.java files');
-  }
-  if (files.includes('.mvn') || files.includes('mvnw') || files.includes('mvnw.cmd')) {
-    indicators[Language.Java].push('Maven wrapper');
-  }
-
+function isCppProject(files: string[], indicators: Record<Language, string[]>): void {
   // Check for C++ indicators
-  if (files.includes('CMakeLists.txt')) {
+  if (files.some(file => path.basename(file) === 'CMakeLists.txt')) {
     indicators[Language.Cpp].push('CMakeLists.txt');
   }
-  if (files.includes('Makefile')) {
+  if (files.some(file => path.basename(file) === 'Makefile')) {
     indicators[Language.Cpp].push('Makefile');
   }
   if (files.some(file => file.endsWith('.cpp') || file.endsWith('.cc') || file.endsWith('.cxx'))) {
@@ -86,33 +70,50 @@ export async function detectLanguage(directoryPath: string): Promise<LanguageDet
   if (files.includes('vcpkg.json')) {
     indicators[Language.Cpp].push('vcpkg package manager');
   }
+}
 
+function isPythonProject(files: string[], indicators: Record<Language, string[]>): void {
   // Check for Python indicators
-  if (files.includes('requirements.txt')) {
+  if (files.some(file => path.basename(file) === 'requirements.txt')) {
     indicators[Language.Python].push('requirements.txt');
   }
-  if (files.includes('setup.py') || files.includes('setup.cfg')) {
+  if (
+    files.some(file => path.basename(file) === 'setup.py') ||
+    files.some(file => path.basename(file) === 'setup.cfg')
+  ) {
     indicators[Language.Python].push('setup.py/setup.cfg');
   }
-  if (files.includes('pyproject.toml')) {
+  if (files.some(file => path.basename(file) === 'pyproject.toml')) {
     indicators[Language.Python].push('pyproject.toml');
   }
-  if (files.includes('Pipfile') || files.includes('Pipfile.lock')) {
+  if (
+    files.some(file => path.basename(file) === 'Pipfile') ||
+    files.some(file => path.basename(file) === 'Pipfile.lock')
+  ) {
     indicators[Language.Python].push('Pipfile');
   }
-  if (files.includes('poetry.lock')) {
+  if (files.some(file => path.basename(file) === 'poetry.lock')) {
     indicators[Language.Python].push('poetry.lock');
   }
   if (files.some(file => file.endsWith('.py'))) {
     indicators[Language.Python].push('.py files');
   }
-  if (files.includes('__pycache__') || files.some(file => file === '__init__.py')) {
+  if (
+    files.some(file => path.basename(file) === '__pycache__') ||
+    files.some(file => path.basename(file) === '__init__.py')
+  ) {
     indicators[Language.Python].push('Python cache/module markers');
   }
-  if (files.includes('venv') || files.includes('.venv') || files.includes('env')) {
+  if (
+    files.some(file => path.basename(file) === 'venv') ||
+    files.some(file => path.basename(file) === '.venv') ||
+    files.some(file => path.basename(file) === 'env')
+  ) {
     indicators[Language.Python].push('virtual environment');
   }
+}
 
+function isDelphiProject(files: string[], indicators: Record<Language, string[]>): void {
   // Check for Delphi indicators
   if (files.some(file => file.endsWith('.dpr') || file.endsWith('.dproj'))) {
     indicators[Language.Delphi].push('.dpr/.dproj project files');
@@ -129,20 +130,30 @@ export async function detectLanguage(directoryPath: string): Promise<LanguageDet
   if (files.some(file => file.endsWith('.dcu') || file.endsWith('.dcu'))) {
     indicators[Language.Delphi].push('compiled unit files');
   }
-  if (files.includes('Win32') || files.includes('Win64')) {
+  if (
+    files.some(file => path.basename(file) === 'Win32') ||
+    files.some(file => path.basename(file) === 'Win64')
+  ) {
     indicators[Language.Delphi].push('Delphi platform directories');
   }
+}
 
+function isKotlinProject(
+  files: string[],
+  indicators: Record<Language, string[]>,
+  directoryPath: string
+): void {
   // Check for Kotlin indicators
-  if (files.includes('build.gradle.kts')) {
+  if (files.some(file => path.basename(file) === 'build.gradle.kts')) {
     indicators[Language.Kotlin].push('build.gradle.kts');
   }
   if (files.some(file => file.endsWith('.kt') || file.endsWith('.kts'))) {
     indicators[Language.Kotlin].push('.kt/.kts files');
   }
-  if (files.includes('build.gradle')) {
+  const buildGradleFile = files.find(file => path.basename(file) === 'build.gradle');
+  if (buildGradleFile) {
     try {
-      const buildGradle = fs.readFileSync(path.join(directoryPath, 'build.gradle'), 'utf8');
+      const buildGradle = fs.readFileSync(path.join(directoryPath, buildGradleFile), 'utf8');
       if (buildGradle.includes('kotlin') || buildGradle.includes('org.jetbrains.kotlin')) {
         indicators[Language.Kotlin].push('Kotlin plugin in Gradle');
       }
@@ -150,9 +161,10 @@ export async function detectLanguage(directoryPath: string): Promise<LanguageDet
       console.error(error);
     }
   }
-  if (files.includes('pom.xml')) {
+  const pomXmlFile = files.find(file => path.basename(file) === 'pom.xml');
+  if (pomXmlFile) {
     try {
-      const pomXml = fs.readFileSync(path.join(directoryPath, 'pom.xml'), 'utf8');
+      const pomXml = fs.readFileSync(path.join(directoryPath, pomXmlFile), 'utf8');
       if (pomXml.includes('kotlin-maven-plugin') || pomXml.includes('kotlin-stdlib')) {
         indicators[Language.Kotlin].push('Kotlin plugin in Maven');
       }
@@ -160,9 +172,94 @@ export async function detectLanguage(directoryPath: string): Promise<LanguageDet
       console.error(error);
     }
   }
-  if (files.includes('settings.gradle.kts')) {
+  if (files.some(file => path.basename(file) === 'settings.gradle.kts')) {
     indicators[Language.Kotlin].push('settings.gradle.kts');
   }
+}
+
+function isJavaProject(files: string[], indicators: Record<Language, string[]>): void {
+  // Check for Java indicators
+  if (files.some(file => path.basename(file) === 'pom.xml')) {
+    indicators[Language.Java].push('pom.xml');
+  }
+  if (
+    files.some(file => path.basename(file) === 'build.gradle') ||
+    files.some(file => path.basename(file) === 'build.gradle.kts')
+  ) {
+    indicators[Language.Java].push('gradle build file');
+  }
+  if (files.some(file => file.endsWith('.java'))) {
+    indicators[Language.Java].push('.java files');
+  }
+  if (
+    files.some(file => path.basename(file) === '.mvn') ||
+    files.some(file => path.basename(file) === 'mvnw') ||
+    files.some(file => path.basename(file) === 'mvnw.cmd')
+  ) {
+    indicators[Language.Java].push('Maven wrapper');
+  }
+}
+
+function isTypeScriptProject(
+  files: string[],
+  indicators: Record<Language, string[]>,
+  directoryPath: string
+): void {
+  // Check for TypeScript indicators
+  const tsconfigFile = files.find(
+    file => path.basename(file).startsWith('tsconfig') && path.basename(file).endsWith('.json')
+  );
+  if (tsconfigFile) {
+    indicators[Language.TypeScript].push(path.basename(tsconfigFile));
+  }
+  if (files.some(file => file.endsWith('.ts') || file.endsWith('.tsx'))) {
+    indicators[Language.TypeScript].push('.ts/.tsx files');
+  }
+  const packageJsonFile = files.find(file => path.basename(file) === 'package.json');
+  if (packageJsonFile) {
+    try {
+      const packageJson = JSON.parse(
+        fs.readFileSync(path.join(directoryPath, packageJsonFile), 'utf8')
+      );
+      if (packageJson.dependencies?.typescript || packageJson.devDependencies?.typescript) {
+        indicators[Language.TypeScript].push('typescript dependency');
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+}
+
+export async function detectLanguage(directoryPath: string): Promise<LanguageDetectionResult> {
+  // Check if directory exists
+  if (!fs.existsSync(directoryPath) || !fs.statSync(directoryPath).isDirectory()) {
+    throw new Error(`Directory does not exist: ${directoryPath}`);
+  }
+
+  const files = findFilesRecursively(directoryPath).map(file =>
+    path.relative(directoryPath, file)
+  );
+  const indicators: Record<Language, string[]> = {
+    [Language.JavaScript]: [],
+    [Language.TypeScript]: [],
+    [Language.Java]: [],
+    [Language.Cpp]: [],
+    [Language.Python]: [],
+    [Language.Delphi]: [],
+    [Language.Kotlin]: [],
+    [Language.Unknown]: [],
+  };
+
+  isJavaScriptProject(files, indicators);
+
+  isTypeScriptProject(files, indicators, directoryPath);
+
+  isJavaProject(files, indicators);
+
+  isCppProject(files, indicators);
+  isPythonProject(files, indicators);
+  isDelphiProject(files, indicators);
+  isKotlinProject(files, indicators, directoryPath);
 
   // Determine the most likely language
   const counts = {
@@ -204,7 +301,10 @@ export async function isJavaScriptRoot(directoryPath: string): Promise<boolean> 
 
 export async function isTypeScriptRoot(directoryPath: string): Promise<boolean> {
   const files = fs.readdirSync(directoryPath);
-  return files.includes('tsconfig.json') && files.includes('package.json');
+  return (
+    files.some(file => file.startsWith('tsconfig') && file.endsWith('.json')) &&
+    files.includes('package.json')
+  );
 }
 
 export async function isJavaRoot(directoryPath: string): Promise<boolean> {
