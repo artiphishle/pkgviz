@@ -4,8 +4,20 @@ import { Language, type LanguageDetectionResult } from '@/shared/types';
 import fs from 'node:fs';
 import path from 'node:path';
 
+function safeReadFileSync(baseDir: string, filePath: string): string {
+  const resolvedBaseDir = path.resolve(baseDir);
+  const resolvedFilePath = path.resolve(baseDir, filePath);
+
+  if (!resolvedFilePath.startsWith(resolvedBaseDir + path.sep)) {
+    throw new Error(`Path traversal attempt: ${filePath}`);
+  }
+
+  return fs.readFileSync(resolvedFilePath, 'utf8');
+}
+
 function findFilesRecursively(
   directoryPath: string,
+  rootPath: string,
   depth: number = 3,
   currentDepth: number = 0
 ): string[] {
@@ -18,11 +30,19 @@ function findFilesRecursively(
 
   for (const item of items) {
     const itemPath = path.join(directoryPath, item);
+
+    // Ensure the path does not go outside the root directory
+    if (!path.resolve(itemPath).startsWith(rootPath + path.sep)) {
+      continue;
+    }
+
     filesAndDirs.push(itemPath);
     const stat = fs.statSync(itemPath);
 
     if (stat.isDirectory()) {
-      filesAndDirs = filesAndDirs.concat(findFilesRecursively(itemPath, depth, currentDepth + 1));
+      filesAndDirs = filesAndDirs.concat(
+        findFilesRecursively(itemPath, rootPath, depth, currentDepth + 1)
+      );
     }
   }
 
@@ -150,7 +170,7 @@ function isKotlinProject(
   const buildGradleFile = files.find(file => path.basename(file) === 'build.gradle');
   if (buildGradleFile) {
     try {
-      const buildGradle = fs.readFileSync(path.join(directoryPath, buildGradleFile), 'utf8');
+      const buildGradle = safeReadFileSync(directoryPath, buildGradleFile);
       if (buildGradle.includes('kotlin') || buildGradle.includes('org.jetbrains.kotlin')) {
         indicators[Language.Kotlin].push('Kotlin plugin in Gradle');
       }
@@ -161,7 +181,7 @@ function isKotlinProject(
   const pomXmlFile = files.find(file => path.basename(file) === 'pom.xml');
   if (pomXmlFile) {
     try {
-      const pomXml = fs.readFileSync(path.join(directoryPath, pomXmlFile), 'utf8');
+      const pomXml = safeReadFileSync(directoryPath, pomXmlFile);
       if (pomXml.includes('kotlin-maven-plugin') || pomXml.includes('kotlin-stdlib')) {
         indicators[Language.Kotlin].push('Kotlin plugin in Maven');
       }
@@ -215,9 +235,7 @@ function isTypeScriptProject(
   const packageJsonFile = files.find(file => path.basename(file) === 'package.json');
   if (packageJsonFile) {
     try {
-      const packageJson = JSON.parse(
-        fs.readFileSync(path.join(directoryPath, packageJsonFile), 'utf8')
-      );
+      const packageJson = JSON.parse(safeReadFileSync(directoryPath, packageJsonFile));
       if (packageJson.dependencies?.typescript || packageJson.devDependencies?.typescript) {
         indicators[Language.TypeScript].push('typescript dependency');
       }
@@ -229,11 +247,14 @@ function isTypeScriptProject(
 
 export async function detectLanguage(directoryPath: string): Promise<LanguageDetectionResult> {
   // Check if directory exists
-  if (!fs.existsSync(directoryPath) || !fs.statSync(directoryPath).isDirectory()) {
+  const resolvedPath = path.resolve(directoryPath);
+  if (!fs.existsSync(resolvedPath) || !fs.statSync(resolvedPath).isDirectory()) {
     throw new Error(`Directory does not exist: ${directoryPath}`);
   }
 
-  const files = findFilesRecursively(directoryPath).map(file => path.relative(directoryPath, file));
+  const files = findFilesRecursively(resolvedPath, resolvedPath).map(file =>
+    path.relative(resolvedPath, file)
+  );
   const indicators: Record<Language, string[]> = {
     [Language.JavaScript]: [],
     [Language.TypeScript]: [],
@@ -247,14 +268,14 @@ export async function detectLanguage(directoryPath: string): Promise<LanguageDet
 
   isJavaScriptProject(files, indicators);
 
-  isTypeScriptProject(files, indicators, directoryPath);
+  isTypeScriptProject(files, indicators, resolvedPath);
 
   isJavaProject(files, indicators);
 
   isCppProject(files, indicators);
   isPythonProject(files, indicators);
   isDelphiProject(files, indicators);
-  isKotlinProject(files, indicators, directoryPath);
+  isKotlinProject(files, indicators, resolvedPath);
 
   // Determine the most likely language
   const counts = {
@@ -290,12 +311,20 @@ export async function detectLanguage(directoryPath: string): Promise<LanguageDet
 }
 
 export async function isJavaScriptRoot(directoryPath: string): Promise<boolean> {
-  const files = fs.readdirSync(directoryPath);
+  const resolvedPath = path.resolve(directoryPath);
+  if (!fs.existsSync(resolvedPath) || !fs.statSync(resolvedPath).isDirectory()) {
+    return false;
+  }
+  const files = fs.readdirSync(resolvedPath);
   return files.includes('package.json') && !files.includes('tsconfig.json');
 }
 
 export async function isTypeScriptRoot(directoryPath: string): Promise<boolean> {
-  const files = fs.readdirSync(directoryPath);
+  const resolvedPath = path.resolve(directoryPath);
+  if (!fs.existsSync(resolvedPath) || !fs.statSync(resolvedPath).isDirectory()) {
+    return false;
+  }
+  const files = fs.readdirSync(resolvedPath);
   return (
     files.some(file => file.startsWith('tsconfig') && file.endsWith('.json')) &&
     files.includes('package.json')
@@ -303,7 +332,11 @@ export async function isTypeScriptRoot(directoryPath: string): Promise<boolean> 
 }
 
 export async function isJavaRoot(directoryPath: string): Promise<boolean> {
-  const files = fs.readdirSync(directoryPath);
+  const resolvedPath = path.resolve(directoryPath);
+  if (!fs.existsSync(resolvedPath) || !fs.statSync(resolvedPath).isDirectory()) {
+    return false;
+  }
+  const files = fs.readdirSync(resolvedPath);
   return (
     files.includes('pom.xml') ||
     files.some(file => file.endsWith('.java')) ||
@@ -313,7 +346,11 @@ export async function isJavaRoot(directoryPath: string): Promise<boolean> {
 }
 
 export async function isCppRoot(directoryPath: string): Promise<boolean> {
-  const files = fs.readdirSync(directoryPath);
+  const resolvedPath = path.resolve(directoryPath);
+  if (!fs.existsSync(resolvedPath) || !fs.statSync(resolvedPath).isDirectory()) {
+    return false;
+  }
+  const files = fs.readdirSync(resolvedPath);
   return (
     files.includes('CMakeLists.txt') ||
     files.includes('Makefile') ||
@@ -322,7 +359,11 @@ export async function isCppRoot(directoryPath: string): Promise<boolean> {
 }
 
 export async function isPythonRoot(directoryPath: string): Promise<boolean> {
-  const files = fs.readdirSync(directoryPath);
+  const resolvedPath = path.resolve(directoryPath);
+  if (!fs.existsSync(resolvedPath) || !fs.statSync(resolvedPath).isDirectory()) {
+    return false;
+  }
+  const files = fs.readdirSync(resolvedPath);
   return (
     files.includes('requirements.txt') ||
     files.includes('setup.py') ||
@@ -332,7 +373,11 @@ export async function isPythonRoot(directoryPath: string): Promise<boolean> {
 }
 
 export async function isDelphiRoot(directoryPath: string): Promise<boolean> {
-  const files = fs.readdirSync(directoryPath);
+  const resolvedPath = path.resolve(directoryPath);
+  if (!fs.existsSync(resolvedPath) || !fs.statSync(resolvedPath).isDirectory()) {
+    return false;
+  }
+  const files = fs.readdirSync(resolvedPath);
   return (
     files.some(file => file.endsWith('.dpr') || file.endsWith('.dproj')) ||
     files.some(file => file.endsWith('.pas') || file.endsWith('.pp'))
@@ -340,11 +385,15 @@ export async function isDelphiRoot(directoryPath: string): Promise<boolean> {
 }
 
 export async function isKotlinRoot(directoryPath: string): Promise<boolean> {
-  const files = fs.readdirSync(directoryPath);
+  const resolvedPath = path.resolve(directoryPath);
+  if (!fs.existsSync(resolvedPath) || !fs.statSync(resolvedPath).isDirectory()) {
+    return false;
+  }
+  const files = fs.readdirSync(resolvedPath);
   return (
     files.includes('build.gradle.kts') ||
     files.some(file => file.endsWith('.kt')) ||
     (files.includes('build.gradle') &&
-      fs.readFileSync(path.join(directoryPath, 'build.gradle'), 'utf8').includes('kotlin'))
+      safeReadFileSync(resolvedPath, 'build.gradle').includes('kotlin'))
   );
 }
