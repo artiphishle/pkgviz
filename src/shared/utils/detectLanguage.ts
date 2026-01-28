@@ -15,6 +15,17 @@ function safeReadFileSync(baseDir: string, filePath: string): string {
   return fs.readFileSync(resolvedFilePath, 'utf8');
 }
 
+function safeReadDirSync(baseDir: string, dirPath: string): string[] {
+  const resolvedBaseDir = path.resolve(baseDir);
+  const resolvedDirPath = path.resolve(baseDir, dirPath);
+
+  if (!resolvedDirPath.startsWith(resolvedBaseDir + path.sep)) {
+    throw new Error(`Path traversal attempt: ${dirPath}`);
+  }
+
+  return fs.readdirSync(resolvedDirPath);
+}
+
 function findFilesRecursively(
   directoryPath: string,
   rootPath: string,
@@ -389,7 +400,7 @@ export async function isKotlinRoot(directoryPath: string): Promise<boolean> {
   if (!fs.existsSync(resolvedPath) || !fs.statSync(resolvedPath).isDirectory()) {
     return false;
   }
-  const files = fs.readdirSync(resolvedPath);
+  const files = safeReadDirSync(resolvedPath, '.');
   return (
     files.includes('build.gradle.kts') ||
     files.some(file => file.endsWith('.kt')) ||
