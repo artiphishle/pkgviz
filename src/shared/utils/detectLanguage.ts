@@ -29,10 +29,7 @@ function findFilesRecursively(
   return filesAndDirs;
 }
 
-function isJavaScriptProject(
-  files: string[],
-  indicators: Record<Language, string[]>
-): void {
+function isJavaScriptProject(files: string[], indicators: Record<Language, string[]>): void {
   // Check for JavaScript indicators
   if (
     files.some(file => path.basename(file) === 'package.json') &&
@@ -236,9 +233,7 @@ export async function detectLanguage(directoryPath: string): Promise<LanguageDet
     throw new Error(`Directory does not exist: ${directoryPath}`);
   }
 
-  const files = findFilesRecursively(directoryPath).map(file =>
-    path.relative(directoryPath, file)
-  );
+  const files = findFilesRecursively(directoryPath).map(file => path.relative(directoryPath, file));
   const indicators: Record<Language, string[]> = {
     [Language.JavaScript]: [],
     [Language.TypeScript]: [],

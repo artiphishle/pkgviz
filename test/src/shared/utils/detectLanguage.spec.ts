@@ -34,7 +34,6 @@ describe('[detectLanguage]', () => {
     fs.writeFileSync(path.join(tsAppPath, 'tsconfig.base.json'), '{}');
     fs.writeFileSync(path.join(tsAppPath, 'package.json'), '{}');
 
-
     const { confidence, indicators, language } = await detectLanguage(tempDir);
     expect(indicators).toContain('tsconfig.base.json');
     expect(confidence).toBe(1);
