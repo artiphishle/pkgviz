@@ -1,8 +1,9 @@
 'use server';
-import type { LanguageDetectionResult, ParsedDirectory } from '@/shared/types';
+import type { ParsedDirectory } from '@/shared/types';
+import type { ParserSelection } from '@/types/parserSelection';
 
 import { getParsedFileStructure } from '@/app/utils/getParsedFileStructure';
-import { detectLanguage } from '@/shared/utils/detectLanguage';
+import { inspectParserLanguageAsync } from '@/app/utils/inspectParserLanguageAsync';
 import {
   getPackageCyclesWithMembers,
   type PackageCycleDetail,
@@ -16,8 +17,8 @@ export async function getAuditAction(): Promise<Audit> {
   const projectPath = parseProjectPath();
   const projectName = getProjectName();
   const timeStart = Date.now();
-  const language = await detectLanguage(projectPath);
-  const files = await getParsedFileStructure();
+  const language = await inspectParserLanguageAsync(projectPath);
+  const files = await getParsedFileStructure(language.language);
   const graph = buildGraph(files);
   const cyclicPackages = getPackageCyclesWithMembers(files, graph).cycles;
 
@@ -58,7 +59,7 @@ export async function downloadAuditXmlAction(): Promise<{ data: string; filename
 interface AuditMeta {
   timeEnd: number;
   readonly timeStart: number;
-  readonly language: LanguageDetectionResult;
+  readonly language: ParserSelection;
   readonly projectName: string;
 }
 

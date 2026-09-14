@@ -5,7 +5,7 @@ import { markCyclicPackagesWithEvidence } from '@/app/utils/markCyclicPackages';
 import { getParsedFileStructure } from '@/app/utils/getParsedFileStructure';
 import { buildGraph } from '@/app/utils/buildGraph';
 import { relative } from 'node:path';
-import { detectLanguage } from '@/shared/utils/detectLanguage';
+import { inspectParserLanguageAsync } from '@/app/utils/inspectParserLanguageAsync';
 import { resolveRoot } from '@/app/utils/getParsedFileStructure';
 import { parseProjectPath } from '@/shared/utils/parseProjectPath';
 
@@ -18,7 +18,7 @@ export async function getGraphAction(): Promise<ElementsDefinition> {
 
 export async function getRootAction(): Promise<string> {
   const projectRoot = parseProjectPath();
-  const { language } = await detectLanguage(projectRoot);
+  const { language } = await inspectParserLanguageAsync(projectRoot);
   const relativeRootDir = relative(projectRoot, await resolveRoot(projectRoot, language));
 
   return relativeRootDir;
