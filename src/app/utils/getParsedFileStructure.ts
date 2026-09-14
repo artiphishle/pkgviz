@@ -4,7 +4,7 @@ import { Language, type ParsedDirectory } from '@/shared/types';
 import { existsSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { toPosix } from '@/shared/utils/toPosix';
-import { detectLanguage } from '@/shared/utils/detectLanguage';
+import { inspectParserLanguageAsync } from './inspectParserLanguageAsync';
 import { parseJavaFile } from '@/app/utils/parser/java/parseJavaFile';
 import { parseFile as parseTypeScriptFile } from '@/app/utils/parser/typescript/parseFile';
 import { parseCppFile } from '@/app/utils/parser/cpp/parseCppFile';
@@ -192,11 +192,11 @@ export async function readDirRecursively(
 /**
  * Entrypoint
  */
-export async function getParsedFileStructure() {
+export async function getParsedFileStructure(language?: Language) {
   const projectPath = parseProjectPath();
 
   // 1. Detect language & filter non-supported
-  const detectedLanguage = (await detectLanguage(projectPath)).language;
+  const detectedLanguage = language ?? (await inspectParserLanguageAsync(projectPath)).language;
   console.log('1. Detected language:', detectedLanguage);
 
   if (

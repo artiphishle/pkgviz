@@ -15,15 +15,6 @@ export enum Language {
   Unknown = 'unknown',
 }
 
-/**
- * Language Detection Result
- */
-export interface LanguageDetectionResult {
-  language: Language;
-  confidence: number;
-  indicators: string[];
-}
-
 //////////////////////////////////////////////////////////////////////////
 // Parser Types
 

@@ -11,7 +11,7 @@
   ],
   "type": "module",
   "engines": {
-    "node": ">=22.14.0",
+    "node": ">=24",
     "bun": ">=1.2.18",
     "npm": ">=10.9.2"
   },
@@ -29,6 +29,7 @@
     "test:cov:html": "c8 --report-dir=./test/coverage --reporter=html tsx --test"
   },
   "dependencies": {
+    "@ankhorage/project-detector": "^0.1.0",
     "@artiphishle/testosterone": "^0.3.1",
     "cytoscape": "^3.33.1",
     "cytoscape-elk": "^2.3.0",
