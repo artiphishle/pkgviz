@@ -1,4 +1,5 @@
 'use client';
+import { toErrorMessage } from '@ankhorage/utility/error';
 import type { ElementsDefinition } from 'cytoscape';
 import { useEffect, useState } from 'react';
 
@@ -6,6 +7,7 @@ import { getAuditEvaluationAction } from '@/app/actions/audit.actions';
 import { getGraphAction } from '@/app/actions/graph.actions';
 import Breadcrumb from '@/components/Breadcrumb';
 import Header from '@/components/Header';
+import ProjectLoadError from '@/components/ProjectLoadError';
 import { SettingsProvider } from '@/contexts/SettingsContext';
 import { HomeGraph } from '@/screens/home/HomeGraph';
 import { HomeSidebar } from '@/screens/home/HomeSidebar';
@@ -17,12 +19,42 @@ export default function HomeScreen() {
   const [currentPackage, setCurrentPackage] = useState<string>('');
   const [packageGraph, setPackageGraph] = useState<ElementsDefinition | null>(null);
   const [auditEvaluation, setAuditEvaluation] = useState<Audit['evaluation'] | null>(null);
+  const [projectError, setProjectError] = useState<string | null>(null);
   const [cycleHighlights, setCycleHighlights] = useState<readonly CycleHighlight[]>([]);
   const [cycleInspection, setCycleInspection] = useState<CycleInspection | null>(null);
 
   useEffect(() => {
-    void getGraphAction().then(setPackageGraph);
-    void getAuditEvaluationAction().then(setAuditEvaluation);
+    let cancelled = false;
+
+    void getGraphAction()
+      .then(result => {
+        if (cancelled) return;
+        if (result.ok) {
+          setPackageGraph(result.value);
+        } else {
+          setProjectError(result.error);
+        }
+      })
+      .catch(error => {
+        if (!cancelled) setProjectError(toErrorMessage(error, 'Unable to load project graph.'));
+      });
+
+    void getAuditEvaluationAction()
+      .then(result => {
+        if (cancelled) return;
+        if (result.ok) {
+          setAuditEvaluation(result.value);
+        } else {
+          setProjectError(result.error);
+        }
+      })
+      .catch(error => {
+        if (!cancelled) setProjectError(toErrorMessage(error, 'Unable to load project audit.'));
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (
@@ -40,14 +72,18 @@ export default function HomeScreen() {
             onCycleHighlightsChange={setCycleHighlights}
             onCycleInspectionChange={setCycleInspection}
           />
-          <HomeGraph
-            currentPackage={currentPackage}
-            cycleHighlights={cycleHighlights}
-            cycleInspection={cycleInspection}
-            packageGraph={packageGraph}
-            setCurrentPackage={setCurrentPackage}
-            onCloseInspection={() => setCycleInspection(null)}
-          />
+          {projectError ? (
+            <ProjectLoadError message={projectError} />
+          ) : (
+            <HomeGraph
+              currentPackage={currentPackage}
+              cycleHighlights={cycleHighlights}
+              cycleInspection={cycleInspection}
+              packageGraph={packageGraph}
+              setCurrentPackage={setCurrentPackage}
+              onCloseInspection={() => setCycleInspection(null)}
+            />
+          )}
         </main>
       </SettingsProvider>
     </>
