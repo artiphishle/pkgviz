@@ -1,7 +1,4 @@
-import { resolve } from 'node:path';
-import { describe, it } from 'node:test';
-
-import { expect } from '@artiphishle/testosterone';
+import { describe, expect, it, resolve } from '@artiphishle/testosterone';
 
 import { buildGraph } from '@/app/utils/buildGraph';
 import { getParsedFileStructure } from '@/app/utils/getParsedFileStructure';
