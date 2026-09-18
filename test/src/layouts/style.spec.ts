@@ -1,6 +1,5 @@
-import { describe, it } from 'node:test';
+import { describe, expect, it } from '@artiphishle/testosterone';
 
-import { expect } from '@artiphishle/testosterone';
 import type { StylesheetStyle } from 'cytoscape';
 
 import { getStyle } from '@/layouts/style';
