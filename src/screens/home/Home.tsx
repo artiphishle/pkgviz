@@ -1,4 +1,5 @@
 'use client';
+import { toErrorMessage } from '@ankhorage/utility/error';
 import type { ElementsDefinition } from 'cytoscape';
 import { useEffect, useState } from 'react';
 
@@ -7,6 +8,7 @@ import Breadcrumb from '@/components/Breadcrumb';
 import { Cytoscape } from '@/components/Cytoscape';
 import Header from '@/components/Header';
 import Loader from '@/components/Loader';
+import ProjectLoadError from '@/components/ProjectLoadError';
 import Settings from '@/components/Settings';
 import { SettingsProvider, useSettings } from '@/contexts/SettingsContext';
 import { AuditRulesSettings } from '@/features/audit/adapters/inbound/react/AuditRulesSettings';
@@ -25,14 +27,33 @@ export default function HomeScreen() {
 function HomeContent() {
   const [currentPackage, setCurrentPackage] = useState<string>('');
   const [packageGraph, setPackageGraph] = useState<ElementsDefinition | null>(null);
+  const [graphError, setGraphError] = useState<string | null>(null);
   const { rulesEnabled, toggleRulesEnabled } = useSettings();
   const auditRuleControls = useAuditRuleControls(rulesEnabled);
 
   useEffect(() => {
-    if (!packageGraph) {
-      getGraphAction().then(setPackageGraph);
-    }
-  }, [packageGraph]);
+    if (packageGraph !== null || graphError !== null) return;
+
+    let cancelled = false;
+    void getGraphAction()
+      .then(result => {
+        if (cancelled) return;
+        if (result.ok) {
+          setPackageGraph(result.value);
+        } else {
+          setGraphError(result.error);
+        }
+      })
+      .catch(error => {
+        if (!cancelled) {
+          setGraphError(toErrorMessage(error, 'Unable to load project graph.'));
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [graphError, packageGraph]);
 
   return (
     <>
@@ -55,7 +76,9 @@ function HomeContent() {
           />
         </Settings>
 
-        {packageGraph ? (
+        {graphError ? (
+          <ProjectLoadError message={graphError} />
+        ) : packageGraph ? (
           <Cytoscape
             currentPackage={currentPackage}
             setCurrentPackage={setCurrentPackage}
