@@ -1,7 +1,5 @@
-import { resolve } from 'node:path';
-import { describe, it } from 'node:test';
+import { describe, expect, it, resolve } from '@artiphishle/testosterone';
 
-import { expect } from '@artiphishle/testosterone/src/matchers';
 import { buildGraph } from '@/app/utils/buildGraph';
 import { getParsedFileStructure } from '@/app/utils/getParsedFileStructure';
 import { getCyclicPackageSet, getPackageCyclesWithMembers } from '@/app/utils/markCyclicPackages';

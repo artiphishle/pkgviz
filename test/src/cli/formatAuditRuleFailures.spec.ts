@@ -1,6 +1,4 @@
-import { describe, it } from 'node:test';
-
-import { expect } from '@artiphishle/testosterone';
+import { describe, expect, it } from '@artiphishle/testosterone';
 
 import { formatAuditRuleFailures } from '@/cli/formatAuditRuleFailures';
 import type { AuditRuleResult } from '@/types/audit';

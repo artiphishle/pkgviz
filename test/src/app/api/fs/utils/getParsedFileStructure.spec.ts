@@ -2,9 +2,8 @@ import { Language, type ParsedDirectory } from '@/shared/types';
 
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
-import { describe, it } from 'node:test';
-import { expect } from '@artiphishle/testosterone/src/matchers';
+import { join } from 'node:path';
+import { describe, expect, it, resolve } from '@artiphishle/testosterone';
 import { getParsedFileStructure } from '@/app/utils/getParsedFileStructure';
 
 describe('[getParsedFileStructure]', () => {

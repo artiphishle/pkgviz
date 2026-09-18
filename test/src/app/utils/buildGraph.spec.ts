@@ -1,6 +1,5 @@
-import { describe, it } from 'node:test';
+import { describe, expect, it } from '@artiphishle/testosterone';
 
-import { expect } from '@artiphishle/testosterone';
 import { buildGraph } from '@/app/utils/buildGraph';
 import type { ParsedDirectory, ParsedFile } from '@/shared/types';
 
