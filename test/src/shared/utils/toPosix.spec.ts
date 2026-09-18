@@ -9,4 +9,13 @@ describe('[toPosix]', () => {
 
     expect(posixPath).toBe('C:/Users/User/Documents/Project');
   });
+
+  it('normalizes project-relative parser paths without changing POSIX paths', () => {
+    expect(toPosix('src\\main\\java\\com\\example\\App.java')).toBe(
+      'src/main/java/com/example/App.java'
+    );
+    expect(toPosix('src/main/java/com/example/App.java')).toBe(
+      'src/main/java/com/example/App.java'
+    );
+  });
 });

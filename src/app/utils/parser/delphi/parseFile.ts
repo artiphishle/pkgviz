@@ -4,16 +4,17 @@ import path from 'node:path';
 
 import { extractPackageFromImport } from '@/app/utils/parser/delphi/extractPackageFromImport';
 import type { ImportDefinition, MethodCall, MethodDefinition, ParsedFile } from '@/shared/types';
+import { toPosix } from '@/shared/utils/toPosix';
 
 /***
  * Extracts package/unit path from Delphi file structure.
  */
 function extractUnitPath(filePath: string, projectRoot: string): string {
-  const relativePath = path.relative(projectRoot, filePath);
-  const dir = path.dirname(relativePath);
+  const relativePath = toPosix(path.relative(projectRoot, filePath));
+  const dir = path.posix.dirname(relativePath);
 
   // Convert path separators to dots for Delphi unit notation
-  return dir === '.' ? '' : dir.replace(/[/\\]/g, '.');
+  return dir === '.' ? '' : dir.replace(/\//g, '.');
 }
 
 /***
@@ -166,7 +167,7 @@ export async function parseDelphiFile(fullPath: string, projectRoot: string): Pr
   const imports = extractImports(content);
   const methods = extractMethodDefinitions(content);
   const calls = extractMethodCalls(content);
-  const relativePath = path.relative(projectRoot, fullPath);
+  const relativePath = toPosix(path.relative(projectRoot, fullPath));
 
   return {
     className,

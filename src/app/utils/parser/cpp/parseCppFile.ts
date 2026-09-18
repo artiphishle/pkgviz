@@ -4,6 +4,7 @@ import path from 'node:path';
 
 import { extractCppPackageFromImport } from '@/app/utils/parser/cpp/extractCppPackageFromImport';
 import type { ImportDefinition, MethodCall, MethodDefinition, ParsedFile } from '@/shared/types';
+import { toPosix } from '@/shared/utils/toPosix';
 
 /***
  * Extracts namespace from C++ code.
@@ -137,7 +138,7 @@ export async function parseCppFile(fullPath: string, projectRoot: string): Promi
   const includes = extractIncludes(content, projectRoot);
   const methods = extractMethodDefinitions(content);
   const calls = extractMethodCalls(content);
-  const relativePath = path.relative(projectRoot, fullPath);
+  const relativePath = toPosix(path.relative(projectRoot, fullPath));
 
   return {
     className,

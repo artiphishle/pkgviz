@@ -4,6 +4,7 @@ import path from 'node:path';
 
 import { extractPackageFromImport } from '@/app/utils/parser/kotlin/extractPackageFromImport';
 import type { ImportDefinition, MethodCall, MethodDefinition, ParsedFile } from '@/shared/types';
+import { toPosix } from '@/shared/utils/toPosix';
 
 /***
  * Extracts package declaration from Kotlin content.
@@ -131,7 +132,7 @@ export async function parseKotlinFile(fullPath: string, projectRoot: string): Pr
   const imports = extractImports(content);
   const methods = extractMethodDefinitions(content);
   const calls = extractMethodCalls(content);
-  const relativePath = path.relative(projectRoot, fullPath);
+  const relativePath = toPosix(path.relative(projectRoot, fullPath));
 
   return {
     className,
