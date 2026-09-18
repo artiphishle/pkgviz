@@ -34,6 +34,7 @@
     "version-packages": "ankhorage-changeset version"
   },
   "dependencies": {
+    "@ankhorage/graph": "^0.1.0",
     "@ankhorage/project-detector": "^0.1.0",
     "@artiphishle/testosterone": "^0.3.9",
     "cytoscape": "^3.33.1",
