@@ -64,12 +64,12 @@ export const getShowVendorPackages = () => {
 };
 
 /***
- * Determines whether audit rule controls are enabled.
+ * Determines whether cyclic-dependency rule controls are enabled.
  */
-export const getRulesEnabled = () => {
+export const getCyclicDependenciesRuleEnabled = () => {
   const env = parseEnv(
-    'NEXT_PUBLIC_SETTINGS_RULES_ENABLED',
-    process.env.NEXT_PUBLIC_SETTINGS_RULES_ENABLED
+    'NEXT_PUBLIC_SETTINGS_RULE_CYCLIC_DEPENDENCIES_ENABLED',
+    process.env.NEXT_PUBLIC_SETTINGS_RULE_CYCLIC_DEPENDENCIES_ENABLED
   );
 
   return env === false ? false : true;
