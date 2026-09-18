@@ -2,7 +2,10 @@
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 
-import { readDirectoryWithinRoot, resolveFileSystemPathWithinRoot } from '@ankhorage/utility/node/fs';
+import {
+  readDirectoryWithinRoot,
+  resolveFileSystemPathWithinRoot,
+} from '@ankhorage/utility/node/fs';
 
 import { parseCppFile } from '@/app/utils/parser/cpp/parseCppFile';
 import { parseDelphiFile } from '@/app/utils/parser/delphi/parseFile';
@@ -73,7 +76,9 @@ async function resolveRoot(dir: string, detectedLanguage: Language) {
 
     case Language.Kotlin:
       // For Kotlin, look for src/main/kotlin directory (Gradle/Maven structure)
-      const kotlinSrcRoot = toPosix(resolveFileSystemPathWithinRoot(projectRoot, 'src/main/kotlin'));
+      const kotlinSrcRoot = toPosix(
+        resolveFileSystemPathWithinRoot(projectRoot, 'src/main/kotlin')
+      );
       if (existsSync(kotlinSrcRoot)) {
         return kotlinSrcRoot;
       }
