@@ -23,7 +23,7 @@
     "lint": "ankhorage-eslint . --max-warnings=0",
     "format:check": "ankhorage-prettier --check .",
     "format:write": "ankhorage-prettier --write \"**/*.{js,jsx,ts,tsx,json,md,yml,yaml,mjs,cjs,html,css,scss,mdx}\"",
-    "test": "bunx @artiphishle/testosterone@0.3.1",
+    "test": "npx @artiphishle/testosterone@0.3.1",
     "test:cov": "c8 --reporter=text --reporter=text-summary tsx --test",
     "test:cov:html": "c8 --report-dir=./test/coverage --reporter=html tsx --test",
     "lint:fix": "ankhorage-eslint . --fix --max-warnings=0",
