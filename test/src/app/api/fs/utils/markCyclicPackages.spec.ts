@@ -4,10 +4,7 @@ import { describe, it } from 'node:test';
 import { expect } from '@artiphishle/testosterone/src/matchers';
 import { buildGraph } from '@/app/utils/buildGraph';
 import { getParsedFileStructure } from '@/app/utils/getParsedFileStructure';
-import {
-  getCyclicPackageSet,
-  getPackageCyclesWithMembers,
-} from '@/app/utils/markCyclicPackages';
+import { getCyclicPackageSet, getPackageCyclesWithMembers } from '@/app/utils/markCyclicPackages';
 
 describe('[package cycles]', () => {
   it('detects the A-B-A package cycle', async () => {
