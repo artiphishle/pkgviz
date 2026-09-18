@@ -5,12 +5,7 @@ import React from 'react';
 import { SidebarBadge } from '@/components/sidebar/SidebarBadge';
 
 /*** Renders reusable secondary sidebar views above the persistent graph settings. */
-export function SidebarTabs({
-  ariaLabel,
-  onValueChange,
-  tabs,
-  value,
-}: SidebarTabsProps) {
+export function SidebarTabs({ ariaLabel, onValueChange, tabs, value }: SidebarTabsProps) {
   return (
     <Tabs.Root value={value ?? ''} onValueChange={onValueChange}>
       <Tabs.List
