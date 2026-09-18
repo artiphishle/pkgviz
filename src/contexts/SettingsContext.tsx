@@ -1,40 +1,35 @@
+import { useLocalStorage } from 'ankh-hooks/store';
 import type { LayoutOptions } from 'cytoscape';
 import React, { createContext, type PropsWithChildren, use } from 'react';
 
-import {
-  getCytoscapeLayout,
-  getCytoscapeLayoutSpacing,
-  getShowCompoundNodes,
-  getShowVendorPackages,
-  getSubPackageDepth,
-} from '@/shared/utils/parseEnv';
-import { useLocalStorage } from '@/store/useLocalStorage';
+import { readSettingsEnvironment } from '@/features/settings/utils/readSettingsEnvironment';
 
 // Settings context
 const SettingsContext = createContext<ISettingsContext | null>(null);
 
 /*** Provides persisted graph settings to the application. */
 export const SettingsProvider = ({ children }: PropsWithChildren) => {
+  const environment = readSettingsEnvironment();
   const [maxSubPackageDepth, setMaxSubPackageDepth] = useMaxSubPackageDepthSetting();
   const [showCompoundNodes, setShowCompoundNodes] = useLocalStorage<boolean>(
     'showCompoundNodes',
-    getShowCompoundNodes()
+    environment.showCompoundNodes
   );
   const [showVendorPackages, setShowVendorPackages] = useLocalStorage<boolean>(
     'showVendorPackages',
-    getShowVendorPackages()
+    environment.showVendorPackages
   );
   const [subPackageDepth, setSubPackageDepth] = useLocalStorage<number>(
     'subPackageDepth',
-    getSubPackageDepth() || 1
+    environment.subPackageDepth
   );
   const [cytoscapeLayout, setCytoscapeLayout] = useLocalStorage<LayoutOptions['name']>(
     'cytoscapeLayout',
-    getCytoscapeLayout()
+    environment.cytoscapeLayout
   );
   const [cytoscapeLayoutSpacing, setCytoscapeLayoutSpacing] = useLocalStorage<number>(
     'cytoscapeLayoutSpacing',
-    getCytoscapeLayoutSpacing()
+    environment.cytoscapeLayoutSpacing
   );
 
   /*** Toggles vendor package visibility. */
