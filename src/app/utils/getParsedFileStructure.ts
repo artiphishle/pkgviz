@@ -88,7 +88,7 @@ export async function resolveRoot(dir: string, detectedLanguage: Language) {
 /**
  * Read directory recursively
  */
-export async function readDirRecursively(
+async function readDirRecursively(
   dir: string,
   result: ParsedDirectory = {},
   projectRoot: string,
