@@ -10,5 +10,4 @@ export default createKnipConfig({
     'test/**/*.spec.{ts,tsx}',
   ],
   ignoreFiles: ['examples/**'],
-  ignoreBinaries: ['rundll32.exe', 'xdg-open'],
 });
