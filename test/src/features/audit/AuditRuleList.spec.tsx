@@ -39,7 +39,7 @@ describe('[AuditRuleList]', () => {
       <AuditRuleList evaluation={failedEvaluation} onCycleHighlightsChange={() => undefined} />
     );
 
-    expect(getByText('Cyclic dependencies')).toBeDefined();
+    expect(getByText('Cyclic Dependencies')).toBeDefined();
     expect(getByText('2')).toBeDefined();
     expect(getByText('app.a → app.b → app.a')).toBeDefined();
     expect(getByText('app.self → app.self')).toBeDefined();
@@ -47,14 +47,14 @@ describe('[AuditRuleList]', () => {
   });
 
   it('disables an empty cyclic-dependencies category without pass/fail decoration', () => {
-    const { container, getByText, queryByText } = render(
+    const { container, getByText } = render(
       <AuditRuleList evaluation={passedEvaluation} onCycleHighlightsChange={() => undefined} />
     );
 
-    const title = getByText('Cyclic dependencies');
+    const title = getByText('Cyclic Dependencies');
     expect(title.closest('button')?.hasAttribute('disabled')).toBe(true);
-    expect(queryByText('Passed')).toBeNull();
-    expect(queryByText('Failed')).toBeNull();
+    expect(container.textContent?.includes('Passed')).toBe(false);
+    expect(container.textContent?.includes('Failed')).toBe(false);
     expect(container.querySelectorAll('input[type="checkbox"]').length).toBe(0);
   });
 });
