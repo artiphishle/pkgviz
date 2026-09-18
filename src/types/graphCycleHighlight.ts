@@ -5,7 +5,8 @@ export interface GraphCycleHighlight {
   readonly edges: readonly GraphCycleHighlightEdge[];
 }
 
-interface GraphCycleHighlightEdge {
+export interface GraphCycleHighlightEdge {
   readonly source: string;
+  readonly step: number;
   readonly target: string;
 }
