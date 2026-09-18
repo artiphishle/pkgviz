@@ -18,7 +18,7 @@ import { inspectParserLanguageAsync } from './inspectParserLanguageAsync';
 /**
  * Returns resolved root
  */
-export async function resolveRoot(dir: string, detectedLanguage: Language) {
+async function resolveRoot(dir: string, detectedLanguage: Language) {
   switch (detectedLanguage) {
     case Language.Java: {
       const javaRoot = toPosix(path.resolve(dir, JAVA_ROOT));
