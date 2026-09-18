@@ -1,0 +1,42 @@
+name: Lint bootstrap
+
+on:
+  push:
+    branches:
+      - chore/add-agents-instructions
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: chore/add-agents-instructions
+          fetch-depth: 0
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.2'
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Apply safe automatic fixes
+        run: |
+          bun run lint:fix || true
+          bun run format
+
+      - name: Commit automatic fixes
+        run: |
+          if git diff --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --all
+          git commit -m "style: apply Devtools automatic fixes [skip ci]"
+          git push origin HEAD:chore/add-agents-instructions
