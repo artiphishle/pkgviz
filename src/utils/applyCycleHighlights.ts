@@ -1,4 +1,4 @@
-import type { Core } from 'cytoscape';
+import type { Core, EdgeSingular } from 'cytoscape';
 
 import type {
   GraphCycleHighlight,
@@ -82,7 +82,7 @@ function collectContextNodeIds(
 
 /*** Applies color, direction, and step labeling to one selected dependency edge. */
 function applyEdgeHighlight(
-  edge: ReturnType<Core['getElementById']>,
+  edge: EdgeSingular,
   highlight: ResolvedEdgeHighlight
 ): void {
   edge.style({
