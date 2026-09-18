@@ -19,7 +19,9 @@ export function applyCycleHighlights(cy: Core, highlights: readonly CycleHighlig
 
     highlight.cycle.edges.forEach((cycleEdge, index) => {
       cy.edges()
-        .filter(edge => edge.source().id() === cycleEdge.from && edge.target().id() === cycleEdge.to)
+        .filter(
+          edge => edge.source().id() === cycleEdge.from && edge.target().id() === cycleEdge.to
+        )
         .forEach(edge => {
           edge.addClass('auditCycle');
           edge.data('auditCycleColor', highlight.color);
