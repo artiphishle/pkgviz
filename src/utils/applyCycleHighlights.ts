@@ -14,6 +14,8 @@ export function applyCycleHighlights(
   if (highlights.length === 0) return;
 
   const nodeColors = buildNodeColors(highlights);
+  if (!hasVisibleCycleNode(cy, nodeColors)) return;
+
   const edgeHighlights = buildEdgeHighlights(highlights);
   const contextIds = collectContextNodeIds(cy, nodeColors);
 
@@ -64,6 +66,11 @@ function buildEdgeHighlights(
     }
   }
   return edges;
+}
+
+/*** Returns whether at least one selected cycle node exists in the current graph projection. */
+function hasVisibleCycleNode(cy: Core, nodeColors: ReadonlyMap<string, string>): boolean {
+  return Array.from(nodeColors.keys()).some(nodeId => !cy.getElementById(nodeId).empty());
 }
 
 /*** Keeps compound ancestors of selected cycle nodes visible as softer graph context. */
