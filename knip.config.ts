@@ -10,4 +10,5 @@ export default createKnipConfig({
     'test/**/*.spec.{ts,tsx}',
   ],
   ignoreFiles: ['examples/**'],
+  ignoreBinaries: ['mvn'],
 });

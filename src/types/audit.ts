@@ -1,8 +1,24 @@
 import type { ParsedDirectory } from '@/shared/types';
 import type { ParserSelection } from '@/types/parserSelection';
 
+type AuditRuleMode = 'audit' | 'block' | 'off';
 type AuditRulePolicy = 'advisory' | 'blocking';
 type AuditRuleStatus = 'failed' | 'passed';
+
+export interface AuditRuleConfiguration {
+  readonly id: string;
+  readonly mode: AuditRuleMode;
+}
+
+export interface AuditConfiguration {
+  readonly failOnRuleViolation: boolean;
+  readonly rules: readonly AuditRuleConfiguration[];
+}
+
+export interface ResolveAuditConfigurationInput {
+  readonly failOnRuleViolation?: boolean;
+  readonly rules?: readonly AuditRuleConfiguration[];
+}
 
 export interface ImportEvidence {
   readonly filePath: string;
@@ -48,11 +64,13 @@ interface AuditMeta {
 }
 
 export interface Audit {
+  readonly configuration: AuditConfiguration;
   readonly evaluation: AuditEvaluation;
   readonly meta: AuditMeta;
   readonly files: ParsedDirectory;
 }
 
 export interface EvaluateAuditRulesInput {
+  readonly configuration: AuditConfiguration;
   readonly cyclicPackages: readonly PackageCycleDetail[];
 }

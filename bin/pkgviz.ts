@@ -6,6 +6,7 @@ import { dirname, resolve } from 'node:path';
 import { spawn } from 'child_process';
 import { formatAuditRuleFailures } from '../src/cli/formatAuditRuleFailures';
 import { runAuditAsync } from '../src/cli/runAuditAsync';
+import type { AuditRuleConfiguration } from '../src/types/audit';
 
 interface Opts {
   out: string;
@@ -15,6 +16,8 @@ interface Opts {
   waitMs: number;
   pretty: boolean;
   verbose: boolean;
+  failOnRuleViolation: boolean;
+  rules: AuditRuleConfiguration[];
   port?: number;
 }
 
@@ -28,6 +31,8 @@ function parseArgs(argv: string[]): Opts {
     waitMs: 90_000,
     pretty: true,
     verbose: false,
+    failOnRuleViolation: true,
+    rules: [],
   };
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i];
@@ -38,6 +43,11 @@ function parseArgs(argv: string[]): Opts {
     else if (a === '-p' || a === '--port') o.port = Number(argv[++i]);
     else if (a === '--wait') o.waitMs = Number(argv[++i]);
     else if (a === '--no-pretty') o.pretty = false;
+    else if (a === '--rule') {
+      const value = argv[++i];
+      if (!value) throw new Error('--rule requires <id>=<off|audit|block>.');
+      o.rules.push(parseRuleConfiguration(value));
+    } else if (a === '--no-fail-on-rule-violation') o.failOnRuleViolation = false;
     else if (a === '-v' || a === '--verbose') o.verbose = true;
     else if (a === '-h' || a === '--help') {
       printHelp();
@@ -45,6 +55,26 @@ function parseArgs(argv: string[]): Opts {
     }
   }
   return o;
+}
+
+/*** Parses one CLI rule override without accepting unknown rule IDs or modes. */
+function parseRuleConfiguration(value: string): AuditRuleConfiguration {
+  const separator = value.indexOf('=');
+  if (separator <= 0 || separator === value.length - 1) {
+    throw new Error(`Invalid --rule value "${value}". Expected <id>=<off|audit|block>.`);
+  }
+
+  const id = value.slice(0, separator);
+  const mode = value.slice(separator + 1);
+
+  if (id !== 'cyclic-dependencies') {
+    throw new Error(`Unknown audit rule "${id}".`);
+  }
+  if (mode !== 'off' && mode !== 'audit' && mode !== 'block') {
+    throw new Error(`Invalid mode "${mode}" for rule "${id}".`);
+  }
+
+  return { id, mode };
 }
 
 function printHelp() {
@@ -60,12 +90,17 @@ Options:
   -p, --port <n>     Port to use (default: find free)
   --wait <ms>        Max wait for server & route (default: 90000)
   --no-pretty        Write minified JSON
+  --rule <id>=<mode> Configure a rule as off, audit, or block (repeatable)
+  --no-fail-on-rule-violation
+                      Never fail only because an audit rule is violated
   -v, --verbose      Verbose logs
   -h, --help         Show help
 
 Behavior:
   - Uses process.cwd() as the project root.
   - Writes the audit before enforcing blocking rules, then exits (unless --open/--serve).
+  - Default rule policy: cyclic-dependencies=block.
+  - --no-fail-on-rule-violation keeps findings in the audit but returns success.
 `);
 }
 
@@ -135,6 +170,10 @@ async function main() {
       projectPath: callerRoot,
       outputPath: opts.out,
       pretty: opts.pretty,
+      configuration: {
+        failOnRuleViolation: opts.failOnRuleViolation,
+        rules: opts.rules,
+      },
     });
 
     console.log(`✓ audit.json written → ${result.artifactPath}`);

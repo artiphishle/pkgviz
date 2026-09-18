@@ -36,7 +36,7 @@
     "lint": "ankhorage-eslint . --max-warnings=0",
     "format:check": "ankhorage-prettier --check .",
     "format:write": "ankhorage-prettier --write \"**/*.{js,jsx,ts,tsx,json,md,yml,yaml,mjs,cjs,html,css,scss,mdx}\"",
-    "test": "testosterone",
+    "test": "testosterone && bun run test:maven",
     "test:cov": "c8 --reporter=text --reporter=text-summary tsx --test",
     "test:cov:html": "c8 --report-dir=./test/coverage --reporter=html tsx --test",
     "lint:fix": "ankhorage-eslint . --fix --max-warnings=0",
@@ -44,7 +44,8 @@
     "knip:check": "ankhorage-knip",
     "changeset": "ankhorage-changeset",
     "changeset:status": "ankhorage-changeset status --since=origin/main",
-    "version-packages": "ankhorage-changeset version"
+    "version-packages": "ankhorage-changeset version",
+    "test:maven": "mvn -B -f maven-plugin/pom.xml test"
   },
   "dependencies": {
     "@ankhorage/dependency-graph": "^0.1.0",

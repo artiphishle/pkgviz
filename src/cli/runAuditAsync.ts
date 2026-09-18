@@ -2,11 +2,11 @@ import { resolveFileSystemPathWithinRoot, writeFileWithinRoot } from '@ankhorage
 
 import { createAuditAsync } from '@/features/audit/application/use-cases/createAuditAsync';
 import { hasBlockingAuditRuleFailure } from '@/features/audit/domain/hasBlockingAuditRuleFailure';
-import type { Audit } from '@/types/audit';
+import type { Audit, ResolveAuditConfigurationInput } from '@/types/audit';
 
 /*** Creates, writes, and evaluates an audit while retaining the artifact on rule failure. */
 export async function runAuditAsync(input: RunAuditInput): Promise<RunAuditResult> {
-  const audit = await createAuditAsync(input.projectPath);
+  const audit = await createAuditAsync(input.projectPath, input.configuration);
   const artifactPath = resolveFileSystemPathWithinRoot(input.projectPath, input.outputPath);
   const body = input.pretty ? JSON.stringify(audit, null, 2) : JSON.stringify(audit);
 
@@ -17,10 +17,13 @@ export async function runAuditAsync(input: RunAuditInput): Promise<RunAuditResul
     exclusive: false,
   });
 
+  const shouldFail =
+    audit.configuration.failOnRuleViolation && hasBlockingAuditRuleFailure(audit.evaluation.rules);
+
   return {
     audit,
     artifactPath,
-    exitCode: hasBlockingAuditRuleFailure(audit.evaluation.rules) ? 2 : 0,
+    exitCode: shouldFail ? 2 : 0,
   };
 }
 
@@ -28,6 +31,7 @@ interface RunAuditInput {
   readonly projectPath: string;
   readonly outputPath: string;
   readonly pretty: boolean;
+  readonly configuration?: ResolveAuditConfigurationInput;
 }
 
 interface RunAuditResult {
