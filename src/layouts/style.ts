@@ -155,8 +155,10 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         'target-arrow-shape': 'chevron',
         'target-arrow-fill': 'filled',
         'line-color': colors.edge,
-        // Bezier routing keeps lifted self-loops and overlapping endpoints renderable.
+        // Bezier routing keeps lifted self-loops renderable; line endpoints avoid invalid compound overlaps.
         'curve-style': 'bezier',
+        'source-endpoint': 'outside-to-line',
+        'target-endpoint': 'outside-to-line',
         opacity: 1,
         'line-opacity': 1,
       },
