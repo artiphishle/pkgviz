@@ -40,7 +40,7 @@ describe('[readSettingsEnvironment]', () => {
           showVendorPackages: true,
           subPackageDepth: 3,
         });
-      }
+      },
     );
   });
 
@@ -60,7 +60,7 @@ describe('[readSettingsEnvironment]', () => {
           showVendorPackages: false,
           subPackageDepth: 1,
         });
-      }
+      },
     );
   });
 
@@ -68,7 +68,7 @@ describe('[readSettingsEnvironment]', () => {
     for (const invalidDepth of ['0', '-1', '2.5', 'not-a-number']) {
       withSettingsEnvironment(
         { NEXT_PUBLIC_SETTINGS_SUBPACKAGE_DEPTH: invalidDepth },
-        () => expect(readSettingsEnvironment().subPackageDepth).toBe(1)
+        () => expect(readSettingsEnvironment().subPackageDepth).toBe(1),
       );
     }
   });
@@ -76,10 +76,10 @@ describe('[readSettingsEnvironment]', () => {
 
 function withSettingsEnvironment(
   values: Partial<Record<(typeof SETTINGS_ENV_NAMES)[number], string>>,
-  action: () => void
+  action: () => void,
 ) {
   const previous = Object.fromEntries(
-    SETTINGS_ENV_NAMES.map(name => [name, process.env[name]])
+    SETTINGS_ENV_NAMES.map(name => [name, process.env[name]]),
   ) as Record<(typeof SETTINGS_ENV_NAMES)[number], string | undefined>;
 
   try {
