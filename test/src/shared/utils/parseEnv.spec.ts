@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@artiphishle/testosterone';
-import { getRulesEnabled, parseEnv } from '@/shared/utils/parseEnv';
+import { getCyclicDependenciesRuleEnabled, parseEnv } from '@/shared/utils/parseEnv';
 
 describe('[parseEnv]', () => {
   it('parses "" correctly to undefined', () => {
@@ -32,19 +32,19 @@ describe('[parseEnv]', () => {
     expect(result).toBe(123);
   });
 
-  it('uses NEXT_PUBLIC_SETTINGS_RULES_ENABLED as the rules default', () => {
-    const previous = process.env.NEXT_PUBLIC_SETTINGS_RULES_ENABLED;
+  it('uses NEXT_PUBLIC_SETTINGS_RULE_CYCLIC_DEPENDENCIES_ENABLED as the rule default', () => {
+    const previous = process.env.NEXT_PUBLIC_SETTINGS_RULE_CYCLIC_DEPENDENCIES_ENABLED;
 
-    process.env.NEXT_PUBLIC_SETTINGS_RULES_ENABLED = 'false';
-    expect(getRulesEnabled()).toBe(false);
+    process.env.NEXT_PUBLIC_SETTINGS_RULE_CYCLIC_DEPENDENCIES_ENABLED = 'false';
+    expect(getCyclicDependenciesRuleEnabled()).toBe(false);
 
-    process.env.NEXT_PUBLIC_SETTINGS_RULES_ENABLED = 'true';
-    expect(getRulesEnabled()).toBe(true);
+    process.env.NEXT_PUBLIC_SETTINGS_RULE_CYCLIC_DEPENDENCIES_ENABLED = 'true';
+    expect(getCyclicDependenciesRuleEnabled()).toBe(true);
 
     if (previous === undefined) {
-      delete process.env.NEXT_PUBLIC_SETTINGS_RULES_ENABLED;
+      delete process.env.NEXT_PUBLIC_SETTINGS_RULE_CYCLIC_DEPENDENCIES_ENABLED;
     } else {
-      process.env.NEXT_PUBLIC_SETTINGS_RULES_ENABLED = previous;
+      process.env.NEXT_PUBLIC_SETTINGS_RULE_CYCLIC_DEPENDENCIES_ENABLED = previous;
     }
   });
 });
