@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import * as net from 'node:net';
 import { dirname, resolve } from 'node:path';
 import { spawn } from 'child_process';
+import { openBrowser } from '@ankhorage/utility/node/process';
 import { formatAuditRuleFailures } from '../src/cli/formatAuditRuleFailures';
 import { runAuditAsync } from '../src/cli/runAuditAsync';
 import type { AuditRuleConfiguration } from '../src/types/audit';
@@ -147,16 +148,6 @@ function resolveNextBin(pkgRoot: string): string {
   );
   if (existsSync(local)) return local;
   return 'next'; // fallback to PATH
-}
-
-function openBrowser(url: string) {
-  const cmd =
-    process.platform === 'darwin'
-      ? ['open', url]
-      : process.platform === 'win32'
-        ? ['cmd', '/c', 'start', '', url]
-        : ['xdg-open', url];
-  spawn(cmd[0], cmd.slice(1), { detached: true, stdio: 'ignore' });
 }
 
 async function main() {
