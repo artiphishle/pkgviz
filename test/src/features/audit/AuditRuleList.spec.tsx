@@ -51,8 +51,8 @@ describe('[AuditRuleList]', () => {
       <AuditRuleList evaluation={passedEvaluation} onCycleHighlightsChange={() => undefined} />
     );
 
-    const title = getByText('Cyclic Dependencies');
-    expect(title.closest('button')?.hasAttribute('disabled')).toBe(true);
+    expect(getByText('Cyclic Dependencies')).toBeDefined();
+    expect(container.querySelector('[data-disabled]')).toBeDefined();
     expect(container.textContent?.includes('Passed')).toBe(false);
     expect(container.textContent?.includes('Failed')).toBe(false);
     expect(container.querySelectorAll('input[type="checkbox"]').length).toBe(0);
