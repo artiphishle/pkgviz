@@ -1,30 +1,32 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-/*** Persists React state in local storage. */
+/*** Persists React state in local storage without changing the initial hydration snapshot. */
 export function useLocalStorage<T>(key: string, initialValue: T) {
-  const [storedValue, setStoredValue] = useState<T>(() => {
-    if (typeof window === 'undefined') return initialValue;
+  const [storedValue, setStoredValue] = useState<T>(initialValue);
 
+  useEffect(() => {
     try {
       const item = window.localStorage.getItem(key);
-      return item ? (JSON.parse(item) as T) : initialValue;
+      if (item !== null) setStoredValue(JSON.parse(item) as T);
     } catch (error) {
       console.warn(`Error reading localStorage key "${key}":`, error);
-      return initialValue;
     }
-  });
+  }, [key]);
 
-  /*** Updates the persisted local-storage value. */
-  const setValue = (value: T | ((val: T) => T)) => {
-    try {
-      const valueToStore = value instanceof Function ? value(storedValue) : value;
-      setStoredValue(valueToStore);
-      if (typeof window !== 'undefined') {
+  /*** Updates React state and the persisted local-storage value atomically. */
+  const setValue = (value: T | ((previousValue: T) => T)) => {
+    setStoredValue(previousValue => {
+      const valueToStore =
+        value instanceof Function ? value(previousValue) : value;
+
+      try {
         window.localStorage.setItem(key, JSON.stringify(valueToStore));
+      } catch (error) {
+        console.warn(`Error setting localStorage key "${key}":`, error);
       }
-    } catch (error) {
-      console.warn(`Error setting localStorage key "${key}":`, error);
-    }
+
+      return valueToStore;
+    });
   };
 
   return [storedValue, setValue] as const;

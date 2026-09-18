@@ -28,7 +28,7 @@ export function CyclicDependenciesRuleDetails({
         const selected = selectedCycleIds.includes(id);
 
         return (
-          <SidebarRow key={id}>
+          <SidebarRow key={`${id}:${index}`}>
             <CycleRow
               color={getCycleColor(index)}
               cycle={cycle}
@@ -79,8 +79,11 @@ function CycleRow({ color, cycle, index, selected, onSelectedChange }: CycleRowP
 function CycleEvidence({ cycle }: { readonly cycle: PackageCycleDetail }) {
   return (
     <ul className="mt-2 space-y-1 text-[11px] text-neutral-500 dark:text-neutral-400">
-      {cycle.edges.map(edge => (
-        <CycleEdgeEvidenceDetail key={`${edge.from}→${edge.to}`} edge={edge} />
+      {cycle.edges.map((edge, edgeIndex) => (
+        <CycleEdgeEvidenceDetail
+          key={`${edge.from}→${edge.to}:${edgeIndex}`}
+          edge={edge}
+        />
       ))}
     </ul>
   );
@@ -91,9 +94,9 @@ function CycleEdgeEvidenceDetail({ edge }: { readonly edge: CycleEdgeEvidence })
   return (
     <li>
       <code>{`${edge.from} → ${edge.to}`}</code>
-      {edge.via.map(evidence => (
+      {edge.via.map((evidence, evidenceIndex) => (
         <ImportEvidenceDetail
-          key={`${evidence.filePath}:${evidence.fileClass}:${evidence.importName}`}
+          key={`${evidence.filePath}:${evidence.fileClass}:${evidence.importName}:${evidenceIndex}`}
           evidence={evidence}
         />
       ))}
