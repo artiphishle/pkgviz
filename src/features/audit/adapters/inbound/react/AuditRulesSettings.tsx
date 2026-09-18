@@ -143,7 +143,7 @@ interface AuditRulesSettingsProps {
   readonly onToggleEnabled: () => void;
 }
 
-interface CyclicDependenciesCategoryProps extends AuditRulesSettingsProps {}
+type CyclicDependenciesCategoryProps = AuditRulesSettingsProps;
 
 interface CycleCategoryContentProps {
   readonly controls: AuditRuleControlState;
