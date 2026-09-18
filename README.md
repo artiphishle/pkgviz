@@ -50,6 +50,89 @@ bunx pkgviz
 
 ```
 
+### Maven
+
+The Maven adapter runs the same PKGViz audit/rule contract during `verify` and writes
+`target/pkgviz-audit.json`.
+
+For local development of the plugin itself:
+
+```bash
+mvn -B -f maven-plugin/pom.xml install
+```
+
+Then configure the plugin in the Maven project being audited:
+
+```xml
+<plugin>
+  <groupId>io.github.artiphishle</groupId>
+  <artifactId>pkgviz-maven-plugin</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+  <executions>
+    <execution>
+      <goals>
+        <goal>audit</goal>
+      </goals>
+    </execution>
+  </executions>
+  <configuration>
+    <packageSpec>pkgviz@YOUR_VERSION</packageSpec>
+    <rules>
+      <rule>cyclic-dependencies=block</rule>
+    </rules>
+    <failOnRuleViolation>true</failOnRuleViolation>
+  </configuration>
+</plugin>
+```
+
+Use `audit` instead of `block` to record cyclic dependencies without failing the build, or
+`off` to disable that rule. Set `failOnRuleViolation=false` to keep blocking findings in the
+audit while keeping the Maven build green.
+
+See [maven-plugin/README.md](./maven-plugin/README.md) for the complete Maven configuration.
+
+### GitHub Actions
+
+PKGViz ships a reusable GitHub Actions workflow that always attempts to upload
+`pkgviz-audit.json` as the `pkgviz-audit` artifact, including when a blocking rule fails.
+
+```yaml
+jobs:
+  pkgviz-audit:
+    uses: artiphishle/pkgviz/.github/workflows/pkgviz-audit.yml@vX.Y.Z
+    with:
+      pkgviz_version: X.Y.Z
+      cyclic_dependencies: block
+      fail_on_rule_violation: true
+```
+
+Pin both the workflow ref and `pkgviz_version` to a released version for reproducible CI.
+
+Common policies:
+
+```yaml
+# Finding is written to the artifact and fails CI.
+cyclic_dependencies: block
+fail_on_rule_violation: true
+```
+
+```yaml
+# Finding is written as advisory; CI stays green.
+cyclic_dependencies: audit
+fail_on_rule_violation: true
+```
+
+```yaml
+# Rule stays blocking in the audit, but this CI run never fails only because of audit findings.
+cyclic_dependencies: block
+fail_on_rule_violation: false
+```
+
+```yaml
+# Rule is disabled.
+cyclic_dependencies: off
+```
+
 ### Browser Visualization
 
 To show the graph visualization in the browser:
