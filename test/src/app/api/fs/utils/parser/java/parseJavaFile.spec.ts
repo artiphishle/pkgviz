@@ -24,7 +24,7 @@ describe('[parseJavaFile]', () => {
 
     await assert.rejects(
       parseJavaFile(resolve(projectPath, '..', 'outside.java'), projectPath),
-      /Path escaped the allowed root/,
+      /Path escaped the allowed root/
     );
   });
 });
