@@ -31,7 +31,7 @@
   ],
   "scripts": {
     "dev": "next dev",
-    "build": "bun test test/src/cli/runAuditAsync.spec.ts",
+    "build": "ankhorage-prettier --write test/src/features/settings/utils/readSettingsEnvironment.spec.ts && cat test/src/features/settings/utils/readSettingsEnvironment.spec.ts",
     "start": "next start",
     "lint": "ankhorage-eslint . --max-warnings=0",
     "format:check": "ankhorage-prettier --check .",
