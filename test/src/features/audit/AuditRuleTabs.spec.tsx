@@ -36,10 +36,7 @@ const cycles: readonly PackageCycleDetail[] = [
 describe('[AuditRuleList]', () => {
   it('lists the rule and every cycle path with sidebar checkboxes', () => {
     const { container, getByText } = render(
-      <AuditRuleList
-        evaluation={failedEvaluation}
-        onCycleHighlightsChange={() => undefined}
-      />
+      <AuditRuleList evaluation={failedEvaluation} onCycleHighlightsChange={() => undefined} />
     );
 
     expect(getByText('Cyclic dependencies')).toBeDefined();
@@ -51,10 +48,7 @@ describe('[AuditRuleList]', () => {
 
   it('shows the explicit satisfied state', () => {
     const { getByText } = render(
-      <AuditRuleList
-        evaluation={passedEvaluation}
-        onCycleHighlightsChange={() => undefined}
-      />
+      <AuditRuleList evaluation={passedEvaluation} onCycleHighlightsChange={() => undefined} />
     );
 
     expect(getByText('Passed')).toBeDefined();

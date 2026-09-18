@@ -20,10 +20,7 @@ describe('[getCycleFocus]', () => {
 
   it('uses root scope for selected cycles from different package roots', () => {
     expect(
-      getCycleFocus([
-        cycle(['app.a', 'app.b', 'app.a']),
-        cycle(['lib.x', 'lib.y', 'lib.x']),
-      ])
+      getCycleFocus([cycle(['app.a', 'app.b', 'app.a']), cycle(['lib.x', 'lib.y', 'lib.x'])])
     ).toEqual({
       packagePath: '',
       subPackageDepth: 2,
