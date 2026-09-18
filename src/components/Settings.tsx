@@ -4,10 +4,15 @@ import dynamic from 'next/dynamic';
 import { Select, Slider } from 'radix-ui';
 import type React from 'react';
 
-import { downloadAuditJsonAction, downloadAuditXmlAction } from '@/app/actions/audit.actions';
+import {
+  downloadAuditJsonAction,
+  downloadAuditXmlAction,
+  getAuditAction,
+} from '@/app/actions/audit.actions';
 import Setting from '@/components/Setting';
 import Switch from '@/components/Switch';
 import { useSettings } from '@/contexts/SettingsContext';
+import { AuditRulePanel } from '@/features/audit/adapters/inbound/react/AuditRulePanel';
 import { t } from '@/i18n/i18n';
 
 /*** Renders the graph settings panel. */
@@ -52,6 +57,11 @@ const Settings: React.FC = () => {
 
   return (
     <div className="md:pt-14 border-r bg-neutral-100 border-r-neutral-200 dark:border-r-neutral-800 dark:bg-neutral-950">
+      <h3>{t('settings.audit')}</h3>
+      <Setting>
+        <AuditRulePanel loadAudit={getAuditAction} />
+      </Setting>
+
       {/* Audit Download */}
       <h3>{t('settings.download')}</h3>
       <div>
