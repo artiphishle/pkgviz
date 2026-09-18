@@ -32,10 +32,7 @@ const legacyUiRules = {
 
 export default [
   {
-    files: [
-      'src/app/utils/**/*.{ts,tsx}',
-      'src/utils/**/*.{ts,tsx}',
-    ],
+    files: ['src/app/utils/**/*.{ts,tsx}', 'src/utils/**/*.{ts,tsx}'],
     rules: legacyAnalysisRules,
   },
   {
