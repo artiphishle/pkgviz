@@ -17,11 +17,49 @@ export function AuditRulePanel({
   onCycleInspectionChange,
 }: AuditRulePanelProps) {
   const { cyclicDependenciesEnabled, toggleCyclicDependenciesEnabled } = useSettings();
+  const { evaluation, loadFailed, retry } = useAuditEvaluation(
+    cyclicDependenciesEnabled,
+    loadAudit
+  );
+
+  const toggleRule = () => {
+    if (cyclicDependenciesEnabled) {
+      onCycleHighlightsChange([]);
+      onCycleInspectionChange(null);
+    } else {
+      retry();
+    }
+    toggleCyclicDependenciesEnabled();
+  };
+
+  if (evaluation === null) {
+    return (
+      <PendingCyclicRule
+        enabled={cyclicDependenciesEnabled}
+        loadFailed={loadFailed}
+        onEnabledToggle={toggleRule}
+      />
+    );
+  }
+
+  return (
+    <AuditRuleList
+      enabled={cyclicDependenciesEnabled}
+      evaluation={evaluation}
+      onCycleHighlightsChange={onCycleHighlightsChange}
+      onCycleInspectionChange={onCycleInspectionChange}
+      onEnabledToggle={toggleRule}
+    />
+  );
+}
+
+/*** Loads audit evaluation only while the cyclic-dependencies rule is enabled. */
+function useAuditEvaluation(enabled: boolean, loadAudit: AuditRulePanelProps['loadAudit']) {
   const [evaluation, setEvaluation] = React.useState<Audit['evaluation'] | null>(null);
   const [loadFailed, setLoadFailed] = React.useState(false);
 
   React.useEffect(() => {
-    if (!cyclicDependenciesEnabled || evaluation !== null || loadFailed) return;
+    if (!enabled || evaluation !== null || loadFailed) return;
     let active = true;
 
     void loadAudit().then(
@@ -36,37 +74,9 @@ export function AuditRulePanel({
     return () => {
       active = false;
     };
-  }, [cyclicDependenciesEnabled, evaluation, loadAudit, loadFailed]);
+  }, [enabled, evaluation, loadAudit, loadFailed]);
 
-  const toggleRule = () => {
-    if (cyclicDependenciesEnabled) {
-      onCycleHighlightsChange([]);
-      onCycleInspectionChange(null);
-    } else {
-      setLoadFailed(false);
-    }
-    toggleCyclicDependenciesEnabled();
-  };
-
-  if (evaluation !== null) {
-    return (
-      <AuditRuleList
-        enabled={cyclicDependenciesEnabled}
-        evaluation={evaluation}
-        onCycleHighlightsChange={onCycleHighlightsChange}
-        onCycleInspectionChange={onCycleInspectionChange}
-        onEnabledToggle={toggleRule}
-      />
-    );
-  }
-
-  return (
-    <PendingCyclicRule
-      enabled={cyclicDependenciesEnabled}
-      loadFailed={loadFailed}
-      onEnabledToggle={toggleRule}
-    />
-  );
+  return { evaluation, loadFailed, retry: () => setLoadFailed(false) };
 }
 
 /*** Renders the always-present rule header before findings are available. */

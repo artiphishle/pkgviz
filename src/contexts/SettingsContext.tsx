@@ -17,7 +17,8 @@ const SettingsContext = createContext<ISettingsContext | null>(null);
 /*** Provides persisted graph settings to the application. */
 export const SettingsProvider = ({ children }: PropsWithChildren) => {
   const [maxSubPackageDepth, setMaxSubPackageDepth] = useMaxSubPackageDepthSetting();
-  const [cyclicDependenciesEnabled, toggleCyclicDependenciesEnabled] = useCyclicDependenciesEnabledSetting();
+  const [cyclicDependenciesEnabled, toggleCyclicDependenciesEnabled] =
+    useCyclicDependenciesEnabledSetting();
   const [showCompoundNodes, setShowCompoundNodes] = useLocalStorage<boolean>(
     'showCompoundNodes',
     getShowCompoundNodes()

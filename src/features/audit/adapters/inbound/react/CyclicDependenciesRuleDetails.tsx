@@ -62,14 +62,7 @@ export function CyclicDependenciesRuleDetails({
 }
 
 /*** Renders one compact cycle selector; full evidence lives in the graph inspector. */
-function CycleRow({
-  color,
-  cycle,
-  index,
-  onInspect,
-  onSelectedChange,
-  selected,
-}: CycleRowProps) {
+function CycleRow({ color, cycle, index, onInspect, onSelectedChange, selected }: CycleRowProps) {
   const route = cycle.packages.join(' → ');
   const packageCount = new Set(cycle.packages).size;
 
