@@ -80,10 +80,7 @@ function CycleEvidence({ cycle }: { readonly cycle: PackageCycleDetail }) {
   return (
     <ul className="mt-2 space-y-1 text-[11px] text-neutral-500 dark:text-neutral-400">
       {cycle.edges.map((edge, edgeIndex) => (
-        <CycleEdgeEvidenceDetail
-          key={`${edge.from}→${edge.to}:${edgeIndex}`}
-          edge={edge}
-        />
+        <CycleEdgeEvidenceDetail key={`${edge.from}→${edge.to}:${edgeIndex}`} edge={edge} />
       ))}
     </ul>
   );
