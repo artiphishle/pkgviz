@@ -34,4 +34,6 @@ jobs:
         run: bun run test
 
       - name: 🏗️ Build
+        env:
+          NEXT_PUBLIC_PROJECT_PATH: ${{ github.workspace }}
         run: bun run build
