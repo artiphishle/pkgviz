@@ -4,6 +4,7 @@ import React, { createContext, type PropsWithChildren, use } from 'react';
 import {
   getCytoscapeLayout,
   getCytoscapeLayoutSpacing,
+  getRulesEnabled,
   getShowCompoundNodes,
   getShowVendorPackages,
   getSubPackageDepth,
@@ -18,6 +19,10 @@ export const SettingsProvider = ({ children }: PropsWithChildren) => {
   const [maxSubPackageDepth, setMaxSubPackageDepth] = useLocalStorage<number>(
     'maxSubPackageDepth',
     1
+  );
+  const [rulesEnabled, setRulesEnabled] = useLocalStorage<boolean>(
+    'rulesEnabled',
+    getRulesEnabled()
   );
   const [showCompoundNodes, setShowCompoundNodes] = useLocalStorage<boolean>(
     'showCompoundNodes',
@@ -40,6 +45,8 @@ export const SettingsProvider = ({ children }: PropsWithChildren) => {
     getCytoscapeLayoutSpacing()
   );
 
+  /*** Toggles audit rule controls. */
+  const toggleRulesEnabled = () => setRulesEnabled(prev => !prev);
   /*** Toggles vendor package visibility. */
   const toggleShowVendorPackages = () => setShowVendorPackages(prev => !prev);
   /*** Toggles compound node visibility. */
@@ -51,6 +58,7 @@ export const SettingsProvider = ({ children }: PropsWithChildren) => {
         cytoscapeLayout,
         cytoscapeLayoutSpacing,
         maxSubPackageDepth,
+        rulesEnabled,
         showCompoundNodes,
         showVendorPackages,
         subPackageDepth,
@@ -58,6 +66,7 @@ export const SettingsProvider = ({ children }: PropsWithChildren) => {
         setCytoscapeLayoutSpacing,
         setMaxSubPackageDepth,
         setSubPackageDepth,
+        toggleRulesEnabled,
         toggleShowCompoundNodes,
         toggleShowVendorPackages,
       }}
@@ -78,6 +87,7 @@ interface ISettingsContext {
   readonly cytoscapeLayout: LayoutOptions['name'];
   readonly cytoscapeLayoutSpacing: number;
   readonly maxSubPackageDepth: number;
+  readonly rulesEnabled: boolean;
   readonly subPackageDepth: number;
   readonly showCompoundNodes: boolean;
   readonly showVendorPackages: boolean;
@@ -85,6 +95,7 @@ interface ISettingsContext {
   readonly setCytoscapeLayoutSpacing: (layoutSpacing: number) => void;
   readonly setMaxSubPackageDepth: (depth: number) => void;
   readonly setSubPackageDepth: (depth: number) => void;
+  readonly toggleRulesEnabled: () => void;
   readonly toggleShowCompoundNodes: () => void;
   readonly toggleShowVendorPackages: () => void;
 }
