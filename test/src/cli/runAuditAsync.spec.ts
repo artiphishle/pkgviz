@@ -1,4 +1,4 @@
-import { cp, mkdtemp, readFile, rm } from 'node:fs/promises';
+import { cp, mkdtemp, readFile, rm, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach } from 'node:test';
@@ -88,6 +88,22 @@ describe('[runAuditAsync]', () => {
 
     expect(result.exitCode).toBe(0);
     expect(result.audit.evaluation.rules[0].status).toBe('passed');
+  });
+
+  it('writes through a symlinked project root without rejecting its canonical path', async () => {
+    const projectPath = await copyFixtureAsync('examples/typescript/my-app');
+    const aliasPath = `${projectPath}-alias`;
+    temporaryDirectories.push(aliasPath);
+    await symlink(projectPath, aliasPath, 'dir');
+
+    const result = await runAuditAsync({
+      projectPath: aliasPath,
+      outputPath: 'audit.json',
+      pretty: false,
+    });
+
+    expect(result.exitCode).toBe(0);
+    expect(JSON.parse(await readFile(result.artifactPath, 'utf8'))).toBeDefined();
   });
 });
 
