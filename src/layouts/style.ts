@@ -80,7 +80,6 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         'background-color': colors.nodeBgVendor,
       },
     },
-    { selector: 'node.packageCycle', style: { 'border-color': '#d80303', 'border-width': 3 } },
     { selector: 'node.isParent', style: { 'font-weight': 'bold' } },
     {
       selector: 'node:selected',
@@ -180,10 +179,6 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         'line-color': colors.weightXl,
         'target-arrow-color': colors.weightXl,
       },
-    },
-    {
-      selector: 'edge.packageCycle',
-      style: { 'line-color': '#d80303', 'target-arrow-color': '#d80303' },
     },
   ];
 }

@@ -14,6 +14,7 @@ import {
 } from '@/layouts';
 import { LAYOUTS } from '@/layouts/constants';
 import { getCanvasBg, getStyle as getCommonStyle } from '@/layouts/style';
+import type { GraphCycleHighlight } from '@/types/graphCycleHighlight';
 import { filterByPackagePrefix } from '@/utils/filter/filterByPackagePrefix';
 import { filterEmptyPackages } from '@/utils/filter/filterEmptyPackages';
 import { filterSubPackagesByDepth, getMaxDepth } from '@/utils/filter/filterSubPackagesFromDepth';
@@ -25,7 +26,8 @@ import { hasChildren } from '@/utils/hasChildren';
 export function useCytoscape(
   elements: ElementsDefinition | null,
   currentPackage: string,
-  setCurrentPackage: (path: string) => void
+  setCurrentPackage: (path: string) => void,
+  cycleHighlights: readonly GraphCycleHighlight[]
 ) {
   const cyRef = useRef<HTMLDivElement>(null);
   const [filteredElements, setFilteredElements] = useState<ElementsDefinition | null>(null);
@@ -223,6 +225,12 @@ export function useCytoscape(
     });
   }, [cyInstance, filteredElements, setCurrentPackage]);
 
+  /*** 5b) Applies selected audit-cycle colors without changing graph data, layout, or viewport. */
+  useEffect(() => {
+    if (!cyInstance || cyInstance.destroyed()) return;
+    applyCycleHighlights(cyInstance, cycleHighlights);
+  }, [cyInstance, filteredElements, cycleHighlights]);
+
   /**
    * 6) Single Layout Trigger
    *
@@ -335,4 +343,32 @@ export function useCytoscape(
   }, [cyInstance, filteredElements, theme, cytoscapeLayout]);
 
   return { cyRef, cyInstance };
+}
+
+/*** Applies and clears direct cycle highlight styles while preserving the base Cytoscape stylesheet. */
+function applyCycleHighlights(cy: Core, highlights: readonly GraphCycleHighlight[]) {
+  cy.nodes().removeStyle('border-color border-width');
+  cy.edges().removeStyle('line-color target-arrow-color width');
+
+  for (const highlight of highlights) {
+    for (const nodeId of highlight.nodeIds) {
+      cy.getElementById(nodeId).style({
+        'border-color': highlight.color,
+        'border-width': 4,
+      });
+    }
+
+    cy.edges()
+      .filter(edge =>
+        highlight.edges.some(
+          candidate =>
+            candidate.source === edge.source().id() && candidate.target === edge.target().id()
+        )
+      )
+      .style({
+        'line-color': highlight.color,
+        'target-arrow-color': highlight.color,
+        width: 4,
+      });
+  }
 }

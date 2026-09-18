@@ -51,7 +51,7 @@ export interface CyclicDependenciesEvidence {
   readonly cycles: readonly PackageCycleDetail[];
 }
 
-interface AuditEvaluation {
+export interface AuditEvaluation {
   readonly cyclicPackages: readonly PackageCycleDetail[];
   readonly rules: readonly AuditRuleResult[];
 }

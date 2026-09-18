@@ -15,6 +15,13 @@ const en: ILanguage = {
   'settings.layout': 'Layout',
   'settings.layoutSpacing': 'Layout Spacing',
   'settings.filter': 'Filter',
+  'settings.rules': 'Rules',
+  'settings.rulesEnabled': 'Enabled',
+  'settings.cyclicDependencies': 'Cyclic Dependencies',
+  'settings.loadingRules': 'Loading findings…',
+  'settings.rulesLoadFailed': 'Unable to load findings',
+  'settings.noCyclicDependencies': 'No cyclic dependencies',
+  'settings.evidence': 'Evidence',
 
   // Layouts
   breadthfirst: 'Breadthfirst',
