@@ -5,7 +5,7 @@ import { SidebarTabs } from '@/components/sidebar/SidebarTabs';
 
 describe('[SidebarTabs]', () => {
   it('supports disabled secondary tabs while leaving Export available', () => {
-    const { getByText } = render(
+    const { container, getByText } = render(
       <SidebarTabs
         ariaLabel="Sidebar tools"
         value={null}
@@ -17,7 +17,10 @@ describe('[SidebarTabs]', () => {
       />
     );
 
-    expect(getByText('Rules').closest('button')?.hasAttribute('disabled')).toBe(true);
-    expect(getByText('Export').closest('button')?.hasAttribute('disabled')).toBe(false);
+    expect(getByText('Rules')).toBeDefined();
+    expect(getByText('Export')).toBeDefined();
+    const disabledTab = container.querySelector('[role="tab"][data-disabled]');
+    expect(disabledTab?.textContent).toBe('Rules');
+    expect(container.querySelectorAll('[role="tab"][data-disabled]').length).toBe(1);
   });
 });
