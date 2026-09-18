@@ -1,7 +1,8 @@
 'use client';
 import React from 'react';
 
-import Setting from '@/components/Setting';
+import { SidebarAccordionSection } from '@/components/sidebar/SidebarAccordionSection';
+import { SidebarRow } from '@/components/sidebar/SidebarRow';
 import { CyclicDependenciesRuleDetails } from '@/features/audit/adapters/inbound/react/CyclicDependenciesRuleDetails';
 import { t } from '@/i18n/i18n';
 import type { Audit, AuditRuleResult } from '@/types/audit';
@@ -11,13 +12,13 @@ const RULE_RENDERERS: Readonly<Record<string, React.ComponentType<AuditRuleRende
   'cyclic-dependencies': CyclicDependenciesRuleDetails,
 };
 
-/*** Renders enabled audit rules through independently registered rule renderers. */
+/*** Renders audit rules through independently registered sidebar category renderers. */
 export function AuditRuleList({ evaluation, onCycleHighlightsChange }: AuditRuleListProps) {
   if (evaluation.rules.length === 0) {
     return (
-      <Setting>
+      <SidebarRow>
         <p className="text-xs text-neutral-500 dark:text-neutral-400">{t('audit.noRules')}</p>
-      </Setting>
+      </SidebarRow>
     );
   }
 
@@ -38,15 +39,18 @@ export function AuditRuleList({ evaluation, onCycleHighlightsChange }: AuditRule
   );
 }
 
-/*** Renders a compact fallback row for rules without a dedicated visualization adapter. */
+/*** Renders an unknown rule as a generic collapsible sidebar category. */
 function GenericAuditRuleDetails({ rule }: AuditRuleRendererProps) {
+  const count = rule.details.length;
+
   return (
-    <Setting>
-      <div className="text-xs">
-        <span className="font-medium">{rule.id}</span>
-        <span className="ml-2 text-neutral-500 dark:text-neutral-400">{rule.message}</span>
-      </div>
-    </Setting>
+    <SidebarAccordionSection count={count} title={rule.id}>
+      {rule.details.map(detail => (
+        <SidebarRow key={detail}>
+          <code className="block break-all text-[11px]">{detail}</code>
+        </SidebarRow>
+      ))}
+    </SidebarAccordionSection>
   );
 }
 

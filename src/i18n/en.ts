@@ -8,10 +8,10 @@ const en: ILanguage = {
   // Settings
   'settings.title': 'Settings',
   'settings.rules': 'Rules',
+  'sidebar.navigation': 'Sidebar sections',
   'settings.showCompoundNodes': 'Show Compound Nodes',
   'settings.showVendorPackages': 'Show Vendor',
   'settings.subPackageDepth': 'Subpackage depth',
-  'settings.audit': 'Audit',
   'settings.download': 'Download',
   'settings.layout': 'Layout',
   'settings.layoutSpacing': 'Layout Spacing',
@@ -22,13 +22,9 @@ const en: ILanguage = {
   'audit.loading': 'Loading audit…',
   'audit.loadError': 'Unable to load audit details.',
   'audit.noRules': 'No audit rules are enabled.',
-  'audit.passed': 'Passed',
-  'audit.failed': 'Failed',
   'audit.cycle': 'Cycle',
-  'audit.cycles': 'Cycles',
-  'audit.noEvidence': 'No source/import evidence available.',
   'audit.imports': 'imports',
-  'audit.rule.cyclicDependencies': 'Cyclic dependencies',
+  'audit.rule.cyclicDependencies': 'Cyclic Dependencies',
 
   // Layouts
   breadthfirst: 'Breadthfirst',

@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 
-import Setting from '@/components/Setting';
+import { SidebarRow } from '@/components/sidebar/SidebarRow';
 import { AuditRuleList } from '@/features/audit/adapters/inbound/react/AuditRuleList';
 import { t } from '@/i18n/i18n';
 import type { Audit } from '@/types/audit';
@@ -18,21 +18,21 @@ export function AuditRulePanel({ loadAudit, onCycleHighlightsChange }: AuditRule
 
   if (loadFailed) {
     return (
-      <Setting>
+      <SidebarRow>
         <p role="alert" className="text-xs text-red-700 dark:text-red-300">
           {t('audit.loadError')}
         </p>
-      </Setting>
+      </SidebarRow>
     );
   }
 
   if (evaluation === null) {
     return (
-      <Setting>
+      <SidebarRow>
         <p aria-live="polite" className="text-xs text-neutral-500 dark:text-neutral-400">
           {t('audit.loading')}
         </p>
-      </Setting>
+      </SidebarRow>
     );
   }
 

@@ -34,25 +34,28 @@ const cycles: readonly PackageCycleDetail[] = [
 ];
 
 describe('[AuditRuleList]', () => {
-  it('lists the rule and every cycle path with sidebar checkboxes', () => {
+  it('opens cyclic findings with a count badge and only cycle-level checkboxes', () => {
     const { container, getByText } = render(
       <AuditRuleList evaluation={failedEvaluation} onCycleHighlightsChange={() => undefined} />
     );
 
     expect(getByText('Cyclic dependencies')).toBeDefined();
-    expect(getByText('Failed')).toBeDefined();
+    expect(getByText('2')).toBeDefined();
     expect(getByText('app.a → app.b → app.a')).toBeDefined();
     expect(getByText('app.self → app.self')).toBeDefined();
-    expect(container.querySelectorAll('input[type="checkbox"]').length).toBe(3);
+    expect(container.querySelectorAll('input[type="checkbox"]').length).toBe(2);
   });
 
-  it('shows the explicit satisfied state', () => {
-    const { getByText } = render(
+  it('disables an empty cyclic-dependencies category without pass/fail decoration', () => {
+    const { container, getByText, queryByText } = render(
       <AuditRuleList evaluation={passedEvaluation} onCycleHighlightsChange={() => undefined} />
     );
 
-    expect(getByText('Passed')).toBeDefined();
-    expect(getByText('No cyclic package dependencies detected.')).toBeDefined();
+    const title = getByText('Cyclic dependencies');
+    expect(title.closest('button')?.hasAttribute('disabled')).toBe(true);
+    expect(queryByText('Passed')).toBeNull();
+    expect(queryByText('Failed')).toBeNull();
+    expect(container.querySelectorAll('input[type="checkbox"]').length).toBe(0);
   });
 });
 
