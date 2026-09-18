@@ -1,20 +1,21 @@
 import { resolve } from 'node:path';
 import { describe, it } from 'node:test';
-import { expect } from '@artiphishle/testosterone/src/matchers';
+
+import { expect } from '@artiphishle/testosterone';
+
 import { parseFile } from '@/app/utils/parser/typescript/parseFile';
 import { parseProjectPath } from '@/shared/utils/parseProjectPath';
 
 describe('[TypeScript: parseFile]', () => {
-  it('parses a .ts/.tsx file correctly', async () => {
+  it('parses file metadata while preserving canonical dependency imports', async () => {
     process.env.NEXT_PUBLIC_PROJECT_PATH = resolve(process.cwd());
     const projectPath = parseProjectPath();
     const file = resolve(projectPath, 'src/app/page.tsx');
-    const parsedFile = await parseFile(file, projectPath);
+    const imports = [{ name: 'src.screens.home', pkg: 'src.screens.home', isIntrinsic: true }];
+    const parsedFile = await parseFile(file, projectPath, imports);
 
-    /** @todo No class found, but: Filename shouldn't be the fallback */
     expect(parsedFile.className).toBe('page.tsx');
-
-    expect(parsedFile.imports.length).toBe(1);
+    expect(parsedFile.imports).toEqual(imports);
     expect(parsedFile.methods.length).toBe(0);
     expect(parsedFile.package).toBe('src.app');
     expect(parsedFile.path).toBe('src/app/page.tsx');

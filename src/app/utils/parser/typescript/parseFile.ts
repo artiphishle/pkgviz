@@ -1,53 +1,10 @@
 import fs from 'node:fs/promises';
-import { basename, relative, resolve } from 'node:path';
+import { basename, relative } from 'node:path';
 
 import ts from 'typescript';
 
-import { extractTypeScriptPackageFromImport } from '@/app/utils/parser/typescript/extractTypeScriptPackageFromImport';
 import type { ImportDefinition, MethodCall, MethodDefinition, ParsedFile } from '@/shared/types';
-import { parseProjectPath } from '@/shared/utils/parseProjectPath';
 import { toPosix } from '@/shared/utils/toPosix';
-
-/***
- * Extracts import statements from TypeScript code.
- */
-function extractImports(content: string, filename: string): ImportDefinition[] {
-  const sourceFile = ts.createSourceFile('temp.ts', content, ts.ScriptTarget.Latest, true);
-  const imports: ImportDefinition[] = [];
-
-  sourceFile.forEachChild(node => {
-    if (!ts.isImportDeclaration(node)) return;
-
-    const fullPath = toPosix(filename).split('/').slice(0, -1).join('/');
-    const moduleSpecifier = (node.moduleSpecifier as ts.StringLiteral).text;
-
-    /*** Resolves a TypeScript import to a project-relative source path. */
-    function resolveImportPath(curDir: string, specifier: string) {
-      const root = parseProjectPath();
-
-      if (specifier.startsWith('./') || specifier.startsWith('../'))
-        return {
-          isIntrinsic: true,
-          resolvedPath: resolve(curDir, specifier).slice(root.length + 1),
-        };
-
-      if (specifier.startsWith('@/'))
-        return {
-          isIntrinsic: true,
-          resolvedPath: specifier.replace(/^@/, 'src'),
-        };
-
-      return { isIntrinsic: false, resolvedPath: specifier };
-    }
-
-    const { resolvedPath, isIntrinsic } = resolveImportPath(fullPath, moduleSpecifier);
-
-    const pkg = extractTypeScriptPackageFromImport(resolvedPath);
-    imports.push({ name: pkg, pkg, isIntrinsic });
-  });
-
-  return imports;
-}
 
 /***
  * Extracts the class name from the content and filename fallback.
@@ -116,7 +73,11 @@ function extractMethodCalls(content: string): MethodCall[] {
 /***
  * Parses a TypeScript file and returns metadata useful for diagram generation.
  */
-export async function parseFile(fullPath: string, projectRoot: string): Promise<ParsedFile> {
+export async function parseFile(
+  fullPath: string,
+  projectRoot: string,
+  imports: readonly ImportDefinition[]
+): Promise<ParsedFile> {
   const posixFullPath = toPosix(fullPath);
   const content = await fs.readFile(posixFullPath, 'utf-8');
   const relativePath = toPosix(relative(projectRoot, posixFullPath));
@@ -125,7 +86,7 @@ export async function parseFile(fullPath: string, projectRoot: string): Promise<
 
   return {
     className: extractClassName(content, fullPath),
-    imports: extractImports(content, fullPath),
+    imports: [...imports],
     methods: extractMethodDefinitions(content),
     calls: extractMethodCalls(content),
     package: segmentedPath.join('.'),
