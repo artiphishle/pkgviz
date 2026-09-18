@@ -21,43 +21,53 @@ export function AuditRulesSettings({
 }: AuditRulesSettingsProps) {
   return (
     <SidebarSection title={t('settings.rules')}>
-      <Setting>
-        <Switch
-          id="switch-rules-enabled"
-          label={t('settings.rulesEnabled')}
-          value={enabled}
-          onToggle={onToggleEnabled}
-        />
-      </Setting>
-      {enabled ? <CyclicDependenciesCategory controls={controls} /> : null}
+      <CyclicDependenciesCategory
+        controls={controls}
+        enabled={enabled}
+        onToggleEnabled={onToggleEnabled}
+      />
     </SidebarSection>
   );
 }
 
-/*** Renders the cyclic-dependencies category with loading, empty, and finding states. */
-function CyclicDependenciesCategory({ controls }: CyclicDependenciesCategoryProps) {
+/*** Renders the cyclic-dependencies rule header, switch, and compact cycle rows. */
+function CyclicDependenciesCategory({
+  controls,
+  enabled,
+  onToggleEnabled,
+}: CyclicDependenciesCategoryProps) {
   const [userOpen, setUserOpen] = useState<boolean | null>(null);
   const hasCycles = controls.cycles.length > 0;
-  const open = controls.loading ? true : hasCycles ? (userOpen ?? true) : false;
+  const open = enabled && (controls.loading ? true : hasCycles ? (userOpen ?? true) : false);
 
   return (
     <>
       <SidebarAccordion
+        action={
+          <Switch
+            id="switch-cyclic-dependencies"
+            ariaLabel={t('settings.enableCyclicDependencies')}
+            value={enabled}
+            onToggle={onToggleEnabled}
+          />
+        }
         title={t('settings.cyclicDependencies')}
         count={controls.loading ? undefined : controls.cycles.length}
-        disabled={!controls.loading && !hasCycles}
+        disabled={!enabled || (!controls.loading && !hasCycles)}
         open={open}
         onOpenChange={setUserOpen}
       >
         <CycleCategoryContent controls={controls} />
       </SidebarAccordion>
-      {!controls.loading && !hasCycles ? <EmptyCycleState failed={controls.loadFailed} /> : null}
+      {enabled && !controls.loading && !hasCycles ? (
+        <EmptyCycleState failed={controls.loadFailed} />
+      ) : null}
     </>
   );
 }
 
-/*** Renders either the loading row or every concrete selectable cycle row. */
-function CycleCategoryContent({ controls }: CyclicDependenciesCategoryProps) {
+/*** Renders loading feedback or the compact set of concrete cycle controls. */
+function CycleCategoryContent({ controls }: CycleCategoryContentProps) {
   if (controls.loading) {
     return (
       <Setting>
@@ -69,11 +79,16 @@ function CycleCategoryContent({ controls }: CyclicDependenciesCategoryProps) {
   }
 
   return controls.cycles.map(cycle => (
-    <CycleRow key={cycle.id} cycle={cycle} onToggle={controls.toggleCycle} />
+    <CycleRow
+      key={cycle.id}
+      cycle={cycle}
+      onInspect={controls.inspectCycle}
+      onToggle={controls.toggleCycle}
+    />
   ));
 }
 
-/*** Renders the disabled no-finding row without adding pass/fail state to the category header. */
+/*** Renders the no-finding or load-error state below the disabled rule accordion. */
 function EmptyCycleState({ failed }: EmptyCycleStateProps) {
   return (
     <Setting>
@@ -85,50 +100,40 @@ function EmptyCycleState({ failed }: EmptyCycleStateProps) {
   );
 }
 
-/*** Renders one selectable cycle path with its stable sidebar color and optional evidence. */
-function CycleRow({ cycle, onToggle }: CycleRowProps) {
-  const evidence = cycle.detail.edges.flatMap(edge => edge.via);
-
+/*** Renders one compact cycle control row; detailed evidence stays in the graph inspector. */
+function CycleRow({ cycle, onInspect, onToggle }: CycleRowProps) {
   return (
     <Setting>
-      <label className="flex min-w-0 cursor-pointer items-start gap-2 text-xs">
+      <div className="flex min-w-0 items-start gap-2">
         <input
+          aria-label={`${cycle.label} ${t('settings.selectCycle')}`}
           type="checkbox"
           checked={cycle.selected}
           onChange={() => onToggle(cycle.id)}
-          className="mt-0.5 shrink-0"
+          className="mt-1 shrink-0"
         />
         <span
           aria-hidden="true"
-          className="mt-1 size-2 shrink-0 rounded-full"
+          className="mt-1.5 size-2 shrink-0 rounded-full"
           style={{ backgroundColor: cycle.color }}
         />
-        <span className="min-w-0 flex-1 break-words leading-5">
-          {cycle.detail.packages.join(' → ')}
-        </span>
-      </label>
-      {evidence.length > 0 ? <CycleEvidence cycle={cycle} /> : null}
-    </Setting>
-  );
-}
-
-/*** Renders import evidence for one cycle without recomputing dependency analysis. */
-function CycleEvidence({ cycle }: CycleEvidenceProps) {
-  const evidence = cycle.detail.edges.flatMap(edge => edge.via);
-
-  return (
-    <details className="mt-1 pl-8 text-[11px] text-neutral-500 dark:text-neutral-400">
-      <summary className="cursor-pointer">
-        {t('settings.evidence')} ({evidence.length})
-      </summary>
-      <div className="mt-1 space-y-1">
-        {evidence.map((item, index) => (
-          <div key={`${item.filePath}-${item.importName}-${index}`} className="break-words">
-            {item.filePath} → {item.importName}
-          </div>
-        ))}
+        <button
+          type="button"
+          onClick={() => onInspect(cycle.id)}
+          className="min-w-0 flex-1 text-left"
+        >
+          <span className="flex items-center justify-between gap-2 text-xs">
+            <span className="truncate font-medium">{cycle.label}</span>
+            <span className="shrink-0 text-[10px] text-neutral-500 dark:text-neutral-400">
+              {cycle.packageCount} {t('settings.packages')}
+            </span>
+          </span>
+          <span className="block truncate text-[11px] leading-4 text-neutral-500 dark:text-neutral-400">
+            {cycle.path}
+          </span>
+        </button>
       </div>
-    </details>
+    </Setting>
   );
 }
 
@@ -138,7 +143,9 @@ interface AuditRulesSettingsProps {
   readonly onToggleEnabled: () => void;
 }
 
-interface CyclicDependenciesCategoryProps {
+interface CyclicDependenciesCategoryProps extends AuditRulesSettingsProps {}
+
+interface CycleCategoryContentProps {
   readonly controls: AuditRuleControlState;
 }
 
@@ -148,9 +155,6 @@ interface EmptyCycleStateProps {
 
 interface CycleRowProps {
   readonly cycle: AuditRuleCycleView;
+  readonly onInspect: (cycleId: string) => void;
   readonly onToggle: (cycleId: string) => void;
-}
-
-interface CycleEvidenceProps {
-  readonly cycle: AuditRuleCycleView;
 }
