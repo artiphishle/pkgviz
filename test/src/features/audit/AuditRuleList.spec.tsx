@@ -52,7 +52,7 @@ describe('[AuditRuleList]', () => {
     );
 
     expect(getByText('Cyclic Dependencies')).toBeDefined();
-    expect(container.querySelector('[data-disabled]')).toBeDefined();
+    expect(container.querySelector('[data-disabled]') !== null).toBe(true);
     expect(container.textContent?.includes('Passed')).toBe(false);
     expect(container.textContent?.includes('Failed')).toBe(false);
     expect(container.querySelectorAll('input[type="checkbox"]').length).toBe(0);
