@@ -5,7 +5,6 @@ import { useTheme } from 'next-themes';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useSettings } from '@/contexts/SettingsContext';
-import type { GraphCycleHighlight } from '@/types/graphCycleHighlight';
 import {
   getBreadthfirstStyle,
   getCircleStyle,
@@ -15,6 +14,7 @@ import {
 } from '@/layouts';
 import { LAYOUTS } from '@/layouts/constants';
 import { getCanvasBg, getStyle as getCommonStyle } from '@/layouts/style';
+import type { GraphCycleHighlight } from '@/types/graphCycleHighlight';
 import { filterByPackagePrefix } from '@/utils/filter/filterByPackagePrefix';
 import { filterEmptyPackages } from '@/utils/filter/filterEmptyPackages';
 import { filterSubPackagesByDepth, getMaxDepth } from '@/utils/filter/filterSubPackagesFromDepth';
@@ -344,7 +344,6 @@ export function useCytoscape(
 
   return { cyRef, cyInstance };
 }
-
 
 /*** Applies and clears direct cycle highlight styles while preserving the base Cytoscape stylesheet. */
 function applyCycleHighlights(cy: Core, highlights: readonly GraphCycleHighlight[]) {
