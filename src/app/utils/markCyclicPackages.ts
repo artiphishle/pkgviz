@@ -1,3 +1,4 @@
+import { findCyclicComponents, type Graph } from '@ankhorage/graph';
 import type { ElementsDefinition } from 'cytoscape';
 
 import type { ParsedDirectory, ParsedFile } from '@/shared/types';
@@ -60,48 +61,21 @@ function elementsToAdj(elements: ElementsDefinition) {
   return adj;
 }
 
-/*** Tarjan SCC on adjacency. */
-function tarjanSCC(
-  graph: Map<TUniquePackageName, Set<TUniquePackageName>>
-): TUniquePackageName[][] {
-  let index = 0;
-  const idx = new Map<TUniquePackageName, number>();
-  const low = new Map<TUniquePackageName, number>();
-  const stack: TUniquePackageName[] = [];
-  const onStack = new Set<TUniquePackageName>();
-  const out: TUniquePackageName[][] = [];
-
-  /*** Visits one vertex while computing strongly connected components. */
-  function strong(v: TUniquePackageName) {
-    idx.set(v, index);
-    low.set(v, index);
-    index++;
-    stack.push(v);
-    onStack.add(v);
-
-    for (const w of graph.get(v) ?? []) {
-      if (!idx.has(w)) {
-        strong(w);
-        low.set(v, Math.min(low.get(v)!, low.get(w)!));
-      } else if (onStack.has(w)) {
-        low.set(v, Math.min(low.get(v)!, idx.get(w)!));
-      }
-    }
-
-    if (low.get(v) === idx.get(v)) {
-      const comp: TUniquePackageName[] = [];
-      let w: TUniquePackageName;
-      do {
-        w = stack.pop()!;
-        onStack.delete(w);
-        comp.push(w);
-      } while (w !== v);
-      out.push(comp);
-    }
-  }
-
-  for (const v of graph.keys()) if (!idx.has(v)) strong(v);
-  return out;
+/*** Convert adjacency to the canonical Ankhorage graph model for shared algorithms. */
+function adjacencyToGraph(
+  adjacency: ReadonlyMap<TUniquePackageName, ReadonlySet<TUniquePackageName>>
+): Graph<undefined, undefined> {
+  return {
+    nodes: Array.from(adjacency.keys(), id => ({ id, data: undefined })),
+    edges: Array.from(adjacency.entries()).flatMap(([source, targets]) =>
+      Array.from(targets, target => ({
+        id: `${source}->${target}`,
+        source,
+        target,
+        data: undefined,
+      }))
+    ),
+  };
 }
 
 /*** Find one simple cycle ordering inside a given SCC. */
@@ -147,33 +121,30 @@ export function getPackageCyclesWithMembers(
   graph: ElementsDefinition; // for convenience (already built)
 } {
   const adj = elementsToAdj(graph);
-  const sccs = tarjanSCC(adj);
+  const sccs = findCyclicComponents(adjacencyToGraph(adj));
   const evidence = buildEdgeEvidence(dir);
 
   const cycles: PackageCycleDetail[] = [];
   const packageSet = new Set<TUniquePackageName>();
 
   for (const scc of sccs) {
-    const selfLoop = scc.length === 1 && (adj.get(scc[0])?.has(scc[0]) ?? false);
-    if (scc.length > 1 || selfLoop) {
-      scc.forEach(p => packageSet.add(p));
-      const sccSet = new Set(scc);
-      const cycle = findOneCycleInScc(adj, sccSet) ?? [...scc, scc[0]];
+    scc.forEach(p => packageSet.add(p));
+    const sccSet = new Set(scc);
+    const cycle = findOneCycleInScc(adj, sccSet) ?? [...scc, scc[0]];
 
-      const edges: CycleEdgeEvidence[] = [];
-      for (let i = 0; i < cycle.length - 1; i++) {
-        const from = cycle[i];
-        const to = cycle[i + 1];
-        const key = `${from}->${to}`;
-        edges.push({
-          from,
-          to,
-          via: evidence.get(key) ?? [],
-        });
-      }
-
-      cycles.push({ packages: cycle, edges });
+    const edges: CycleEdgeEvidence[] = [];
+    for (let i = 0; i < cycle.length - 1; i++) {
+      const from = cycle[i];
+      const to = cycle[i + 1];
+      const key = `${from}->${to}`;
+      edges.push({
+        from,
+        to,
+        via: evidence.get(key) ?? [],
+      });
     }
+
+    cycles.push({ packages: cycle, edges });
   }
 
   return { cycles, packageSet, graph };
