@@ -15,12 +15,12 @@ import {
 import { LAYOUTS } from '@/layouts/constants';
 import { getCanvasBg, getStyle as getCommonStyle } from '@/layouts/style';
 import type { GraphCycleHighlight } from '@/types/graphCycleHighlight';
+import { applyCycleHighlights } from '@/utils/applyCycleHighlights';
 import { filterByPackagePrefix } from '@/utils/filter/filterByPackagePrefix';
 import { filterEmptyPackages } from '@/utils/filter/filterEmptyPackages';
 import { filterSubPackagesByDepth, getMaxDepth } from '@/utils/filter/filterSubPackagesFromDepth';
 import { filterVendorPackages } from '@/utils/filter/filterVendorPackages';
 import { toggleCompoundNodes } from '@/utils/filter/toggleCompoundNodes';
-import { applyCycleHighlights } from '@/utils/applyCycleHighlights';
 import { hasChildren } from '@/utils/hasChildren';
 
 /*** Owns the Cytoscape instance, filtering, layout, styling, and interactions. */
