@@ -8,7 +8,6 @@ const en: ILanguage = {
   // Settings
   'settings.title': 'Settings',
   'settings.rules': 'Rules',
-  'settings.rulesEnabled': 'Enabled',
   'sidebar.navigation': 'Sidebar sections',
   'settings.showCompoundNodes': 'Show Compound Nodes',
   'settings.showVendorPackages': 'Show Vendor',
@@ -25,6 +24,12 @@ const en: ILanguage = {
   'audit.noRules': 'No audit rules are enabled.',
   'audit.cycle': 'Cycle',
   'audit.imports': 'imports',
+  'audit.cyclePath': 'Cycle path',
+  'audit.dependencyEvidence': 'Dependency evidence',
+  'audit.packages': 'packages',
+  'audit.dependencyEdges': 'dependency edges',
+  'audit.noEvidence': 'No source/import evidence available.',
+  'audit.closeInspector': 'Close cycle inspector',
   'audit.rule.cyclicDependencies': 'Cyclic Dependencies',
 
   // Layouts

@@ -6,15 +6,15 @@ import { SidebarRow } from '@/components/sidebar/SidebarRow';
 import { CyclicDependenciesRuleDetails } from '@/features/audit/adapters/inbound/react/CyclicDependenciesRuleDetails';
 import { t } from '@/i18n/i18n';
 import type { Audit, AuditRuleResult } from '@/types/audit';
-import type { CycleHighlight } from '@/types/auditVisualization';
+import type { CycleHighlight, CycleInspection } from '@/types/auditVisualization';
 
 const RULE_RENDERERS: Readonly<Record<string, React.ComponentType<AuditRuleRendererProps>>> = {
   'cyclic-dependencies': CyclicDependenciesRuleDetails,
 };
 
 /*** Renders audit rules through independently registered sidebar category renderers. */
-export function AuditRuleList({ evaluation, onCycleHighlightsChange }: AuditRuleListProps) {
-  if (evaluation.rules.length === 0) {
+export function AuditRuleList(props: AuditRuleListProps) {
+  if (props.evaluation.rules.length === 0) {
     return (
       <SidebarRow>
         <p className="text-xs text-neutral-500 dark:text-neutral-400">{t('audit.noRules')}</p>
@@ -24,43 +24,39 @@ export function AuditRuleList({ evaluation, onCycleHighlightsChange }: AuditRule
 
   return (
     <>
-      {evaluation.rules.map(rule => {
+      {props.evaluation.rules.map(rule => {
         const RuleRenderer = RULE_RENDERERS[rule.id] ?? GenericAuditRuleDetails;
-        return (
-          <RuleRenderer
-            key={rule.id}
-            evaluation={evaluation}
-            rule={rule}
-            onCycleHighlightsChange={onCycleHighlightsChange}
-          />
-        );
+        return <RuleRenderer {...props} key={rule.id} rule={rule} />;
       })}
     </>
   );
 }
 
-/*** Renders an unknown rule as a generic collapsible sidebar category. */
+/*** Renders an unknown rule as a compact generic collapsible category. */
 function GenericAuditRuleDetails({ rule }: AuditRuleRendererProps) {
   const count = rule.details.length;
 
   return (
     <SidebarAccordionSection count={count} title={rule.id}>
-      {rule.details.map(detail => (
-        <SidebarRow key={detail}>
-          <code className="block break-all text-[11px]">{detail}</code>
+      {rule.details.map((detail, index) => (
+        <SidebarRow key={detail + ':' + index}>
+          <code className="block truncate text-[11px]" title={detail}>
+            {detail}
+          </code>
         </SidebarRow>
       ))}
     </SidebarAccordionSection>
   );
 }
 
-interface AuditRuleRendererProps {
-  readonly evaluation: Audit['evaluation'];
+interface AuditRuleRendererProps extends AuditRuleListProps {
   readonly rule: AuditRuleResult;
-  readonly onCycleHighlightsChange: (highlights: readonly CycleHighlight[]) => void;
 }
 
 interface AuditRuleListProps {
+  readonly enabled: boolean;
   readonly evaluation: Audit['evaluation'];
   readonly onCycleHighlightsChange: (highlights: readonly CycleHighlight[]) => void;
+  readonly onCycleInspectionChange: (inspection: CycleInspection | null) => void;
+  readonly onEnabledToggle: () => void;
 }

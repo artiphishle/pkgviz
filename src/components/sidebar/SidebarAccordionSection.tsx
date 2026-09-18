@@ -5,8 +5,9 @@ import React from 'react';
 
 import { SidebarBadge } from '@/components/sidebar/SidebarBadge';
 
-/*** Renders a sidebar category that can expose findings or a loading state. */
+/*** Renders a sidebar category that can expose findings, loading state, and a header action. */
 export function SidebarAccordionSection({
+  action,
   children,
   count,
   disabled = false,
@@ -14,7 +15,7 @@ export function SidebarAccordionSection({
   title,
 }: SidebarAccordionSectionProps) {
   const hasFindings = count > 0;
-  const isOpenByDefault = loading || hasFindings;
+  const isOpenByDefault = !disabled && (loading || hasFindings);
   const isDisabled = disabled || (!loading && !hasFindings);
 
   return (
@@ -25,8 +26,8 @@ export function SidebarAccordionSection({
       className="mt-6"
     >
       <Accordion.Item value="content" disabled={isDisabled}>
-        <Accordion.Header className="mx-6 my-0">
-          <Accordion.Trigger className="group flex w-full items-center gap-2 py-2 text-left text-sm font-bold disabled:cursor-default disabled:text-neutral-400 dark:disabled:text-neutral-600">
+        <Accordion.Header className="mx-6 my-0 flex items-center gap-2">
+          <Accordion.Trigger className="group flex min-w-0 flex-1 items-center gap-2 py-2 text-left text-sm font-bold disabled:cursor-default disabled:text-neutral-400 dark:disabled:text-neutral-600">
             <span className="min-w-0 flex-1">{title}</span>
             {hasFindings && <SidebarBadge count={count} />}
             <ChevronDownIcon
@@ -35,6 +36,7 @@ export function SidebarAccordionSection({
               className="shrink-0 transition-transform group-data-[state=open]:rotate-180 group-disabled:opacity-0"
             />
           </Accordion.Trigger>
+          {action}
         </Accordion.Header>
         <Accordion.Content className="overflow-hidden">{children}</Accordion.Content>
       </Accordion.Item>
@@ -43,6 +45,7 @@ export function SidebarAccordionSection({
 }
 
 interface SidebarAccordionSectionProps {
+  readonly action?: React.ReactNode;
   readonly children: React.ReactNode;
   readonly count: number;
   readonly disabled?: boolean;

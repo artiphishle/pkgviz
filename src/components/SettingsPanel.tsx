@@ -11,7 +11,7 @@ import { useSettings } from '@/contexts/SettingsContext';
 import { t } from '@/i18n/i18n';
 
 /*** Renders graph and rule settings using the shared application-sidebar primitives. */
-export function SettingsPanel({ onRulesDisabled, rules }: SettingsPanelProps) {
+export function SettingsPanel({ rules }: SettingsPanelProps) {
   return (
     <>
       <DownloadSettings />
@@ -19,7 +19,7 @@ export function SettingsPanel({ onRulesDisabled, rules }: SettingsPanelProps) {
       <SubPackageDepthSettings />
       <LayoutSettings />
       <LayoutSpacingSettings />
-      <RulesSettings onRulesDisabled={onRulesDisabled}>{rules}</RulesSettings>
+      <SidebarSection title={t('settings.rules')}>{rules}</SidebarSection>
     </>
   );
 }
@@ -164,28 +164,6 @@ function LayoutSpacingSettings() {
   );
 }
 
-/*** Renders persisted audit-rule visualization settings without hiding graph settings. */
-function RulesSettings({ children, onRulesDisabled }: RulesSettingsProps) {
-  const { rulesEnabled, toggleRulesEnabled } = useSettings();
-
-  return (
-    <SidebarSection title={t('settings.rules')}>
-      <SidebarRow>
-        <Switch
-          id="switch-rules-enabled"
-          label={t('settings.rulesEnabled')}
-          onToggle={() => {
-            if (rulesEnabled) onRulesDisabled();
-            toggleRulesEnabled();
-          }}
-          value={rulesEnabled}
-        />
-      </SidebarRow>
-      {rulesEnabled && children}
-    </SidebarSection>
-  );
-}
-
 /*** Renders the shared slider shape used by numeric sidebar settings. */
 function SettingsSlider({ ariaLabel, max, min, onValueChange, step, value }: SettingsSliderProps) {
   return (
@@ -244,11 +222,5 @@ interface DownloadButtonProps {
 }
 
 interface SettingsPanelProps {
-  readonly onRulesDisabled: () => void;
   readonly rules: React.ReactNode;
-}
-
-interface RulesSettingsProps {
-  readonly children: React.ReactNode;
-  readonly onRulesDisabled: () => void;
 }

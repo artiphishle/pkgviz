@@ -81,10 +81,27 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
       },
     },
     {
+      selector: 'node.auditCycleMuted',
+      style: {
+        opacity: 0.18,
+      },
+    },
+    {
+      selector: 'node.auditCycleContext',
+      style: {
+        opacity: 0.5,
+      },
+    },
+    {
       selector: 'node.auditCycle',
       style: {
         'border-color': 'data(auditCycleColor)',
-        'border-width': 4,
+        'border-width': 5,
+        opacity: 1,
+        'underlay-color': 'data(auditCycleColor)',
+        'underlay-opacity': 0.18,
+        'underlay-padding': 4,
+        'z-index': 999,
       },
     },
     { selector: 'node.isParent', style: { 'font-weight': 'bold' } },
@@ -188,14 +205,29 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
       },
     },
     {
+      selector: 'edge.auditCycleMuted',
+      style: {
+        opacity: 0.06,
+        'line-opacity': 0.06,
+      },
+    },
+    {
       selector: 'edge.auditCycle',
       style: {
-        width: 4,
+        width: 6,
+        opacity: 1,
+        'line-opacity': 1,
+        'arrow-scale': 1.5,
         'line-color': 'data(auditCycleColor)',
         'target-arrow-color': 'data(auditCycleColor)',
         color: 'data(auditCycleColor)',
         label: 'data(auditCycleStep)',
-        'font-size': 10,
+        'font-size': 12,
+        'font-weight': 'bold',
+        'text-background-color': colors.canvasBg,
+        'text-background-opacity': 0.9,
+        'text-background-padding': 3,
+        'z-index': 999,
       },
     },
   ];

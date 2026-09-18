@@ -5,3 +5,7 @@ export interface CycleHighlight {
   readonly color: string;
   readonly cycle: PackageCycleDetail;
 }
+
+export interface CycleInspection extends CycleHighlight {
+  readonly label: string;
+}

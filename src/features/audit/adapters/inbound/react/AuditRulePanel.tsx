@@ -3,53 +3,122 @@ import React from 'react';
 
 import { SidebarAccordionSection } from '@/components/sidebar/SidebarAccordionSection';
 import { SidebarRow } from '@/components/sidebar/SidebarRow';
+import { ToggleSwitch } from '@/components/ToggleSwitch';
+import { useSettings } from '@/contexts/SettingsContext';
 import { AuditRuleList } from '@/features/audit/adapters/inbound/react/AuditRuleList';
 import { t } from '@/i18n/i18n';
 import type { Audit } from '@/types/audit';
-import type { CycleHighlight } from '@/types/auditVisualization';
+import type { CycleHighlight, CycleInspection } from '@/types/auditVisualization';
 
-/*** Loads the serializable audit evaluation while keeping known rule categories visible. */
-export function AuditRulePanel({ loadAudit, onCycleHighlightsChange }: AuditRulePanelProps) {
+/*** Loads audit findings while keeping the cyclic-dependencies control immediately available. */
+export function AuditRulePanel({
+  loadAudit,
+  onCycleHighlightsChange,
+  onCycleInspectionChange,
+}: AuditRulePanelProps) {
+  const { cyclicDependenciesEnabled, toggleCyclicDependenciesEnabled } = useSettings();
   const [evaluation, setEvaluation] = React.useState<Audit['evaluation'] | null>(null);
   const [loadFailed, setLoadFailed] = React.useState(false);
 
   React.useEffect(() => {
-    void loadAudit().then(setEvaluation, () => setLoadFailed(true));
-  }, [loadAudit]);
+    if (!cyclicDependenciesEnabled || evaluation !== null || loadFailed) return;
+    let active = true;
 
-  if (loadFailed) {
-    return (
-      <>
-        <SidebarAccordionSection count={0} title={t('audit.rule.cyclicDependencies')}>
-          {null}
-        </SidebarAccordionSection>
-        <SidebarRow>
-          <p role="alert" className="text-xs text-red-700 dark:text-red-300">
-            {t('audit.loadError')}
-          </p>
-        </SidebarRow>
-      </>
+    void loadAudit().then(
+      nextEvaluation => {
+        if (active) setEvaluation(nextEvaluation);
+      },
+      () => {
+        if (active) setLoadFailed(true);
+      }
     );
-  }
 
-  if (evaluation === null) {
+    return () => {
+      active = false;
+    };
+  }, [cyclicDependenciesEnabled, evaluation, loadAudit, loadFailed]);
+
+  const toggleRule = () => {
+    if (cyclicDependenciesEnabled) {
+      onCycleHighlightsChange([]);
+      onCycleInspectionChange(null);
+    } else {
+      setLoadFailed(false);
+    }
+    toggleCyclicDependenciesEnabled();
+  };
+
+  if (evaluation !== null) {
     return (
-      <SidebarAccordionSection count={0} loading title={t('audit.rule.cyclicDependencies')}>
-        <SidebarRow>
-          <p aria-live="polite" className="text-xs text-neutral-500 dark:text-neutral-400">
-            {t('audit.loading')}
-          </p>
-        </SidebarRow>
-      </SidebarAccordionSection>
+      <AuditRuleList
+        enabled={cyclicDependenciesEnabled}
+        evaluation={evaluation}
+        onCycleHighlightsChange={onCycleHighlightsChange}
+        onCycleInspectionChange={onCycleInspectionChange}
+        onEnabledToggle={toggleRule}
+      />
     );
   }
 
   return (
-    <AuditRuleList evaluation={evaluation} onCycleHighlightsChange={onCycleHighlightsChange} />
+    <PendingCyclicRule
+      enabled={cyclicDependenciesEnabled}
+      loadFailed={loadFailed}
+      onEnabledToggle={toggleRule}
+    />
+  );
+}
+
+/*** Renders the always-present rule header before findings are available. */
+function PendingCyclicRule({ enabled, loadFailed, onEnabledToggle }: PendingCyclicRuleProps) {
+  return (
+    <>
+      <SidebarAccordionSection
+        action={
+          <ToggleSwitch
+            ariaLabel={t('audit.rule.cyclicDependencies')}
+            id="switch-cyclic-dependencies-enabled"
+            onToggle={onEnabledToggle}
+            value={enabled}
+          />
+        }
+        count={0}
+        disabled={!enabled || loadFailed}
+        loading={enabled && !loadFailed}
+        title={t('audit.rule.cyclicDependencies')}
+      >
+        {enabled && !loadFailed ? (
+          <SidebarRow>
+            <p aria-live="polite" className="text-xs text-neutral-500 dark:text-neutral-400">
+              {t('audit.loading')}
+            </p>
+          </SidebarRow>
+        ) : null}
+      </SidebarAccordionSection>
+      {loadFailed ? <LoadError /> : null}
+    </>
+  );
+}
+
+/*** Renders audit-loading failure feedback without replacing the rule category header. */
+function LoadError() {
+  return (
+    <SidebarRow>
+      <p role="alert" className="text-xs text-red-700 dark:text-red-300">
+        {t('audit.loadError')}
+      </p>
+    </SidebarRow>
   );
 }
 
 interface AuditRulePanelProps {
   readonly loadAudit: () => Promise<Audit['evaluation']>;
   readonly onCycleHighlightsChange: (highlights: readonly CycleHighlight[]) => void;
+  readonly onCycleInspectionChange: (inspection: CycleInspection | null) => void;
+}
+
+interface PendingCyclicRuleProps {
+  readonly enabled: boolean;
+  readonly loadFailed: boolean;
+  readonly onEnabledToggle: () => void;
 }

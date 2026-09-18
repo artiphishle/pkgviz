@@ -34,27 +34,42 @@ const cycles: readonly PackageCycleDetail[] = [
 ];
 
 describe('[AuditRuleList]', () => {
-  it('opens cyclic findings with a count badge and only cycle-level checkboxes', () => {
+  it('keeps cyclic findings compact with rule toggle and cycle-level checkboxes', () => {
     const { container, getByText } = render(
-      <AuditRuleList evaluation={failedEvaluation} onCycleHighlightsChange={() => undefined} />
+      <AuditRuleList
+        enabled
+        evaluation={failedEvaluation}
+        onCycleHighlightsChange={() => undefined}
+        onCycleInspectionChange={() => undefined}
+        onEnabledToggle={() => undefined}
+      />
     );
 
     expect(getByText('Cyclic Dependencies')).toBeDefined();
     expect(getByText('2')).toBeDefined();
     expect(getByText('app.a → app.b → app.a')).toBeDefined();
     expect(getByText('app.self → app.self')).toBeDefined();
+    expect(container.querySelectorAll('[role="switch"]').length).toBe(1);
     expect(container.querySelectorAll('input[type="checkbox"]').length).toBe(2);
+    expect(container.textContent?.includes('src/a.ts')).toBe(false);
   });
 
   it('disables an empty cyclic-dependencies category without pass/fail decoration', () => {
     const { container, getByText } = render(
-      <AuditRuleList evaluation={passedEvaluation} onCycleHighlightsChange={() => undefined} />
+      <AuditRuleList
+        enabled
+        evaluation={passedEvaluation}
+        onCycleHighlightsChange={() => undefined}
+        onCycleInspectionChange={() => undefined}
+        onEnabledToggle={() => undefined}
+      />
     );
 
     expect(getByText('Cyclic Dependencies')).toBeDefined();
     expect(container.querySelector('[data-disabled]') !== null).toBe(true);
     expect(container.textContent?.includes('Passed')).toBe(false);
     expect(container.textContent?.includes('Failed')).toBe(false);
+    expect(container.querySelectorAll('[role="switch"]').length).toBe(1);
     expect(container.querySelectorAll('input[type="checkbox"]').length).toBe(0);
   });
 });
