@@ -6,6 +6,7 @@ import { dirname, resolve } from 'node:path';
 import { spawn } from 'child_process';
 import { resolveFileSystemPathWithinRoot, writeFileWithinRoot } from '@ankhorage/utility/node/fs';
 import { getAuditAction } from '../src/app/actions/audit.actions';
+import { openBrowser } from '../src/cli/openBrowser';
 
 interface Opts {
   out: string;
@@ -113,16 +114,6 @@ function resolveNextBin(pkgRoot: string): string {
   );
   if (existsSync(local)) return local;
   return 'next'; // fallback to PATH
-}
-
-function openBrowser(url: string) {
-  const cmd =
-    process.platform === 'darwin'
-      ? ['open', url]
-      : process.platform === 'win32'
-        ? ['cmd', '/c', 'start', '', url]
-        : ['xdg-open', url];
-  spawn(cmd[0], cmd.slice(1), { detached: true, stdio: 'ignore' });
 }
 
 async function main() {
