@@ -9,7 +9,7 @@ export function openBrowser(url: string): void {
     throw new Error(`Unsupported browser URL protocol: ${parsedUrl.protocol}`);
   }
 
-  const href = parsedUrl.href;
+  const { href } = parsedUrl;
   const options = {
     detached: true,
     stdio: 'ignore' as const,
