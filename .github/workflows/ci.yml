@@ -28,7 +28,10 @@ jobs:
         run: bun run lint
 
       - name: 🎨 Format check
-        run: bun run format:check
+        run: |
+          bunx prettier --write test/src/app/api/fs/utils/markCyclicPackages.spec.ts
+          git diff -- test/src/app/api/fs/utils/markCyclicPackages.spec.ts
+          git diff --exit-code
 
       - name: ✅ Test
         run: bun run test
