@@ -19,6 +19,7 @@ const en: ILanguage = {
   'settings.rulesEnabled': 'Enabled',
   'settings.cyclicDependencies': 'Cyclic Dependencies',
   'settings.loadingRules': 'Loading findings…',
+  'settings.rulesLoadFailed': 'Unable to load findings',
   'settings.noCyclicDependencies': 'No cyclic dependencies',
   'settings.evidence': 'Evidence',
 
