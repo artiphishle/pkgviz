@@ -1,6 +1,8 @@
-import type { ParsedDirectory } from '@/shared/types';
+import { Language, type ParsedDirectory } from '@/shared/types';
 
-import { resolve } from 'node:path';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 import { describe, it } from 'node:test';
 import { expect } from '@artiphishle/testosterone/src/matchers';
 import { getParsedFileStructure } from '@/app/utils/getParsedFileStructure';
@@ -24,5 +26,31 @@ describe('[getParsedFileStructure]', () => {
     expect(comExampleMyappB['B.java'].className).toBe('B');
     expect(comExampleMyappC['C.java'].className).toBe('C');
     expect(comExampleMyappD['D.java'].className).toBe('D');
+  });
+
+  it('preserves __proto__ directories as own keys without prototype pollution', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'pkgviz-prototype-'));
+    const previousProjectPath = process.env.NEXT_PUBLIC_PROJECT_PATH;
+
+    try {
+      await mkdir(join(root, 'src', '__proto__'), { recursive: true });
+      await writeFile(join(root, 'src', '__proto__', 'module.py'), 'VALUE = 1\n');
+      process.env.NEXT_PUBLIC_PROJECT_PATH = root;
+
+      const parsedFileStructure = await getParsedFileStructure(Language.Python);
+      const protoDirectory = parsedFileStructure['__proto__'] as ParsedDirectory;
+
+      expect(Object.getPrototypeOf(parsedFileStructure)).toBe(null);
+      expect(Object.prototype.hasOwnProperty.call(parsedFileStructure, '__proto__')).toBe(true);
+      expect(Object.getPrototypeOf(protoDirectory)).toBe(null);
+      expect(Object.prototype.hasOwnProperty.call(protoDirectory, 'module.py')).toBe(true);
+    } finally {
+      if (previousProjectPath === undefined) {
+        delete process.env.NEXT_PUBLIC_PROJECT_PATH;
+      } else {
+        process.env.NEXT_PUBLIC_PROJECT_PATH = previousProjectPath;
+      }
+      await rm(root, { recursive: true, force: true });
+    }
   });
 });
