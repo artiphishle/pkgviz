@@ -33,7 +33,6 @@ it('reports incomplete scans rather than treating partial evidence as complete',
   }
 });
 
-
 it('normalizes an unavailable inspection root to a project path error', async () => {
   const root = await mkdtemp(join(tmpdir(), 'pkgviz-missing-'));
   await rm(root, { recursive: true, force: true });
