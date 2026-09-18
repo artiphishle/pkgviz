@@ -8,12 +8,25 @@ import { Cytoscape } from '@/components/Cytoscape';
 import Header from '@/components/Header';
 import Loader from '@/components/Loader';
 import Settings from '@/components/Settings';
-import { SettingsProvider } from '@/contexts/SettingsContext';
+import { useSettings, SettingsProvider } from '@/contexts/SettingsContext';
+import { AuditRulesSettings } from '@/features/audit/adapters/inbound/react/AuditRulesSettings';
+import { useAuditRuleControls } from '@/features/audit/adapters/inbound/react/useAuditRuleControls';
 
-/*** Renders the PKGViz home screen. */
+/*** Renders the PKGViz home screen within persisted settings state. */
 export default function HomeScreen() {
+  return (
+    <SettingsProvider>
+      <HomeContent />
+    </SettingsProvider>
+  );
+}
+
+/*** Composes graph settings, audit-rule controls, and graph visualization at the screen boundary. */
+function HomeContent() {
   const [currentPackage, setCurrentPackage] = useState<string>('');
   const [packageGraph, setPackageGraph] = useState<ElementsDefinition | null>(null);
+  const { rulesEnabled, toggleRulesEnabled } = useSettings();
+  const auditRuleControls = useAuditRuleControls(rulesEnabled);
 
   useEffect(() => {
     if (!packageGraph) {
@@ -30,20 +43,26 @@ export default function HomeScreen() {
         />
       </Header>
 
-      <SettingsProvider>
-        <main data-testid="main" className="flex flex-1 flex-row dark:bg-[#171717]">
-          <Settings />
-          {packageGraph ? (
-            <Cytoscape
-              currentPackage={currentPackage}
-              setCurrentPackage={setCurrentPackage}
-              packageGraph={packageGraph}
-            />
-          ) : (
-            <Loader />
-          )}
-        </main>
-      </SettingsProvider>
+      <main data-testid="main" className="flex flex-1 flex-row dark:bg-[#171717]">
+        <Settings>
+          <AuditRulesSettings
+            controls={auditRuleControls}
+            enabled={rulesEnabled}
+            onToggleEnabled={toggleRulesEnabled}
+          />
+        </Settings>
+
+        {packageGraph ? (
+          <Cytoscape
+            currentPackage={currentPackage}
+            setCurrentPackage={setCurrentPackage}
+            packageGraph={packageGraph}
+            cycleHighlights={auditRuleControls.highlights}
+          />
+        ) : (
+          <Loader />
+        )}
+      </main>
     </>
   );
 }
