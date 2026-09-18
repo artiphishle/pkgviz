@@ -1,9 +1,9 @@
 'use server';
-import type { ParsedFile, MethodCall, MethodDefinition, ImportDefinition } from '@/shared/types';
-
 import fs from 'node:fs';
 import path from 'node:path';
+
 import { extractPythonPackageFromImport } from '@/app/utils/parser/python/extractPythonPackageFromImport';
+import type { ImportDefinition, MethodCall, MethodDefinition, ParsedFile } from '@/shared/types';
 
 /**
  * Extracts module path from Python __init__.py structure.
@@ -68,7 +68,7 @@ function extractImports(content: string): ImportDefinition[] {
  */
 function extractClassName(content: string, fileName: string): string {
   // Try to find class declaration
-  const classMatch = content.match(/^class\s+([A-Za-z0-9_]+)/m);
+  const classMatch = /^class\s+([A-Za-z0-9_]+)/m.exec(content);
   if (classMatch) {
     return classMatch[1];
   }

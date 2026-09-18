@@ -1,16 +1,16 @@
 'use server';
-import type { ParsedFile, MethodCall, MethodDefinition } from '@/shared/types';
-
 import fs from 'node:fs';
 import path from 'node:path';
-import { getIntrinsicPackagesRecursive } from '@/app/utils/parser/java/getIntrinsicPackagesRecursive';
+
 import { extractJavaPackageFromImport } from '@/app/utils/parser/java/extractJavaPackageFromImport';
+import { getIntrinsicPackagesRecursive } from '@/app/utils/parser/java/getIntrinsicPackagesRecursive';
+import type { MethodCall, MethodDefinition, ParsedFile } from '@/shared/types';
 
 /**
  * Extracts the package declaration from Java code.
  */
 function extractPackageName(content: string): string {
-  const match = content.match(/^package\s+([a-zA-Z0-9_.]+);/m);
+  const match = /^package\s+([a-zA-Z0-9_.]+);/m.exec(content);
   return match?.[1] || '';
 }
 
@@ -29,7 +29,7 @@ function extractClassName(content: string, fileName: string): string {
   const classNameMatch = content.match(classPattern);
   if (classNameMatch) return fileName;
 
-  const fallback = content.match(/(?:public\s+)?(class|interface|enum|record)\s+([A-Za-z0-9_]+)/);
+  const fallback = /(?:public\s+)?(class|interface|enum|record)\s+([A-Za-z0-9_]+)/.exec(content);
   return fallback?.[2] || '';
 }
 

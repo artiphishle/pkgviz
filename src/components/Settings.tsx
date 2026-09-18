@@ -1,13 +1,14 @@
 'use client';
-import dynamic from 'next/dynamic';
 import { ChevronDownIcon, DownloadIcon } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { Select, Slider } from 'radix-ui';
 import type React from 'react';
+
+import { downloadAuditJsonAction, downloadAuditXmlAction } from '@/app/actions/audit.actions';
 import Setting from '@/components/Setting';
 import Switch from '@/components/Switch';
 import { useSettings } from '@/contexts/SettingsContext';
 import { t } from '@/i18n/i18n';
-import { downloadAuditJsonAction, downloadAuditXmlAction } from '@/app/actions/audit.actions';
 
 const Settings: React.FC = () => {
   const {

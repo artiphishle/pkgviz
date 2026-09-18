@@ -1,15 +1,15 @@
 'use server';
-import type { ParsedFile, MethodCall, MethodDefinition, ImportDefinition } from '@/shared/types';
-
 import fs from 'node:fs';
 import path from 'node:path';
+
 import { extractPackageFromImport } from '@/app/utils/parser/kotlin/extractPackageFromImport';
+import type { ImportDefinition, MethodCall, MethodDefinition, ParsedFile } from '@/shared/types';
 
 /**
  * Extracts package declaration from Kotlin content.
  */
 function extractPackage(content: string): string {
-  const packageMatch = content.match(/^\s*package\s+([\w.]+)/m);
+  const packageMatch = /^\s*package\s+([\w.]+)/m.exec(content);
   return packageMatch ? packageMatch[1] : '';
 }
 
@@ -46,9 +46,10 @@ function extractImports(content: string): ImportDefinition[] {
  */
 function extractClassName(content: string, fileName: string): string {
   // Try to find class/object/interface declaration
-  const classMatch = content.match(
-    /(?:^|\n)\s*(?:data\s+|sealed\s+|abstract\s+|open\s+)?(?:class|object|interface)\s+([A-Za-z0-9_]+)/m
-  );
+  const classMatch =
+    /(?:^|\n)\s*(?:data\s+|sealed\s+|abstract\s+|open\s+)?(?:class|object|interface)\s+([A-Za-z0-9_]+)/m.exec(
+      content
+    );
 
   if (classMatch) {
     return classMatch[1];
@@ -71,11 +72,7 @@ function extractMethodDefinitions(content: string): MethodDefinition[] {
   let match;
   while ((match = methodRegex.exec(content)) !== null) {
     const visibility = (match[1] || 'public') as
-      | 'public'
-      | 'protected'
-      | 'private'
-      | 'internal'
-      | 'default';
+      'public' | 'protected' | 'private' | 'internal' | 'default';
     const name = match[2];
     const paramsStr = match[3];
     const returnType = match[4]?.trim() || 'Unit';
@@ -87,7 +84,7 @@ function extractMethodDefinitions(content: string): MethodDefinition[] {
       .filter(p => p)
       .map(p => {
         // Extract parameter name (before colon)
-        const paramMatch = p.match(/([a-zA-Z_][a-zA-Z0-9_]*)\s*:/);
+        const paramMatch = /([a-zA-Z_][a-zA-Z0-9_]*)\s*:/.exec(p);
         return paramMatch ? paramMatch[1] : p;
       });
 

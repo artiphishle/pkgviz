@@ -105,10 +105,10 @@ export function getMaxDepthByRoot(elements: ElementsDefinition): Record<string, 
  */
 export function filterSubPackagesByDepth(
   elements: ElementsDefinition,
-  allowSelfLoops: boolean = false,
-  maxDepth: number = 1
+  allowSelfLoops = false,
+  maxDepth = 1
 ): ElementsDefinition {
-  const allPackages = elements.nodes.map(n => n.data.id as string);
+  const allPackages = elements.nodes.map(n => n.data.id!);
   const existingSet = new Set(allPackages);
 
   // 1) Identify minimal roots (no ancestor present)
@@ -125,14 +125,14 @@ export function filterSubPackagesByDepth(
 
   // 3) Visible nodes = unique set of chosen ancestors
   const visibleNodeIds = new Set<string>(pkgToVisible.values());
-  const filteredNodes = elements.nodes.filter(n => visibleNodeIds.has(n.data.id as string));
+  const filteredNodes = elements.nodes.filter(n => visibleNodeIds.has(n.data.id!));
 
   // 4) Lift & aggregate edges to visible ancestors (sum weights)
   const edgeMap = new Map<string, EdgeDefinition>();
 
   for (const e of elements.edges) {
-    const rawSource = e.data.source as string;
-    const rawTarget = e.data.target as string;
+    const rawSource = e.data.source;
+    const rawTarget = e.data.target;
 
     const liftedSource = pkgToVisible.get(rawSource) ?? rawSource;
     const liftedTarget = pkgToVisible.get(rawTarget) ?? rawTarget;

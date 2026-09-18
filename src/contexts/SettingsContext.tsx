@@ -1,6 +1,6 @@
 import type { LayoutOptions } from 'cytoscape';
+import React, { createContext, type PropsWithChildren, use } from 'react';
 
-import React, { createContext, use, type PropsWithChildren } from 'react';
 import {
   getCytoscapeLayout,
   getCytoscapeLayoutSpacing,

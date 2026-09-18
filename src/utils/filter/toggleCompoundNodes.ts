@@ -1,4 +1,4 @@
-import { ElementsDefinition } from 'cytoscape';
+import type { ElementsDefinition } from 'cytoscape';
 
 /**
  * Toggles display of compound nodes ('parent' attribute) in the node

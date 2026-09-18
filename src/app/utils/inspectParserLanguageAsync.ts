@@ -1,4 +1,5 @@
 import { inspectProjectAsync } from '@ankhorage/project-detector/node';
+
 import type { ParserSelection } from '../../types/parserSelection';
 import { selectParserLanguage } from './selectParserLanguage';
 

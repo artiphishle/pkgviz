@@ -1,17 +1,17 @@
 'use server';
-import type { ParsedDirectory } from '@/shared/types';
-import type { ParserSelection } from '@/types/parserSelection';
+import { js2xml } from 'xml-js';
 
+import { buildGraph } from '@/app/utils/buildGraph';
 import { getParsedFileStructure } from '@/app/utils/getParsedFileStructure';
 import { inspectParserLanguageAsync } from '@/app/utils/inspectParserLanguageAsync';
 import {
   getPackageCyclesWithMembers,
   type PackageCycleDetail,
 } from '@/app/utils/markCyclicPackages';
-import { buildGraph } from '@/app/utils/buildGraph';
-import { parseProjectPath } from '@/shared/utils/parseProjectPath';
+import type { ParsedDirectory } from '@/shared/types';
 import { getProjectName } from '@/shared/utils/getProjectName';
-import { js2xml } from 'xml-js';
+import { parseProjectPath } from '@/shared/utils/parseProjectPath';
+import type { ParserSelection } from '@/types/parserSelection';
 
 export async function getAuditAction(): Promise<Audit> {
   const projectPath = parseProjectPath();

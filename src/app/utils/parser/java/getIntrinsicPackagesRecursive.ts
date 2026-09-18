@@ -1,8 +1,9 @@
 'use server';
 import { readdirSync } from 'node:fs';
 import { relative, resolve } from 'node:path';
-import { parseProjectPath } from '@/shared/utils/parseProjectPath';
+
 import { JAVA_ROOT } from '@/shared/constants';
+import { parseProjectPath } from '@/shared/utils/parseProjectPath';
 
 export async function getIntrinsicPackagesRecursive(
   root: string = parseProjectPath(),

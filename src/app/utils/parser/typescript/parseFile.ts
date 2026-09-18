@@ -1,11 +1,12 @@
-import type { ParsedFile, MethodCall, MethodDefinition, ImportDefinition } from '@/shared/types';
-
 import fs from 'node:fs/promises';
 import { basename, relative, resolve } from 'node:path';
+
 import ts from 'typescript';
+
 import { extractTypeScriptPackageFromImport } from '@/app/utils/parser/typescript/extractTypeScriptPackageFromImport';
-import { toPosix } from '@/shared/utils/toPosix';
+import type { ImportDefinition, MethodCall, MethodDefinition, ParsedFile } from '@/shared/types';
 import { parseProjectPath } from '@/shared/utils/parseProjectPath';
+import { toPosix } from '@/shared/utils/toPosix';
 
 /**
  * Extracts import statements from TypeScript code.
@@ -51,7 +52,7 @@ function extractImports(content: string, filename: string): ImportDefinition[] {
  * Extracts the class name from the content and filename fallback.
  */
 function extractClassName(content: string, fileName: string): string {
-  const classMatch = content.match(/class\s+(\w+)/);
+  const classMatch = /class\s+(\w+)/.exec(content);
   if (classMatch) {
     return classMatch[1];
   }

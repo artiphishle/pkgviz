@@ -1,12 +1,13 @@
 'use server';
+import { relative } from 'node:path';
+
 import type { ElementsDefinition } from 'cytoscape';
 
-import { markCyclicPackagesWithEvidence } from '@/app/utils/markCyclicPackages';
-import { getParsedFileStructure } from '@/app/utils/getParsedFileStructure';
 import { buildGraph } from '@/app/utils/buildGraph';
-import { relative } from 'node:path';
-import { inspectParserLanguageAsync } from '@/app/utils/inspectParserLanguageAsync';
+import { getParsedFileStructure } from '@/app/utils/getParsedFileStructure';
 import { resolveRoot } from '@/app/utils/getParsedFileStructure';
+import { inspectParserLanguageAsync } from '@/app/utils/inspectParserLanguageAsync';
+import { markCyclicPackagesWithEvidence } from '@/app/utils/markCyclicPackages';
 import { parseProjectPath } from '@/shared/utils/parseProjectPath';
 
 export async function getGraphAction(): Promise<ElementsDefinition> {

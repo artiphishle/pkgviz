@@ -1,4 +1,5 @@
 import type { ProjectDetection } from '@ankhorage/project-detector/types';
+
 import { Language } from '../../shared/types';
 import type { ParserSelection } from '../../types/parserSelection';
 

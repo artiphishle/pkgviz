@@ -1,13 +1,13 @@
 'use client';
 import type { ElementsDefinition } from 'cytoscape';
-
 import { useEffect, useState } from 'react';
+
 import { getGraphAction } from '@/app/actions/graph.actions';
 import Breadcrumb from '@/components/Breadcrumb';
+import { Cytoscape } from '@/components/Cytoscape';
 import Header from '@/components/Header';
 import Loader from '@/components/Loader';
 import Settings from '@/components/Settings';
-import { Cytoscape } from '@/components/Cytoscape';
 import { SettingsProvider } from '@/contexts/SettingsContext';
 
 export default function HomeScreen() {
