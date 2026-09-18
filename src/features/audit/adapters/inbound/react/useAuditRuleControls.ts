@@ -20,7 +20,12 @@ export function useAuditRuleControls(enabled: boolean): AuditRuleControlState {
     let cancelled = false;
     void getAuditEvaluationAction()
       .then(result => {
-        if (!cancelled) setEvaluation(result);
+        if (cancelled) return;
+        if (result.ok) {
+          setEvaluation(result.value);
+        } else {
+          setLoadFailed(true);
+        }
       })
       .catch(() => {
         if (!cancelled) setLoadFailed(true);
