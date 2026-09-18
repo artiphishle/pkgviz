@@ -37,6 +37,7 @@
     "@ankhorage/graph": "^0.1.2",
     "@ankhorage/graph-cytoscape": "^0.1.1",
     "@ankhorage/project-detector": "^0.1.0",
+    "@ankhorage/utility": "^1.2.1",
     "@artiphishle/testosterone": "^0.3.9",
     "cytoscape": "^3.34.3",
     "cytoscape-elk": "^2.3.0",

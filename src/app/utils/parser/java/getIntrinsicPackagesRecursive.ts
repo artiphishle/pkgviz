@@ -1,6 +1,10 @@
 'use server';
-import { readdirSync } from 'node:fs';
 import { relative, resolve } from 'node:path';
+
+import {
+  readDirectoryWithinRoot,
+  resolveFileSystemPathWithinRoot,
+} from '@ankhorage/utility/node/fs';
 
 import { JAVA_ROOT } from '@/shared/constants';
 import { parseProjectPath } from '@/shared/utils/parseProjectPath';
@@ -12,10 +16,11 @@ export async function getIntrinsicPackagesRecursive(
   currentPath?: string,
   results: string[] = []
 ) {
-  const basePath = resolve(root, JAVA_ROOT);
-  const dirPath = currentPath ?? basePath;
-
-  const entries = readdirSync(dirPath, { withFileTypes: true });
+  const basePath = resolveFileSystemPathWithinRoot(root, JAVA_ROOT);
+  const { entries, path: dirPath } = readDirectoryWithinRoot({
+    rootPath: basePath,
+    directoryPath: currentPath ?? basePath,
+  });
 
   const subdirs = entries.filter(e => e.isDirectory());
   const javaFiles = entries.filter(e => e.isFile() && e.name.endsWith('.java'));

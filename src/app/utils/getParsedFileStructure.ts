@@ -1,6 +1,11 @@
 'use server';
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
+
+import {
+  readDirectoryWithinRoot,
+  resolveFileSystemPathWithinRoot,
+} from '@ankhorage/utility/node/fs';
 
 import { parseCppFile } from '@/app/utils/parser/cpp/parseCppFile';
 import { parseDelphiFile } from '@/app/utils/parser/delphi/parseFile';
@@ -19,9 +24,11 @@ import { inspectParserLanguageAsync } from './inspectParserLanguageAsync';
  * Returns resolved root
  */
 async function resolveRoot(dir: string, detectedLanguage: Language) {
+  const projectRoot = resolveFileSystemPathWithinRoot(dir, '.', { allowRoot: true });
+
   switch (detectedLanguage) {
     case Language.Java: {
-      const javaRoot = toPosix(path.resolve(dir, JAVA_ROOT));
+      const javaRoot = toPosix(resolveFileSystemPathWithinRoot(projectRoot, JAVA_ROOT));
       if (!existsSync(javaRoot)) {
         console.error('Failed to find:', JAVA_ROOT);
         throw new Error(`Invalid Java project structure. Missing ${JAVA_ROOT}`);
@@ -31,15 +38,15 @@ async function resolveRoot(dir: string, detectedLanguage: Language) {
 
     case Language.TypeScript:
       // Normalize to an absolute project root
-      return toPosix(path.resolve(dir));
+      return toPosix(projectRoot);
 
     case Language.Cpp:
       // For C++, look for src directory or use project root
-      const cppSrcRoot = toPosix(path.resolve(dir, 'src'));
+      const cppSrcRoot = toPosix(resolveFileSystemPathWithinRoot(projectRoot, 'src'));
       if (existsSync(cppSrcRoot)) {
         return cppSrcRoot;
       }
-      return toPosix(path.resolve(dir));
+      return toPosix(projectRoot);
 
     case Language.Python:
       // For Python, look for src directory or use project root
@@ -48,11 +55,11 @@ async function resolveRoot(dir: string, detectedLanguage: Language) {
         return pythonSrcRoot;
       }
       // Also check for common Python app structure
-      const appRoot = toPosix(path.resolve(dir, 'app'));
+      const appRoot = toPosix(resolveFileSystemPathWithinRoot(projectRoot, 'app'));
       if (existsSync(appRoot)) {
         return appRoot;
       }
-      return toPosix(path.resolve(dir));
+      return toPosix(projectRoot);
 
     case Language.Delphi:
       // For Delphi, look for common source directories
@@ -61,15 +68,17 @@ async function resolveRoot(dir: string, detectedLanguage: Language) {
         return delphiSrcRoot;
       }
       // Also check for Source directory (common in Delphi projects)
-      const sourceRoot = toPosix(path.resolve(dir, 'Source'));
+      const sourceRoot = toPosix(resolveFileSystemPathWithinRoot(projectRoot, 'Source'));
       if (existsSync(sourceRoot)) {
         return sourceRoot;
       }
-      return toPosix(path.resolve(dir));
+      return toPosix(projectRoot);
 
     case Language.Kotlin:
       // For Kotlin, look for src/main/kotlin directory (Gradle/Maven structure)
-      const kotlinSrcRoot = toPosix(path.resolve(dir, 'src/main/kotlin'));
+      const kotlinSrcRoot = toPosix(
+        resolveFileSystemPathWithinRoot(projectRoot, 'src/main/kotlin')
+      );
       if (existsSync(kotlinSrcRoot)) {
         return kotlinSrcRoot;
       }
@@ -78,7 +87,7 @@ async function resolveRoot(dir: string, detectedLanguage: Language) {
       if (existsSync(kotlinAltSrcRoot)) {
         return kotlinAltSrcRoot;
       }
-      return toPosix(path.resolve(dir));
+      return toPosix(projectRoot);
 
     default:
       throw new Error(`Invalid file structure for ${detectedLanguage}`);
@@ -94,17 +103,11 @@ async function readDirRecursively(
   projectRoot: string,
   language: Language
 ): Promise<ParsedDirectory> {
-  const resolvedRoot = path.resolve(projectRoot);
-  const resolvedDir = path.resolve(dir);
-
-  // Validate dir is inside projectRoot (avoid path traversal / accidental escapes)
-  const relative = path.relative(resolvedRoot, resolvedDir);
-  if (relative.startsWith('..') || path.isAbsolute(relative)) {
-    throw new Error(`Path traversal detected: ${dir} is outside of project root ${projectRoot}`);
-  }
-
-  // 1. Read current directory
-  const entries = readdirSync(resolvedDir, { withFileTypes: true });
+  // 1. Read the current directory through the shared rooted-filesystem boundary.
+  const { entries, path: resolvedDir } = readDirectoryWithinRoot({
+    rootPath: projectRoot,
+    directoryPath: dir,
+  });
 
   const ignores = [
     '@types',
