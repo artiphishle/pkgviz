@@ -1,6 +1,6 @@
-import fs from 'node:fs/promises';
 import { basename, relative, resolve } from 'node:path';
 
+import { readTextFileWithinRoot } from '@ankhorage/utility/node/fs';
 import ts from 'typescript';
 
 import { extractTypeScriptPackageFromImport } from '@/app/utils/parser/typescript/extractTypeScriptPackageFromImport';
@@ -117,15 +117,18 @@ function extractMethodCalls(content: string): MethodCall[] {
  * Parses a TypeScript file and returns metadata useful for diagram generation.
  */
 export async function parseFile(fullPath: string, projectRoot: string): Promise<ParsedFile> {
-  const posixFullPath = toPosix(fullPath);
-  const content = await fs.readFile(posixFullPath, 'utf-8');
+  const { content, path: resolvedPath } = readTextFileWithinRoot({
+    rootPath: projectRoot,
+    filePath: fullPath,
+  });
+  const posixFullPath = toPosix(resolvedPath);
   const relativePath = toPosix(relative(projectRoot, posixFullPath));
   const segments = relativePath.split('/');
   const segmentedPath = segments.slice(0, -1);
 
   return {
-    className: extractClassName(content, fullPath),
-    imports: extractImports(content, fullPath),
+    className: extractClassName(content, posixFullPath),
+    imports: extractImports(content, posixFullPath),
     methods: extractMethodDefinitions(content),
     calls: extractMethodCalls(content),
     package: segmentedPath.join('.'),
