@@ -16,10 +16,7 @@ const SettingsContext = createContext<ISettingsContext | null>(null);
 
 /*** Provides persisted graph settings to the application. */
 export const SettingsProvider = ({ children }: PropsWithChildren) => {
-  const [maxSubPackageDepth, setMaxSubPackageDepth] = useLocalStorage<number>(
-    'maxSubPackageDepth',
-    1
-  );
+  const [maxSubPackageDepth, setMaxSubPackageDepth] = useMaxSubPackageDepthSetting();
   const [rulesEnabled, toggleRulesEnabled] = useRulesEnabledSetting();
   const [showCompoundNodes, setShowCompoundNodes] = useLocalStorage<boolean>(
     'showCompoundNodes',
@@ -70,6 +67,11 @@ export const SettingsProvider = ({ children }: PropsWithChildren) => {
     </SettingsContext>
   );
 };
+
+/*** Owns the persisted maximum package-depth state. */
+function useMaxSubPackageDepthSetting() {
+  return useLocalStorage<number>('maxSubPackageDepth', 1);
+}
 
 /*** Owns the persisted audit-rule visualization setting. */
 function useRulesEnabledSetting() {
