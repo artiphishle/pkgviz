@@ -1,0 +1,49 @@
+name: Devtools bootstrap
+
+on:
+  push:
+    branches:
+      - chore/add-agents-instructions
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: chore/add-agents-instructions
+          fetch-depth: 0
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.2'
+
+      - name: Install current dependencies
+        run: bun install
+
+      - name: Install Devtools
+        run: bun add -D @ankhorage/devtools
+
+      - name: Sync managed repository tooling
+        run: |
+          bunx @ankhorage/ankh devtools package sync .
+          bunx @ankhorage/ankh devtools skills sync .
+          bunx @ankhorage/ankh devtools eslint sync .
+          bunx @ankhorage/ankh devtools prettier sync .
+          bunx @ankhorage/ankh devtools knip sync .
+          bunx @ankhorage/ankh devtools vscode sync .
+
+      - name: Commit synchronized tooling
+        run: |
+          if git diff --quiet && git diff --cached --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --all
+          git commit -m "chore: sync Devtools repository tooling [skip ci]"
+          git push origin HEAD:chore/add-agents-instructions
