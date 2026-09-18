@@ -55,14 +55,24 @@ For graph/dependency modularization, follow issue #142:
 
 ## Required repository instructions
 
-Before changing any file, read this `AGENTS.md` completely.
+Before changing any file, read this `AGENTS.md` completely and inspect `.agents/skills/`.
 
-If `.agents/skills/` exists, inspect it before editing and load every repository-local skill whose
-description or requirements match the task. Repository-local instructions take precedence over
-remembered or generic guidance.
+PKGViz explicitly adopts the repository-local Ankhorage engineering standards below. Their
+requirements are mandatory for PKGViz even where the skill text describes Ankhorage repositories.
 
-When automation later installs managed Ankhorage skills, use the repository-local versions rather
-than copying rules from another repository.
+For every implementation, refactoring, testing, review, or pull-request delivery task, load:
+
+1. `.agents/skills/ankhorage-coding-rules/SKILL.md`
+2. `.agents/skills/ankhorage-project-structure/SKILL.md` when source ownership, package boundaries,
+   type/utility placement, public entrypoints, CLI structure, or source architecture are involved
+3. `.agents/skills/hexagonal-architecture/SKILL.md` whenever the project-structure skill requires
+   it or when feature/application boundaries are changed
+
+These are target-architecture obligations, not permission for a big-bang rewrite. Existing PKGViz
+areas migrate through focused, regression-protected changes, while new and materially changed
+architecture must follow the current rules.
+
+When automation later manages these files, continue using the repository-local versions.
 
 ## Testing and regression coverage
 
