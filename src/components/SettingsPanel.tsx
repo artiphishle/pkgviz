@@ -1,48 +1,23 @@
 'use client';
-import { ChevronDownIcon, DownloadIcon } from 'lucide-react';
+import { ChevronDownIcon } from 'lucide-react';
 import { Select, Slider } from 'radix-ui';
 import React from 'react';
 
-import { downloadAuditJsonAction, downloadAuditXmlAction } from '@/app/actions/audit.actions';
 import { SidebarRow } from '@/components/sidebar/SidebarRow';
 import { SidebarSection } from '@/components/sidebar/SidebarSection';
 import Switch from '@/components/Switch';
 import { useSettings } from '@/contexts/SettingsContext';
 import { t } from '@/i18n/i18n';
 
-/*** Renders graph and rule settings using the shared application-sidebar primitives. */
-export function SettingsPanel({ rules }: SettingsPanelProps) {
+/*** Renders the persistent first-rank graph controls below secondary sidebar tools. */
+export function SettingsPanel() {
   return (
     <>
-      <DownloadSettings />
       <FilterSettings />
       <SubPackageDepthSettings />
       <LayoutSettings />
       <LayoutSpacingSettings />
-      <SidebarSection title={t('settings.rules')}>{rules}</SidebarSection>
     </>
-  );
-}
-
-/*** Renders audit-download settings using the shared sidebar category styling. */
-function DownloadSettings() {
-  return (
-    <SidebarSection title={t('settings.download')}>
-      <SidebarRow>
-        <DownloadButton
-          format="JSON"
-          onDownload={downloadAuditJsonAction}
-          mimeType="application/json"
-        />
-      </SidebarRow>
-      <SidebarRow>
-        <DownloadButton
-          format="XML"
-          onDownload={downloadAuditXmlAction}
-          mimeType="application/xml"
-        />
-      </SidebarRow>
-    </SidebarSection>
   );
 }
 
@@ -82,7 +57,7 @@ function SubPackageDepthSettings() {
   const { maxSubPackageDepth, setSubPackageDepth, subPackageDepth } = useSettings();
 
   return (
-    <SidebarSection title={`${t('settings.subPackageDepth')}: ${subPackageDepth}`}>
+    <SidebarSection title={t('settings.subPackageDepth') + ': ' + subPackageDepth}>
       <SidebarRow>
         <SettingsSlider
           ariaLabel={t('settings.subPackageDepth')}
@@ -149,7 +124,7 @@ function LayoutSpacingSettings() {
   const { cytoscapeLayoutSpacing, setCytoscapeLayoutSpacing } = useSettings();
 
   return (
-    <SidebarSection title={`${t('settings.layoutSpacing')}: ${cytoscapeLayoutSpacing}`}>
+    <SidebarSection title={t('settings.layoutSpacing') + ': ' + cytoscapeLayoutSpacing}>
       <SidebarRow>
         <SettingsSlider
           ariaLabel={t('settings.layoutSpacing')}
@@ -184,28 +159,6 @@ function SettingsSlider({ ariaLabel, max, min, onValueChange, step, value }: Set
   );
 }
 
-/*** Downloads one serialized audit format from its server action. */
-function DownloadButton({ format, mimeType, onDownload }: DownloadButtonProps) {
-  return (
-    <button
-      onClick={async () => {
-        const { data, filename } = await onDownload();
-        const blob = new Blob([data], { type: mimeType });
-        const url = URL.createObjectURL(blob);
-        const anchor = document.createElement('a');
-        anchor.href = url;
-        anchor.download = filename;
-        anchor.click();
-        URL.revokeObjectURL(url);
-      }}
-      className="flex cursor-pointer items-center text-xs hover:text-blue-600 dark:hover:text-blue-400"
-    >
-      <DownloadIcon size={10} className="mr-1.5" />
-      <span>{format}</span>
-    </button>
-  );
-}
-
 interface SettingsSliderProps {
   readonly ariaLabel: string;
   readonly max: number;
@@ -213,14 +166,4 @@ interface SettingsSliderProps {
   readonly onValueChange: (value: number) => void;
   readonly step: number;
   readonly value: number;
-}
-
-interface DownloadButtonProps {
-  readonly format: string;
-  readonly mimeType: string;
-  readonly onDownload: () => Promise<{ data: string; filename: string }>;
-}
-
-interface SettingsPanelProps {
-  readonly rules: React.ReactNode;
 }

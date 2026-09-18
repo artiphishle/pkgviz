@@ -4,18 +4,20 @@ import React from 'react';
 import { SidebarTabs } from '@/components/sidebar/SidebarTabs';
 
 describe('[SidebarTabs]', () => {
-  it('keeps mutually exclusive sidebar views available as a reusable primitive', () => {
+  it('supports disabled secondary tabs while leaving Export available', () => {
     const { getByText } = render(
       <SidebarTabs
+        ariaLabel="Sidebar tools"
+        value={null}
+        onValueChange={() => undefined}
         tabs={[
-          { id: 'one', label: 'One', content: <span>First</span> },
-          { id: 'two', label: 'Two', content: <span>Second</span> },
+          { id: 'rules', label: 'Rules', content: <span>Rules content</span>, disabled: true },
+          { id: 'export', label: 'Export', content: <span>Export content</span> },
         ]}
       />
     );
 
-    expect(getByText('One')).toBeDefined();
-    expect(getByText('Two')).toBeDefined();
-    expect(getByText('First')).toBeDefined();
+    expect(getByText('Rules').closest('button')?.hasAttribute('disabled')).toBe(true);
+    expect(getByText('Export').closest('button')?.hasAttribute('disabled')).toBe(false);
   });
 });

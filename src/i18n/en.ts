@@ -8,11 +8,11 @@ const en: ILanguage = {
   // Settings
   'settings.title': 'Settings',
   'settings.rules': 'Rules',
-  'sidebar.navigation': 'Sidebar sections',
+  'settings.export': 'Export',
+  'sidebar.tools': 'Sidebar tools',
   'settings.showCompoundNodes': 'Show Compound Nodes',
   'settings.showVendorPackages': 'Show Vendor',
   'settings.subPackageDepth': 'Subpackage depth',
-  'settings.download': 'Download',
   'settings.layout': 'Layout',
   'settings.layoutSpacing': 'Layout Spacing',
   'settings.filter': 'Filter',

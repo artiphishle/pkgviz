@@ -20,11 +20,7 @@ const cycles: readonly PackageCycleDetail[] = [
           },
         ],
       },
-      {
-        from: 'app.b',
-        to: 'app.a',
-        via: [],
-      },
+      { from: 'app.b', to: 'app.a', via: [] },
     ],
   },
   {
@@ -34,14 +30,12 @@ const cycles: readonly PackageCycleDetail[] = [
 ];
 
 describe('[AuditRuleList]', () => {
-  it('keeps cyclic findings compact with rule toggle and cycle-level checkboxes', () => {
+  it('shows violated cycles compactly and selects every cycle by default', () => {
     const { container, getByText } = render(
       <AuditRuleList
-        enabled
         evaluation={failedEvaluation}
         onCycleHighlightsChange={() => undefined}
         onCycleInspectionChange={() => undefined}
-        onEnabledToggle={() => undefined}
       />
     );
 
@@ -49,28 +43,25 @@ describe('[AuditRuleList]', () => {
     expect(getByText('2')).toBeDefined();
     expect(getByText('app.a → app.b → app.a')).toBeDefined();
     expect(getByText('app.self → app.self')).toBeDefined();
-    expect(container.querySelectorAll('[role="switch"]').length).toBe(1);
-    expect(container.querySelectorAll('input[type="checkbox"]').length).toBe(2);
+
+    const checkboxes = Array.from(
+      container.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')
+    );
+    expect(checkboxes.length).toBe(2);
+    expect(checkboxes.every(checkbox => checkbox.checked)).toBe(true);
     expect(container.textContent?.includes('src/a.ts')).toBe(false);
   });
 
-  it('disables an empty cyclic-dependencies category without pass/fail decoration', () => {
-    const { container, getByText } = render(
+  it('does not render satisfied rules in the Rules tab', () => {
+    const { container } = render(
       <AuditRuleList
-        enabled
         evaluation={passedEvaluation}
         onCycleHighlightsChange={() => undefined}
         onCycleInspectionChange={() => undefined}
-        onEnabledToggle={() => undefined}
       />
     );
 
-    expect(getByText('Cyclic Dependencies')).toBeDefined();
-    expect(container.querySelector('[data-disabled]') !== null).toBe(true);
-    expect(container.textContent?.includes('Passed')).toBe(false);
-    expect(container.textContent?.includes('Failed')).toBe(false);
-    expect(container.querySelectorAll('[role="switch"]').length).toBe(1);
-    expect(container.querySelectorAll('input[type="checkbox"]').length).toBe(0);
+    expect(container.textContent).toBe('');
   });
 });
 

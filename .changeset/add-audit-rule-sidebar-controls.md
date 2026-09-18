@@ -2,4 +2,4 @@
 'pkgviz': minor
 ---
 
-Add persistent audit-rule controls, compact cyclic-dependency findings, graph emphasis, and a dedicated cycle inspector to the settings sidebar.
+Add Rules and Export sidebar tabs above persistent graph settings, with violated rules enabled by tab selection, compact cycle controls, graph emphasis, and a dedicated cycle inspector.
