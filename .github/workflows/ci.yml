@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main, develop]
 
+permissions:
+  contents: write
+
 jobs:
   install-and-check:
     runs-on: ubuntu-latest
@@ -24,10 +27,22 @@ jobs:
           BUN_INSTALL_PREINSTALL: '0'
         run: bun install --no-save # noch weniger Angriffsfläche
 
-      - name: 🧭 Devtools sync dry-run
+      - name: 🧭 Bootstrap Devtools tooling
         run: |
           bun add -D @ankhorage/devtools
-          bunx @ankhorage/ankh devtools sync . --dry-run
+          bunx @ankhorage/ankh devtools package sync .
+          bunx @ankhorage/ankh devtools skills sync .
+          bunx @ankhorage/ankh devtools eslint sync .
+          bunx @ankhorage/ankh devtools prettier sync .
+          bunx @ankhorage/ankh devtools knip sync .
+          bunx @ankhorage/ankh devtools vscode sync .
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --all
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: sync Devtools repository tooling [skip ci]"
+            git push origin HEAD:chore/add-agents-instructions
+          fi
 
       - name: 🧹 Lint
         run: bun run lint
