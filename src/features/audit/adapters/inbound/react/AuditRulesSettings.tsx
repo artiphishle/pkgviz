@@ -1,7 +1,7 @@
 'use client';
 
 import { CheckIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import Setting from '@/components/Setting';
 import { SidebarAccordion } from '@/components/sidebar/SidebarAccordion';
@@ -19,18 +19,6 @@ export function AuditRulesSettings({
   enabled,
   onToggleEnabled,
 }: AuditRulesSettingsProps) {
-  const [cyclesOpen, setCyclesOpen] = useState(true);
-
-  useEffect(() => {
-    if (controls.loading) {
-      setCyclesOpen(true);
-      return;
-    }
-    setCyclesOpen(controls.cycles.length > 0);
-  }, [controls.cycles.length, controls.loading]);
-
-  const hasCycles = controls.cycles.length > 0;
-
   return (
     <SidebarSection title={t('settings.rules')}>
       <Setting>
@@ -41,40 +29,59 @@ export function AuditRulesSettings({
           onToggle={onToggleEnabled}
         />
       </Setting>
-
-      {enabled ? (
-        <>
-          <SidebarAccordion
-            title={t('settings.cyclicDependencies')}
-            count={controls.loading ? undefined : controls.cycles.length}
-            disabled={!controls.loading && !hasCycles}
-            open={cyclesOpen}
-            onOpenChange={setCyclesOpen}
-          >
-            {controls.loading ? (
-              <Setting>
-                <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                  {t('settings.loadingRules')}
-                </span>
-              </Setting>
-            ) : (
-              controls.cycles.map(cycle => (
-                <CycleRow key={cycle.id} cycle={cycle} onToggle={controls.toggleCycle} />
-              ))
-            )}
-          </SidebarAccordion>
-
-          {!controls.loading && !hasCycles ? (
-            <Setting>
-              <span className="flex items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400">
-                <CheckIcon size={12} />
-                {t('settings.noCyclicDependencies')}
-              </span>
-            </Setting>
-          ) : null}
-        </>
-      ) : null}
+      {enabled ? <CyclicDependenciesCategory controls={controls} /> : null}
     </SidebarSection>
+  );
+}
+
+/*** Renders the cyclic-dependencies category with loading, empty, and finding states. */
+function CyclicDependenciesCategory({ controls }: CyclicDependenciesCategoryProps) {
+  const [userOpen, setUserOpen] = useState<boolean | null>(null);
+  const hasCycles = controls.cycles.length > 0;
+  const open = controls.loading ? true : hasCycles ? (userOpen ?? true) : false;
+
+  return (
+    <>
+      <SidebarAccordion
+        title={t('settings.cyclicDependencies')}
+        count={controls.loading ? undefined : controls.cycles.length}
+        disabled={!controls.loading && !hasCycles}
+        open={open}
+        onOpenChange={setUserOpen}
+      >
+        <CycleCategoryContent controls={controls} />
+      </SidebarAccordion>
+      {!controls.loading && !hasCycles ? <EmptyCycleState failed={controls.loadFailed} /> : null}
+    </>
+  );
+}
+
+/*** Renders either the loading row or every concrete selectable cycle row. */
+function CycleCategoryContent({ controls }: CyclicDependenciesCategoryProps) {
+  if (controls.loading) {
+    return (
+      <Setting>
+        <span className="text-xs text-neutral-500 dark:text-neutral-400">
+          {t('settings.loadingRules')}
+        </span>
+      </Setting>
+    );
+  }
+
+  return controls.cycles.map(cycle => (
+    <CycleRow key={cycle.id} cycle={cycle} onToggle={controls.toggleCycle} />
+  ));
+}
+
+/*** Renders the disabled no-finding row without adding pass/fail state to the category header. */
+function EmptyCycleState({ failed }: EmptyCycleStateProps) {
+  return (
+    <Setting>
+      <span className="flex items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400">
+        <CheckIcon size={12} />
+        {t(failed ? 'settings.rulesLoadFailed' : 'settings.noCyclicDependencies')}
+      </span>
+    </Setting>
   );
 }
 
@@ -100,20 +107,28 @@ function CycleRow({ cycle, onToggle }: CycleRowProps) {
           {cycle.detail.packages.join(' → ')}
         </span>
       </label>
-
-      {evidence.length > 0 ? (
-        <details className="mt-1 pl-8 text-[11px] text-neutral-500 dark:text-neutral-400">
-          <summary className="cursor-pointer">{t('settings.evidence')} ({evidence.length})</summary>
-          <div className="mt-1 space-y-1">
-            {evidence.map((item, index) => (
-              <div key={`${item.filePath}-${item.importName}-${index}`} className="break-words">
-                {item.filePath} → {item.importName}
-              </div>
-            ))}
-          </div>
-        </details>
-      ) : null}
+      {evidence.length > 0 ? <CycleEvidence cycle={cycle} /> : null}
     </Setting>
+  );
+}
+
+/*** Renders import evidence for one cycle without recomputing dependency analysis. */
+function CycleEvidence({ cycle }: CycleEvidenceProps) {
+  const evidence = cycle.detail.edges.flatMap(edge => edge.via);
+
+  return (
+    <details className="mt-1 pl-8 text-[11px] text-neutral-500 dark:text-neutral-400">
+      <summary className="cursor-pointer">
+        {t('settings.evidence')} ({evidence.length})
+      </summary>
+      <div className="mt-1 space-y-1">
+        {evidence.map((item, index) => (
+          <div key={`${item.filePath}-${item.importName}-${index}`} className="break-words">
+            {item.filePath} → {item.importName}
+          </div>
+        ))}
+      </div>
+    </details>
   );
 }
 
@@ -123,7 +138,19 @@ interface AuditRulesSettingsProps {
   readonly onToggleEnabled: () => void;
 }
 
+interface CyclicDependenciesCategoryProps {
+  readonly controls: AuditRuleControlState;
+}
+
+interface EmptyCycleStateProps {
+  readonly failed: boolean;
+}
+
 interface CycleRowProps {
   readonly cycle: AuditRuleCycleView;
   readonly onToggle: (cycleId: string) => void;
+}
+
+interface CycleEvidenceProps {
+  readonly cycle: AuditRuleCycleView;
 }
