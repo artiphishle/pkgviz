@@ -12,10 +12,7 @@ const RULE_RENDERERS: Readonly<Record<string, ComponentType<AuditRuleRendererPro
 };
 
 /*** Renders enabled audit rules through independently registered rule renderers. */
-export function AuditRuleList({
-  evaluation,
-  onCycleHighlightsChange,
-}: AuditRuleListProps) {
+export function AuditRuleList({ evaluation, onCycleHighlightsChange }: AuditRuleListProps) {
   if (evaluation.rules.length === 0) {
     return (
       <Setting>

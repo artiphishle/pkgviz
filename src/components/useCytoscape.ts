@@ -14,14 +14,15 @@ import {
 } from '@/layouts';
 import { LAYOUTS } from '@/layouts/constants';
 import { getCanvasBg, getStyle as getCommonStyle } from '@/layouts/style';
+import type { CycleHighlight } from '@/types/auditVisualization';
 import { filterByPackagePrefix } from '@/utils/filter/filterByPackagePrefix';
 import { filterEmptyPackages } from '@/utils/filter/filterEmptyPackages';
 import { filterSubPackagesByDepth, getMaxDepth } from '@/utils/filter/filterSubPackagesFromDepth';
 import { filterVendorPackages } from '@/utils/filter/filterVendorPackages';
 import { toggleCompoundNodes } from '@/utils/filter/toggleCompoundNodes';
+import { applyCycleHighlights } from '@/utils/graph/applyCycleHighlights';
 import { getCycleFocus } from '@/utils/graph/getCycleFocus';
 import { hasChildren } from '@/utils/hasChildren';
-import type { CycleHighlight } from '@/types/auditVisualization';
 
 /*** Owns the Cytoscape instance, filtering, layout, styling, and interactions. */
 export function useCytoscape(
@@ -68,13 +69,7 @@ export function useCytoscape(
     if (subPackageDepth !== focus.subPackageDepth) {
       setSubPackageDepth(focus.subPackageDepth);
     }
-  }, [
-    cycleHighlights,
-    currentPackage,
-    setCurrentPackage,
-    setSubPackageDepth,
-    subPackageDepth,
-  ]);
+  }, [cycleHighlights, currentPackage, setCurrentPackage, setSubPackageDepth, subPackageDepth]);
 
   /** 2) Compute filteredElements when inputs change */
   useEffect(() => {
@@ -383,39 +378,3 @@ export function useCytoscape(
   return { cyRef, cyInstance };
 }
 
-
-/*** Applies selected audit-cycle metadata to existing Cytoscape nodes and directed edges. */
-function applyCycleHighlights(
-  cy: Core,
-  highlights: readonly CycleHighlight[]
-) {
-  const allElements = cy.elements();
-  allElements.removeClass('auditCycle');
-  allElements.removeData('auditCycleColor');
-  allElements.removeData('auditCycleStep');
-
-  for (const highlight of highlights) {
-    for (const packageName of new Set(highlight.cycle.packages)) {
-      const node = cy.getElementById(packageName);
-      if (node.empty()) continue;
-      node.addClass('auditCycle');
-      node.data('auditCycleColor', highlight.color);
-    }
-
-    highlight.cycle.edges.forEach((cycleEdge, index) => {
-      cy.edges()
-        .filter(
-          edge =>
-            edge.source().id() === cycleEdge.from &&
-            edge.target().id() === cycleEdge.to
-        )
-        .forEach(edge => {
-          edge.addClass('auditCycle');
-          edge.data('auditCycleColor', highlight.color);
-          edge.data('auditCycleStep', String(index + 1));
-        });
-    });
-  }
-
-  return cy.elements('.auditCycle');
-}

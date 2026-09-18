@@ -25,77 +25,116 @@ export function CyclicDependenciesRuleDetails({
 
   return (
     <>
-      <Setting>
-        <label className="flex cursor-pointer items-center gap-2 text-xs">
-          <input
-            type="checkbox"
-            checked={enabled}
-            onChange={event => {
-              const nextEnabled = event.currentTarget.checked;
-              setEnabled(nextEnabled);
-              if (!nextEnabled) {
-                setSelectedCycleIds([]);
-                onCycleHighlightsChange([]);
-              }
+      <RuleToggle
+        enabled={enabled}
+        failed={failed}
+        onEnabledChange={nextEnabled => {
+          setEnabled(nextEnabled);
+          if (!nextEnabled) {
+            setSelectedCycleIds([]);
+            onCycleHighlightsChange([]);
+          }
+        }}
+      />
+      {enabled &&
+        (failed ? (
+          <CycleList
+            cycles={cycles}
+            selectedCycleIds={selectedCycleIds}
+            onSelectedCycleIdsChange={nextIds => {
+              setSelectedCycleIds(nextIds);
+              onCycleHighlightsChange(createCycleHighlights(cycles, nextIds));
             }}
           />
-          <span className="flex-1 font-medium">{t('audit.rule.cyclicDependencies')}</span>
-          <span className={failed ? 'text-red-700 dark:text-red-300' : 'text-green-700 dark:text-green-300'}>
-            {failed ? t('audit.failed') : t('audit.passed')}
-          </span>
-        </label>
-      </Setting>
-
-      {enabled && (
-        failed ? (
-          <>
-            <h3>{t('audit.cycles')}</h3>
-            {cycles.map((cycle, index) => {
-              const id = getCycleId(cycle);
-              const color = getCycleColor(index);
-              const selected = selectedCycleIds.includes(id);
-
-              return (
-                <Setting key={id}>
-                  <label className="flex cursor-pointer items-start gap-2 text-xs">
-                    <input
-                      type="checkbox"
-                      checked={selected}
-                      style={{ accentColor: color }}
-                      onChange={event => {
-                        const nextIds = event.currentTarget.checked
-                          ? [...selectedCycleIds, id]
-                          : selectedCycleIds.filter(selectedId => selectedId !== id);
-                        setSelectedCycleIds(nextIds);
-                        onCycleHighlightsChange(createCycleHighlights(cycles, nextIds));
-                      }}
-                    />
-                    <span className="min-w-0">
-                      <span className="flex items-center gap-1 font-medium">
-                        <span
-                          aria-hidden="true"
-                          className="inline-block h-2 w-2 rounded-full"
-                          style={{ backgroundColor: color }}
-                        />
-                        {t('audit.cycle')} {index + 1}
-                      </span>
-                      <code className="mt-1 block break-all text-[11px]">
-                        {cycle.packages.join(' → ')}
-                      </code>
-                      {selected && <CycleEvidence cycle={cycle} />}
-                    </span>
-                  </label>
-                </Setting>
-              );
-            })}
-          </>
         ) : (
           <Setting>
             <p className="text-xs text-green-700 dark:text-green-300">{rule.message}</p>
           </Setting>
-        )
-      )}
+        ))}
     </>
+  );
+}
+
+/*** Renders the rule checkbox and current pass/fail state. */
+function RuleToggle({ enabled, failed, onEnabledChange }: RuleToggleProps) {
+  return (
+    <Setting>
+      <label className="flex cursor-pointer items-center gap-2 text-xs">
+        <input
+          type="checkbox"
+          checked={enabled}
+          onChange={event => onEnabledChange(event.currentTarget.checked)}
+        />
+        <span className="flex-1 font-medium">{t('audit.rule.cyclicDependencies')}</span>
+        <span
+          className={
+            failed ? 'text-red-700 dark:text-red-300' : 'text-green-700 dark:text-green-300'
+          }
+        >
+          {failed ? t('audit.failed') : t('audit.passed')}
+        </span>
+      </label>
+    </Setting>
+  );
+}
+
+/*** Renders every detected cycle as an independently selectable sidebar row. */
+function CycleList({
+  cycles,
+  selectedCycleIds,
+  onSelectedCycleIdsChange,
+}: CycleListProps) {
+  return (
+    <>
+      <h3>{t('audit.cycles')}</h3>
+      {cycles.map((cycle, index) => {
+        const id = getCycleId(cycle);
+        const selected = selectedCycleIds.includes(id);
+
+        return (
+          <Setting key={id}>
+            <CycleRow
+              color={getCycleColor(index)}
+              cycle={cycle}
+              index={index}
+              selected={selected}
+              onSelectedChange={nextSelected => {
+                const nextIds = nextSelected
+                  ? [...selectedCycleIds, id]
+                  : selectedCycleIds.filter(selectedId => selectedId !== id);
+                onSelectedCycleIdsChange(nextIds);
+              }}
+            />
+          </Setting>
+        );
+      })}
+    </>
+  );
+}
+
+/*** Renders one cycle selector, path, and selected evidence. */
+function CycleRow({ color, cycle, index, selected, onSelectedChange }: CycleRowProps) {
+  return (
+    <label className="flex cursor-pointer items-start gap-2 text-xs">
+      <input
+        type="checkbox"
+        checked={selected}
+        style={{ accentColor: color }}
+        onChange={event => onSelectedChange(event.currentTarget.checked)}
+      />
+      <span className="min-w-0">
+        <span className="flex items-center gap-1 font-medium">
+          <span
+            aria-hidden="true"
+            className="inline-block h-2 w-2 rounded-full"
+            style={{ backgroundColor: color }}
+          />
+          {t('audit.cycle')} {index + 1}
+        </span>
+        <code className="mt-1 block break-all text-[11px]">{cycle.packages.join(' → ')}</code>
+        {selected && <CycleEvidence cycle={cycle} />}
+      </span>
+    </label>
   );
 }
 
@@ -145,11 +184,13 @@ function createCycleHighlights(
     const id = getCycleId(cycle);
     if (!selectedCycleIds.includes(id)) return [];
 
-    return [{
-      id,
-      color: getCycleColor(index),
-      cycle,
-    }];
+    return [
+      {
+        id,
+        color: getCycleColor(index),
+        cycle,
+      },
+    ];
   });
 }
 
@@ -169,4 +210,24 @@ interface CyclicDependenciesRuleDetailsProps {
   readonly evaluation: Audit['evaluation'];
   readonly rule: AuditRuleResult;
   readonly onCycleHighlightsChange: (highlights: readonly CycleHighlight[]) => void;
+}
+
+interface RuleToggleProps {
+  readonly enabled: boolean;
+  readonly failed: boolean;
+  readonly onEnabledChange: (enabled: boolean) => void;
+}
+
+interface CycleListProps {
+  readonly cycles: readonly PackageCycleDetail[];
+  readonly selectedCycleIds: readonly string[];
+  readonly onSelectedCycleIdsChange: (ids: readonly string[]) => void;
+}
+
+interface CycleRowProps {
+  readonly color: string;
+  readonly cycle: PackageCycleDetail;
+  readonly index: number;
+  readonly selected: boolean;
+  readonly onSelectedChange: (selected: boolean) => void;
 }

@@ -8,10 +8,7 @@ import type { Audit } from '@/types/audit';
 import type { CycleHighlight } from '@/types/auditVisualization';
 
 /*** Loads the serializable audit evaluation and renders the sidebar rule controls. */
-export function AuditRulePanel({
-  loadAudit,
-  onCycleHighlightsChange,
-}: AuditRulePanelProps) {
+export function AuditRulePanel({ loadAudit, onCycleHighlightsChange }: AuditRulePanelProps) {
   const [evaluation, setEvaluation] = useState<Audit['evaluation'] | null>(null);
   const [loadFailed, setLoadFailed] = useState(false);
 
@@ -40,10 +37,7 @@ export function AuditRulePanel({
   }
 
   return (
-    <AuditRuleList
-      evaluation={evaluation}
-      onCycleHighlightsChange={onCycleHighlightsChange}
-    />
+    <AuditRuleList evaluation={evaluation} onCycleHighlightsChange={onCycleHighlightsChange} />
   );
 }
 
