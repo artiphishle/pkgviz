@@ -12,7 +12,7 @@ Package: `pkgviz`
 PKGViz analyzes source projects, dependencies, architecture rules, and audit evidence and renders the
 result as an interactive Cytoscape-based visualization.
 
-PKGViz is a paid production project. Preserve working behavior after every change.
+Preserve working PKGViz behavior after every change.
 
 ## Current architecture only
 
@@ -33,7 +33,7 @@ Relevant canonical boundaries include:
 Cross-package usage must go through published public APIs and declared dependencies, never sibling
 repository source files.
 
-## Production safety
+## Stability and recovery
 
 PKGViz must remain buildable, testable, and usable after every pull request.
 
