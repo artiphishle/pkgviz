@@ -7,7 +7,7 @@ import type React from 'react';
 import {
   downloadAuditJsonAction,
   downloadAuditXmlAction,
-  getAuditAction,
+  getAuditEvaluationAction,
 } from '@/app/actions/audit.actions';
 import Setting from '@/components/Setting';
 import Switch from '@/components/Switch';
@@ -59,7 +59,7 @@ const Settings: React.FC = () => {
     <div className="md:pt-14 border-r bg-neutral-100 border-r-neutral-200 dark:border-r-neutral-800 dark:bg-neutral-950">
       <h3>{t('settings.audit')}</h3>
       <Setting>
-        <AuditRulePanel loadAudit={getAuditAction} />
+        <AuditRulePanel loadAudit={getAuditEvaluationAction} />
       </Setting>
 
       {/* Audit Download */}

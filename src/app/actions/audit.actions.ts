@@ -10,6 +10,11 @@ export async function getAuditAction(): Promise<Audit> {
   return await createAuditAsync(parseProjectPath());
 }
 
+/*** Returns the serializable audit evaluation required by the client rule panel. */
+export async function getAuditEvaluationAction(): Promise<Audit['evaluation']> {
+  return (await getAuditAction()).evaluation;
+}
+
 /*** Serializes the current project audit as JSON. */
 export async function downloadAuditJsonAction(): Promise<{ data: string; filename: string }> {
   const audit = await getAuditAction();

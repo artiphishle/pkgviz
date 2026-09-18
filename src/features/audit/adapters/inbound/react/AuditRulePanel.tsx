@@ -5,13 +5,13 @@ import { AuditRuleTabs } from '@/features/audit/adapters/inbound/react/AuditRule
 import { t } from '@/i18n/i18n';
 import type { Audit } from '@/types/audit';
 
-/*** Loads the existing audit result and renders inspectable rule details. */
+/*** Loads the existing audit evaluation and renders inspectable rule details. */
 export function AuditRulePanel({ loadAudit }: AuditRulePanelProps) {
-  const [audit, setAudit] = useState<Audit | null>(null);
+  const [evaluation, setEvaluation] = useState<Audit['evaluation'] | null>(null);
   const [loadFailed, setLoadFailed] = useState(false);
 
   useEffect(() => {
-    void loadAudit().then(setAudit, () => setLoadFailed(true));
+    void loadAudit().then(setEvaluation, () => setLoadFailed(true));
   }, [loadAudit]);
 
   if (loadFailed) {
@@ -22,7 +22,7 @@ export function AuditRulePanel({ loadAudit }: AuditRulePanelProps) {
     );
   }
 
-  if (audit === null) {
+  if (evaluation === null) {
     return (
       <p aria-live="polite" className="text-xs text-neutral-500 dark:text-neutral-400">
         {t('audit.loading')}
@@ -32,12 +32,12 @@ export function AuditRulePanel({ loadAudit }: AuditRulePanelProps) {
 
   return (
     <AuditRuleTabs
-      cyclicPackages={audit.evaluation.cyclicPackages}
-      rules={audit.evaluation.rules}
+      cyclicPackages={evaluation.cyclicPackages}
+      rules={evaluation.rules}
     />
   );
 }
 
 interface AuditRulePanelProps {
-  readonly loadAudit: () => Promise<Audit>;
+  readonly loadAudit: () => Promise<Audit['evaluation']>;
 }
