@@ -28,7 +28,9 @@ function extractImports(content: string): string[] {
  * Extracts the class name from the content and filename fallback.
  */
 function extractClassName(content: string, fileName: string): string {
-  const classPattern = new RegExp(`(?:public\\s+)?(class|interface|enum|record)\\s+${escapeRegExp(fileName)}\\b`);
+  const classPattern = new RegExp(
+    `(?:public\\s+)?(class|interface|enum|record)\\s+${escapeRegExp(fileName)}\\b`
+  );
   const classNameMatch = content.match(classPattern);
   if (classNameMatch) return fileName;
 
