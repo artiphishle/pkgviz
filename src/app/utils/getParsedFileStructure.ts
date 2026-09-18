@@ -102,6 +102,7 @@ async function readDirRecursively(
   dir: string,
   projectRoot: string,
   language: Language,
+  analysisRoot: string,
   typeScriptImportsByFile?: ReadonlyMap<string, readonly ImportDefinition[]>
 ): Promise<ParsedDirectory> {
   const result: ParsedDirectory = Object.create(null);
@@ -136,6 +137,7 @@ async function readDirRecursively(
         fullPath,
         projectRoot,
         language,
+        analysisRoot,
         typeScriptImportsByFile
       );
       continue;
@@ -146,7 +148,7 @@ async function readDirRecursively(
       // Java
       case Language.Java:
         if (entry.name.endsWith('.java')) {
-          result[entry.name] = await parseJavaFile(fullPath, projectRoot);
+          result[entry.name] = await parseJavaFile(fullPath, projectRoot, analysisRoot);
         }
         break;
 
@@ -209,9 +211,10 @@ async function readDirRecursively(
 /***
  * Entrypoint
  */
-export async function getParsedFileStructure(language?: Language) {
-  const projectPath = parseProjectPath();
-
+export async function getParsedFileStructure(
+  language?: Language,
+  projectPath: string = parseProjectPath()
+) {
   // 1. Detect language & filter non-supported
   const detectedLanguage = language ?? (await inspectParserLanguageAsync(projectPath)).language;
   console.log('1. Detected language:', detectedLanguage);
@@ -241,5 +244,11 @@ export async function getParsedFileStructure(language?: Language) {
       : undefined;
 
   // 3. Read directory recursively (pass resolved root as both dir and projectRoot)
-  return await readDirRecursively(rootDir, rootDir, detectedLanguage, typeScriptImportsByFile);
+  return await readDirRecursively(
+    rootDir,
+    rootDir,
+    detectedLanguage,
+    projectPath,
+    typeScriptImportsByFile
+  );
 }
