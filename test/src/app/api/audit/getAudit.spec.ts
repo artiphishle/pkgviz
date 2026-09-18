@@ -2,7 +2,7 @@ import { Language, type ParsedFile } from '@/shared/types';
 
 import { resolve } from 'node:path';
 import { describe, it, beforeEach } from 'node:test';
-import { expect } from '@artiphishle/testosterone/src/matchers';
+import { expect } from '@artiphishle/testosterone';
 import { getAuditAction } from '@/app/actions/audit.actions';
 
 describe('[getAuditAction]', () => {
@@ -71,5 +71,11 @@ describe('[getAuditAction]', () => {
     expect(audit.meta.projectName).toBe('my-app');
     expect(typeof audit.meta.timeStart).toBe('number');
     expect(typeof audit.meta.timeEnd).toBe('number');
+
+    const cyclicRule = audit.evaluation.rules.find(rule => rule.id === 'cyclic-dependencies');
+    expect(cyclicRule?.status).toBe('failed');
+    expect(cyclicRule?.policy).toBe('blocking');
+    expect(audit.evaluation.cyclicPackages.length).toBe(1);
+    expect(JSON.stringify(cyclicRule?.evidence).includes('com.example.myapp.a')).toBe(true);
   });
 });
