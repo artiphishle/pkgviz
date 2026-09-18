@@ -14,7 +14,7 @@ export function getCycleId(cycle: PackageCycleDetail, index: number): string {
 }
 
 /*** Creates one stable cycle highlight descriptor. */
-export function createCycleHighlight(cycle: PackageCycleDetail, index: number): CycleHighlight {
+function createCycleHighlight(cycle: PackageCycleDetail, index: number): CycleHighlight {
   return {
     id: getCycleId(cycle, index),
     color: getCycleColor(index),
