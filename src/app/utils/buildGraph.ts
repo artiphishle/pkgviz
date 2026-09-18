@@ -1,120 +1,118 @@
-import type {
-  EdgeDataDefinition,
-  EdgeDefinition,
-  ElementsDefinition,
-  NodeDefinition,
-} from 'cytoscape';
+import type { Graph, GraphEdge, GraphNode } from '@ankhorage/graph';
+import { toCytoscapeElements } from '@ankhorage/graph-cytoscape';
+import type { ElementsDefinition } from 'cytoscape';
 
 import type { ParsedDirectory, ParsedFile } from '@/shared/types';
 
 /***
- * Builds a weighted dependency graph based on package-level imports.
- * - Adds intrinsic directory nodes (from folder structure)
- * - Aggregates edges (source pkg -> target pkg) with cumulative weight
- * - Adds vendor nodes for any edge endpoints not present as intrinsic nodes
- * - Sanitizes: skips empty package ids and self-edges
+ * Builds a weighted dependency graph and converts it through the canonical Cytoscape adapter.
  */
-export function buildGraph(dir: ParsedDirectory) {
-  /***
-   * Build graph (nodes/edges) recursively
-   */
-  function buildGraphRecursively(
-    currentDir: ParsedDirectory,
-    currentPath = '',
-    nodes: NodeDefinition[] = [],
-    edges = new Map<string, EdgeDefinition>()
-  ) {
-    Object.keys(currentDir).forEach(key => {
-      const dirOrFile = (currentDir as Record<string, ParsedDirectory | ParsedFile>)[key];
-      const isDirectory = !(dirOrFile as ParsedFile)?.className;
+export function buildGraph(dir: ParsedDirectory): ElementsDefinition {
+  const graph = buildCanonicalGraph(dir);
 
-      // 1) Add directory as a node
-      if (isDirectory) {
-        const pkg = currentPath ? `${currentPath}.${key}` : key;
+  return toCytoscapeElements(graph, {
+    nodeClasses: node => (node.data.isIntrinsic === true ? undefined : 'isVendor'),
+  });
+}
 
-        nodes.push({
-          data: {
-            id: pkg,
-            path: pkg,
-            parent: currentPath,
-            label: key,
-            name: key.split('.').pop() || key,
-            isIntrinsic: true,
-          },
-          group: 'nodes',
-        });
+/*** Builds PKGViz package dependencies in the canonical Ankhorage graph model. */
+function buildCanonicalGraph(dir: ParsedDirectory): Graph<PackageNodeData, PackageEdgeData> {
+  const { nodes, edges } = buildGraphRecursively(dir);
 
-        // Recurse into subdirectories
-        return buildGraphRecursively(dirOrFile as ParsedDirectory, pkg, nodes, edges);
-      }
+  for (const edge of edges.values()) {
+    for (const endpoint of [edge.source, edge.target]) {
+      if (nodes.some(node => node.id === endpoint)) continue;
 
-      // 2) Aggregate file imports as weighted package edges (package perspective)
-      const file = dirOrFile as ParsedFile;
-      const source = file.package?.trim();
-      if (!source) return; // skip empty/default package ids
+      const parent = endpoint.includes('.') ? endpoint.split('.').slice(0, -1).join('.') : '';
+      const name = endpoint.split('.').pop() || endpoint;
 
-      const targets = (file.imports ?? [])
-        .map(imp => imp.pkg?.trim())
-        .filter((t): t is string => !!t);
-
-      targets.forEach(target => {
-        if (target === source) return; // skip self-edges at package level
-
-        const edgeId = `${source}->${target}`;
-        const existing = edges.get(edgeId);
-        const prev = (existing?.data as EdgeDataDefinitionWithWeight | undefined)?.weight ?? 0;
-        const weight: EdgeDataDefinitionWithWeight['weight'] = prev + 1;
-
-        const data: EdgeDataDefinitionWithWeight = { source, target, weight };
-        edges.set(edgeId, { data, group: 'edges' });
+      nodes.push({
+        id: endpoint,
+        data: {
+          label: endpoint,
+          path: endpoint,
+          parent,
+          name,
+        },
       });
-    });
-
-    return { nodes, edges };
+    }
   }
 
-  const rawElements: ElementsDefinitionWithEdgeMap = buildGraphRecursively(dir);
-
-  // Add vendor packages (edge source/target not already in 'nodes')
-  rawElements.edges.forEach(({ data: { source, target } }) => {
-    [source, target].forEach(maybeNode => {
-      const id = String(maybeNode ?? '').trim();
-      if (!id) return; // don't create a node with empty id
-
-      // Node already defined while handling intrinsic directories
-      if (rawElements.nodes.find(node => node.data.id === id)) return;
-
-      // Grab the eventual parent for compound nodes
-      const parent = id.includes('.') ? id.split('.').slice(0, -1).join('.') : '';
-
-      // Add vendor node: 'isIntrinsic' is not set (vendor package)
-      rawElements.nodes.push({
-        data: {
-          id: parent ? id.split('.').pop() : id,
-          label: id,
-          path: id,
-          parent,
-          name: id.split('.').pop() || id,
-        },
-        group: 'nodes',
-        classes: 'isVendor',
-      });
-    });
-  });
-
-  // Convert edges from Map (values) to EdgeDefinition[]
-  const elements: ElementsDefinition = {
-    nodes: rawElements.nodes,
-    edges: Array.from(rawElements.edges.values()),
+  return {
+    nodes,
+    edges: Array.from(edges.values()),
   };
-
-  return elements;
 }
 
-interface EdgeDataDefinitionWithWeight extends EdgeDataDefinition {
-  weight: number;
+/*** Recursively collects intrinsic package nodes and weighted dependency edges. */
+function buildGraphRecursively(
+  currentDir: ParsedDirectory,
+  currentPath = '',
+  nodes: GraphNode<PackageNodeData>[] = [],
+  edges = new Map<string, GraphEdge<PackageEdgeData>>()
+): CanonicalGraphAccumulator {
+  for (const key of Object.keys(currentDir)) {
+    const dirOrFile = (currentDir as Record<string, ParsedDirectory | ParsedFile>)[key];
+    const isDirectory = !(dirOrFile as ParsedFile)?.className;
+
+    if (isDirectory) {
+      const pkg = currentPath ? `${currentPath}.${key}` : key;
+
+      nodes.push({
+        id: pkg,
+        data: {
+          path: pkg,
+          parent: currentPath,
+          label: key,
+          name: key.split('.').pop() || key,
+          isIntrinsic: true,
+        },
+      });
+
+      buildGraphRecursively(dirOrFile as ParsedDirectory, pkg, nodes, edges);
+      continue;
+    }
+
+    const file = dirOrFile as ParsedFile;
+    const source = file.package?.trim();
+    if (!source) continue;
+
+    const targets = (file.imports ?? [])
+      .map(imp => imp.pkg?.trim())
+      .filter((target): target is string => Boolean(target));
+
+    for (const target of targets) {
+      if (target === source) continue;
+
+      const edgeId = `${source}->${target}`;
+      const existing = edges.get(edgeId);
+      const weight = (existing?.data.weight ?? 0) + 1;
+
+      edges.set(edgeId, {
+        id: edgeId,
+        source,
+        target,
+        data: { weight },
+      });
+    }
+  }
+
+  return { nodes, edges };
 }
-interface ElementsDefinitionWithEdgeMap {
-  readonly nodes: NodeDefinition[];
-  readonly edges: Map<string, EdgeDefinition>;
+
+interface PackageNodeData extends Readonly<Record<string, unknown>> {
+  readonly path: string;
+  readonly parent: string;
+  readonly label: string;
+  readonly name: string;
+  readonly isIntrinsic?: boolean;
+}
+
+interface PackageEdgeData extends Readonly<Record<string, unknown>> {
+  readonly weight: number;
+}
+
+interface CanonicalGraphAccumulator {
+  readonly nodes: GraphNode<PackageNodeData>[];
+  readonly edges: Map<string, GraphEdge<PackageEdgeData>>;
 }

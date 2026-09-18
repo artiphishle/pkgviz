@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 
-import { expect } from '@artiphishle/testosterone/src/matchers';
+import { expect } from '@artiphishle/testosterone';
 import { buildGraph } from '@/app/utils/buildGraph';
 import type { ParsedDirectory, ParsedFile } from '@/shared/types';
 
@@ -45,7 +45,9 @@ describe('[buildGraph]', () => {
       edge => edge.data.source === 'src.features' && edge.data.target === 'src.shared'
     );
 
+    expect(reactEdge?.data.id).toBe('src.features->react');
     expect(reactEdge?.data.weight).toBe(2);
+    expect(sharedEdge?.data.id).toBe('src.features->src.shared');
     expect(sharedEdge?.data.weight).toBe(1);
   });
 });
