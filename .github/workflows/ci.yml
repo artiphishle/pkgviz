@@ -24,6 +24,11 @@ jobs:
           BUN_INSTALL_PREINSTALL: '0'
         run: bun install --no-save # noch weniger Angriffsfläche
 
+      - name: 🧭 Devtools sync dry-run
+        run: |
+          bun add -D @ankhorage/devtools
+          bunx @ankhorage/ankh devtools sync . --dry-run
+
       - name: 🧹 Lint
         run: bun run lint
 
