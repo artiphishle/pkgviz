@@ -16,6 +16,18 @@ const en: ILanguage = {
   'settings.layoutSpacing': 'Layout Spacing',
   'settings.filter': 'Filter',
 
+  // Audit
+  'audit.rules': 'Audit rules',
+  'audit.loading': 'Loading audit…',
+  'audit.loadError': 'Unable to load audit details.',
+  'audit.noRules': 'No audit rules are enabled.',
+  'audit.passed': 'Passed',
+  'audit.failed': 'Failed',
+  'audit.cycle': 'Cycle',
+  'audit.noEvidence': 'No source/import evidence available.',
+  'audit.imports': 'imports',
+  'audit.rule.cyclicDependencies': 'Cyclic dependencies',
+
   // Layouts
   breadthfirst: 'Breadthfirst',
   circle: 'Circle',
