@@ -31,7 +31,7 @@
   ],
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "ankhorage-prettier --write test/src/features/settings/utils/readSettingsEnvironment.spec.ts && git diff -- test/src/features/settings/utils/readSettingsEnvironment.spec.ts && exit 1",
     "start": "next start",
     "lint": "ankhorage-eslint . --max-warnings=0",
     "format:check": "ankhorage-prettier --check .",
