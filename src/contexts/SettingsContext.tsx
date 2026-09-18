@@ -20,7 +20,7 @@ export const SettingsProvider = ({ children }: PropsWithChildren) => {
     'maxSubPackageDepth',
     1
   );
-  const [rulesEnabled, setRulesEnabled] = useLocalStorage<boolean>('rulesEnabled', getRulesEnabled());
+  const [rulesEnabled, toggleRulesEnabled] = useRulesEnabledSetting();
   const [showCompoundNodes, setShowCompoundNodes] = useLocalStorage<boolean>(
     'showCompoundNodes',
     getShowCompoundNodes()
@@ -42,8 +42,6 @@ export const SettingsProvider = ({ children }: PropsWithChildren) => {
     getCytoscapeLayoutSpacing()
   );
 
-  /*** Toggles audit-rule visualization. */
-  const toggleRulesEnabled = () => setRulesEnabled(prev => !prev);
   /*** Toggles vendor package visibility. */
   const toggleShowVendorPackages = () => setShowVendorPackages(prev => !prev);
   /*** Toggles compound node visibility. */
@@ -72,6 +70,15 @@ export const SettingsProvider = ({ children }: PropsWithChildren) => {
     </SettingsContext>
   );
 };
+
+/*** Owns the persisted audit-rule visualization setting. */
+function useRulesEnabledSetting() {
+  const [rulesEnabled, setRulesEnabled] = useLocalStorage<boolean>(
+    'rulesEnabled',
+    getRulesEnabled()
+  );
+  return [rulesEnabled, () => setRulesEnabled(prev => !prev)] as const;
+}
 
 /*** Returns the current graph settings context. */
 export function useSettings() {

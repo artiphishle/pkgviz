@@ -1,7 +1,7 @@
 'use client';
 import { ChevronDownIcon } from 'lucide-react';
-import React from 'react';
 import { Accordion } from 'radix-ui';
+import React from 'react';
 
 import { SidebarBadge } from '@/components/sidebar/SidebarBadge';
 

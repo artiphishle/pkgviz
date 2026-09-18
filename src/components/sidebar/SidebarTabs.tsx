@@ -1,6 +1,6 @@
 'use client';
-import React from 'react';
 import { Tabs } from 'radix-ui';
+import React from 'react';
 
 /*** Renders a reusable tab surface for sidebar views that must be mutually exclusive. */
 export function SidebarTabs({ tabs }: SidebarTabsProps) {

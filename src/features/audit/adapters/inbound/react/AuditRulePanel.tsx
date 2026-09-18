@@ -34,11 +34,7 @@ export function AuditRulePanel({ loadAudit, onCycleHighlightsChange }: AuditRule
 
   if (evaluation === null) {
     return (
-      <SidebarAccordionSection
-        count={0}
-        loading
-        title={t('audit.rule.cyclicDependencies')}
-      >
+      <SidebarAccordionSection count={0} loading title={t('audit.rule.cyclicDependencies')}>
         <SidebarRow>
           <p aria-live="polite" className="text-xs text-neutral-500 dark:text-neutral-400">
             {t('audit.loading')}

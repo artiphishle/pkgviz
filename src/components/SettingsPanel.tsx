@@ -1,7 +1,7 @@
 'use client';
 import { ChevronDownIcon, DownloadIcon } from 'lucide-react';
-import React from 'react';
 import { Select, Slider } from 'radix-ui';
+import React from 'react';
 
 import { downloadAuditJsonAction, downloadAuditXmlAction } from '@/app/actions/audit.actions';
 import { SidebarRow } from '@/components/sidebar/SidebarRow';
@@ -187,14 +187,7 @@ function RulesSettings({ children, onRulesDisabled }: RulesSettingsProps) {
 }
 
 /*** Renders the shared slider shape used by numeric sidebar settings. */
-function SettingsSlider({
-  ariaLabel,
-  max,
-  min,
-  onValueChange,
-  step,
-  value,
-}: SettingsSliderProps) {
+function SettingsSlider({ ariaLabel, max, min, onValueChange, step, value }: SettingsSliderProps) {
   return (
     <Slider.Root
       min={min}
