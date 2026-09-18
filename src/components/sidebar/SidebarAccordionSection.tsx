@@ -5,21 +5,23 @@ import { Accordion } from 'radix-ui';
 
 import { SidebarBadge } from '@/components/sidebar/SidebarBadge';
 
-/*** Renders a sidebar category that expands into rows when findings are available. */
+/*** Renders a sidebar category that can expose findings or a loading state. */
 export function SidebarAccordionSection({
   children,
   count,
   disabled = false,
+  loading = false,
   title,
 }: SidebarAccordionSectionProps) {
   const hasFindings = count > 0;
-  const isDisabled = disabled || !hasFindings;
+  const isOpenByDefault = loading || hasFindings;
+  const isDisabled = disabled || (!loading && !hasFindings);
 
   return (
     <Accordion.Root
       type="single"
       collapsible
-      defaultValue={hasFindings ? 'content' : undefined}
+      defaultValue={isOpenByDefault ? 'content' : undefined}
       className="mt-6"
     >
       <Accordion.Item value="content" disabled={isDisabled}>
@@ -44,5 +46,6 @@ interface SidebarAccordionSectionProps {
   readonly children: React.ReactNode;
   readonly count: number;
   readonly disabled?: boolean;
+  readonly loading?: boolean;
   readonly title: React.ReactNode;
 }

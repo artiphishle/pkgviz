@@ -8,6 +8,7 @@ const en: ILanguage = {
   // Settings
   'settings.title': 'Settings',
   'settings.rules': 'Rules',
+  'settings.rulesEnabled': 'Enabled',
   'sidebar.navigation': 'Sidebar sections',
   'settings.showCompoundNodes': 'Show Compound Nodes',
   'settings.showVendorPackages': 'Show Vendor',

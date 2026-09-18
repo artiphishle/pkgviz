@@ -10,8 +10,8 @@ import Switch from '@/components/Switch';
 import { useSettings } from '@/contexts/SettingsContext';
 import { t } from '@/i18n/i18n';
 
-/*** Renders graph settings using the shared application-sidebar primitives. */
-export function SettingsPanel() {
+/*** Renders graph and rule settings using the shared application-sidebar primitives. */
+export function SettingsPanel({ onRulesDisabled, rules }: SettingsPanelProps) {
   return (
     <>
       <DownloadSettings />
@@ -19,6 +19,7 @@ export function SettingsPanel() {
       <SubPackageDepthSettings />
       <LayoutSettings />
       <LayoutSpacingSettings />
+      <RulesSettings onRulesDisabled={onRulesDisabled}>{rules}</RulesSettings>
     </>
   );
 }
@@ -163,6 +164,28 @@ function LayoutSpacingSettings() {
   );
 }
 
+/*** Renders persisted audit-rule visualization settings without hiding graph settings. */
+function RulesSettings({ children, onRulesDisabled }: RulesSettingsProps) {
+  const { rulesEnabled, toggleRulesEnabled } = useSettings();
+
+  return (
+    <SidebarSection title={t('settings.rules')}>
+      <SidebarRow>
+        <Switch
+          id="switch-rules-enabled"
+          label={t('settings.rulesEnabled')}
+          onToggle={() => {
+            if (rulesEnabled) onRulesDisabled();
+            toggleRulesEnabled();
+          }}
+          value={rulesEnabled}
+        />
+      </SidebarRow>
+      {rulesEnabled && children}
+    </SidebarSection>
+  );
+}
+
 /*** Renders the shared slider shape used by numeric sidebar settings. */
 function SettingsSlider({
   ariaLabel,
@@ -225,4 +248,14 @@ interface DownloadButtonProps {
   readonly format: string;
   readonly mimeType: string;
   readonly onDownload: () => Promise<{ data: string; filename: string }>;
+}
+
+interface SettingsPanelProps {
+  readonly onRulesDisabled: () => void;
+  readonly rules: React.ReactNode;
+}
+
+interface RulesSettingsProps {
+  readonly children: React.ReactNode;
+  readonly onRulesDisabled: () => void;
 }

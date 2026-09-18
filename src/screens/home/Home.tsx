@@ -14,7 +14,7 @@ import { SettingsProvider } from '@/contexts/SettingsContext';
 import { AuditRulePanel } from '@/features/audit/adapters/inbound/react/AuditRulePanel';
 import type { CycleHighlight } from '@/types/auditVisualization';
 
-/*** Renders the PKGViz home screen and composes sidebar features without cross-feature coupling. */
+/*** Renders the PKGViz home screen with rules embedded below persistent graph settings. */
 export default function HomeScreen() {
   const [currentPackage, setCurrentPackage] = useState<string>('');
   const [packageGraph, setPackageGraph] = useState<ElementsDefinition | null>(null);
@@ -37,15 +37,17 @@ export default function HomeScreen() {
 
       <SettingsProvider>
         <main data-testid="main" className="flex min-w-0 flex-1 flex-row dark:bg-[#171717]">
-          <Sidebar
-            settings={<SettingsPanel />}
-            rules={
-              <AuditRulePanel
-                loadAudit={getAuditEvaluationAction}
-                onCycleHighlightsChange={setCycleHighlights}
-              />
-            }
-          />
+          <Sidebar>
+            <SettingsPanel
+              onRulesDisabled={() => setCycleHighlights([])}
+              rules={
+                <AuditRulePanel
+                  loadAudit={getAuditEvaluationAction}
+                  onCycleHighlightsChange={setCycleHighlights}
+                />
+              }
+            />
+          </Sidebar>
           {packageGraph ? (
             <Cytoscape
               currentPackage={currentPackage}
