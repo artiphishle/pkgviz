@@ -11,30 +11,25 @@ const CYCLE_COLORS = ['#d80303', '#2563eb', '#16a34a', '#9333ea', '#ea580c', '#0
 /*** Loads audit findings and owns client-only cycle selection state. */
 export function useAuditRuleControls(enabled: boolean): AuditRuleControlState {
   const [evaluation, setEvaluation] = useState<AuditEvaluation | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [selectedCycleIds, setSelectedCycleIds] = useState<readonly string[]>([]);
 
   useEffect(() => {
-    if (!enabled) {
-      setSelectedCycleIds([]);
-      return;
-    }
-    if (evaluation !== null) return;
+    if (!enabled || evaluation !== null || loadFailed) return;
 
     let cancelled = false;
-    setLoading(true);
-    getAuditEvaluationAction()
+    void getAuditEvaluationAction()
       .then(result => {
         if (!cancelled) setEvaluation(result);
       })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
+      .catch(() => {
+        if (!cancelled) setLoadFailed(true);
       });
 
     return () => {
       cancelled = true;
     };
-  }, [enabled, evaluation]);
+  }, [enabled, evaluation, loadFailed]);
 
   const cycles = useMemo(
     () =>
@@ -43,25 +38,29 @@ export function useAuditRuleControls(enabled: boolean): AuditRuleControlState {
       ),
     [evaluation, selectedCycleIds]
   );
-
   const highlights = useMemo(
-    () =>
-      enabled
-        ? cycles.filter(cycle => cycle.selected).map(cycle => createHighlight(cycle))
-        : [],
+    () => enabled ? cycles.filter(cycle => cycle.selected).map(createHighlight) : [],
     [cycles, enabled]
   );
+
+  /*** Clears every selected cycle when Rules are disabled. */
+  const clearSelection = () => setSelectedCycleIds([]);
 
   /*** Toggles one concrete cycle without affecting graph settings or other selected cycles. */
   const toggleCycle = (cycleId: string) => {
     setSelectedCycleIds(current =>
-      current.includes(cycleId)
-        ? current.filter(id => id !== cycleId)
-        : [...current, cycleId]
+      current.includes(cycleId) ? current.filter(id => id !== cycleId) : [...current, cycleId]
     );
   };
 
-  return { cycles, highlights, loading, toggleCycle };
+  return {
+    clearSelection,
+    cycles,
+    highlights,
+    loadFailed,
+    loading: enabled && evaluation === null && !loadFailed,
+    toggleCycle,
+  };
 }
 
 /*** Builds stable UI identity and color from the audit's deterministic cycle ordering. */
@@ -90,8 +89,10 @@ function createHighlight(cycle: AuditRuleCycleView): GraphCycleHighlight {
 }
 
 export interface AuditRuleControlState {
+  readonly clearSelection: () => void;
   readonly cycles: readonly AuditRuleCycleView[];
   readonly highlights: readonly GraphCycleHighlight[];
+  readonly loadFailed: boolean;
   readonly loading: boolean;
   readonly toggleCycle: (cycleId: string) => void;
 }
