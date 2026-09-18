@@ -11,7 +11,7 @@ describe('[Java dependency graph baseline]', () => {
     const graph = buildGraph(files);
 
     const weights = new Map(
-      graph.edges.map(edge => [
+      graph.edges.map((edge) => [
         `${edge.data.source}->${edge.data.target}`,
         edge.data.weight,
       ]),
@@ -31,7 +31,7 @@ describe('[Java dependency graph baseline]', () => {
       'com.example.myapp.d',
     ]) {
       expect(
-        graph.nodes.some(node => node.data.id === packageName && node.classes !== 'isVendor'),
+        graph.nodes.some((node) => node.data.id === packageName && node.classes !== 'isVendor'),
       ).toBe(true);
     }
   });
