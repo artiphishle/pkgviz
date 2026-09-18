@@ -8,9 +8,10 @@ import type { GraphCycleHighlight } from '@/types/graphCycleHighlight';
 
 const CYCLE_COLORS = ['#d80303', '#2563eb', '#16a34a', '#9333ea', '#ea580c', '#0891b2'] as const;
 
-/*** Loads audit findings and owns client-only cycle selection state. */
+/*** Loads audit findings and owns client-only cycle selection and inspection state. */
 export function useAuditRuleControls(enabled: boolean): AuditRuleControlState {
   const [evaluation, setEvaluation] = useState<AuditEvaluation | null>(null);
+  const [inspectedCycleId, setInspectedCycleId] = useState<string | null>(null);
   const [loadFailed, setLoadFailed] = useState(false);
   const [selectedCycleIds, setSelectedCycleIds] = useState<readonly string[]>([]);
 
@@ -42,9 +43,15 @@ export function useAuditRuleControls(enabled: boolean): AuditRuleControlState {
     () => (enabled ? cycles.filter(cycle => cycle.selected).map(createHighlight) : []),
     [cycles, enabled]
   );
+  const inspectedCycle = enabled
+    ? (cycles.find(cycle => cycle.id === inspectedCycleId) ?? null)
+    : null;
 
-  /*** Clears every selected cycle when Rules are disabled. */
-  const clearSelection = () => setSelectedCycleIds([]);
+  /*** Clears selected and inspected cycles when the rule is disabled. */
+  const clearActiveCycles = () => {
+    setSelectedCycleIds([]);
+    setInspectedCycleId(null);
+  };
 
   /*** Toggles one concrete cycle without affecting graph settings or other selected cycles. */
   const toggleCycle = (cycleId: string) => {
@@ -54,16 +61,19 @@ export function useAuditRuleControls(enabled: boolean): AuditRuleControlState {
   };
 
   return {
-    clearSelection,
+    clearActiveCycles,
+    closeInspector: () => setInspectedCycleId(null),
     cycles,
     highlights,
+    inspectCycle: setInspectedCycleId,
+    inspectedCycle,
     loadFailed,
     loading: enabled && evaluation === null && !loadFailed,
     toggleCycle,
   };
 }
 
-/*** Builds stable UI identity and color from the audit's deterministic cycle ordering. */
+/*** Builds stable UI identity, labels, and color from deterministic audit cycle ordering. */
 function createCycleView(
   detail: PackageCycleDetail,
   index: number,
@@ -74,24 +84,34 @@ function createCycleView(
     id,
     color: CYCLE_COLORS[index % CYCLE_COLORS.length],
     detail,
+    label: `Cycle ${index + 1}`,
+    packageCount: new Set(detail.packages).size,
+    path: detail.packages.join(' → '),
     selected: selectedCycleIds.includes(id),
   };
 }
 
-/*** Maps selected audit evidence to the generic graph-highlighting contract. */
+/*** Maps selected audit evidence to the generic graph-emphasis contract. */
 function createHighlight(cycle: AuditRuleCycleView): GraphCycleHighlight {
   return {
     id: cycle.id,
     color: cycle.color,
     nodeIds: [...new Set(cycle.detail.packages)],
-    edges: cycle.detail.edges.map(edge => ({ source: edge.from, target: edge.to })),
+    edges: cycle.detail.edges.map((edge, index) => ({
+      source: edge.from,
+      step: index + 1,
+      target: edge.to,
+    })),
   };
 }
 
 export interface AuditRuleControlState {
-  readonly clearSelection: () => void;
+  readonly clearActiveCycles: () => void;
+  readonly closeInspector: () => void;
   readonly cycles: readonly AuditRuleCycleView[];
   readonly highlights: readonly GraphCycleHighlight[];
+  readonly inspectCycle: (cycleId: string) => void;
+  readonly inspectedCycle: AuditRuleCycleView | null;
   readonly loadFailed: boolean;
   readonly loading: boolean;
   readonly toggleCycle: (cycleId: string) => void;
@@ -101,5 +121,8 @@ export interface AuditRuleCycleView {
   readonly id: string;
   readonly color: string;
   readonly detail: PackageCycleDetail;
+  readonly label: string;
+  readonly packageCount: number;
+  readonly path: string;
   readonly selected: boolean;
 }
