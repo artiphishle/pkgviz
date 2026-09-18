@@ -5,6 +5,7 @@ import path from 'node:path';
 import { extractJavaPackageFromImport } from '@/app/utils/parser/java/extractJavaPackageFromImport';
 import { getIntrinsicPackagesRecursive } from '@/app/utils/parser/java/getIntrinsicPackagesRecursive';
 import type { MethodCall, MethodDefinition, ParsedFile } from '@/shared/types';
+import { toPosix } from '@/shared/utils/toPosix';
 
 /***
  * Extracts the package declaration from Java code.
@@ -99,7 +100,7 @@ export async function parseJavaFile(fullPath: string, projectRoot: string) {
   });
   const methods = extractMethodDefinitions(content);
   const calls = extractMethodCalls(content);
-  const relativePath = path.relative(projectRoot, fullPath);
+  const relativePath = toPosix(path.relative(projectRoot, fullPath));
 
   const file: ParsedFile = {
     className,

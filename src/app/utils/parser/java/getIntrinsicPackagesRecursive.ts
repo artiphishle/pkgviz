@@ -4,6 +4,7 @@ import { relative, resolve } from 'node:path';
 
 import { JAVA_ROOT } from '@/shared/constants';
 import { parseProjectPath } from '@/shared/utils/parseProjectPath';
+import { toPosix } from '@/shared/utils/toPosix';
 
 /*** Collects intrinsic Java packages recursively. */
 export async function getIntrinsicPackagesRecursive(
@@ -21,7 +22,7 @@ export async function getIntrinsicPackagesRecursive(
 
   // Only include if it has .java files and no subdirectories
   if (javaFiles.length > 0 && subdirs.length === 0) {
-    const relPath = relative(basePath, dirPath).replace(/\//g, '.');
+    const relPath = toPosix(relative(basePath, dirPath)).replace(/\//g, '.');
     results.push(relPath);
   }
 

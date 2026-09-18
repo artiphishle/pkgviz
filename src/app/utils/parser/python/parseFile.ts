@@ -4,13 +4,14 @@ import path from 'node:path';
 
 import { extractPythonPackageFromImport } from '@/app/utils/parser/python/extractPythonPackageFromImport';
 import type { ImportDefinition, MethodCall, MethodDefinition, ParsedFile } from '@/shared/types';
+import { toPosix } from '@/shared/utils/toPosix';
 
 /***
  * Extracts module path from Python __init__.py structure.
  */
 function extractModulePath(filePath: string, projectRoot: string): string {
-  const relativePath = path.relative(projectRoot, filePath);
-  const parts = relativePath.split(path.sep);
+  const relativePath = toPosix(path.relative(projectRoot, filePath));
+  const parts = relativePath.split('/');
 
   // Remove the filename
   parts.pop();
@@ -158,7 +159,7 @@ export async function parsePythonFile(fullPath: string, projectRoot: string): Pr
   const imports = extractImports(content);
   const methods = extractMethodDefinitions(content);
   const calls = extractMethodCalls(content);
-  const relativePath = path.relative(projectRoot, fullPath);
+  const relativePath = toPosix(path.relative(projectRoot, fullPath));
 
   return {
     className,
