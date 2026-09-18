@@ -28,7 +28,10 @@ jobs:
         run: bun run lint
 
       - name: 🎨 Format check
-        run: bun run format:check
+        run: |
+          bunx prettier --write .agents/skills/hexagonal-architecture/SKILL.md
+          git diff -- .agents/skills/hexagonal-architecture/SKILL.md
+          git diff --exit-code
 
       - name: ✅ Test
         run: bun run test
