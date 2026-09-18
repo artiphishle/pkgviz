@@ -9,6 +9,7 @@ import Header from '@/components/Header';
 import Loader from '@/components/Loader';
 import Settings from '@/components/Settings';
 import { SettingsProvider, useSettings } from '@/contexts/SettingsContext';
+import { AuditCycleInspector } from '@/features/audit/adapters/inbound/react/AuditCycleInspector';
 import { AuditRulesSettings } from '@/features/audit/adapters/inbound/react/AuditRulesSettings';
 import { useAuditRuleControls } from '@/features/audit/adapters/inbound/react/useAuditRuleControls';
 
@@ -25,8 +26,8 @@ export default function HomeScreen() {
 function HomeContent() {
   const [currentPackage, setCurrentPackage] = useState<string>('');
   const [packageGraph, setPackageGraph] = useState<ElementsDefinition | null>(null);
-  const { rulesEnabled, toggleRulesEnabled } = useSettings();
-  const auditRuleControls = useAuditRuleControls(rulesEnabled);
+  const { cyclicDependenciesEnabled, toggleCyclicDependenciesEnabled } = useSettings();
+  const auditRuleControls = useAuditRuleControls(cyclicDependenciesEnabled);
 
   useEffect(() => {
     if (!packageGraph) {
@@ -47,24 +48,30 @@ function HomeContent() {
         <Settings>
           <AuditRulesSettings
             controls={auditRuleControls}
-            enabled={rulesEnabled}
+            enabled={cyclicDependenciesEnabled}
             onToggleEnabled={() => {
-              auditRuleControls.clearSelection();
-              toggleRulesEnabled();
+              auditRuleControls.clearActiveCycles();
+              toggleCyclicDependenciesEnabled();
             }}
           />
         </Settings>
 
-        {packageGraph ? (
-          <Cytoscape
-            currentPackage={currentPackage}
-            setCurrentPackage={setCurrentPackage}
-            packageGraph={packageGraph}
-            cycleHighlights={auditRuleControls.highlights}
+        <div className="relative flex min-w-0 flex-1">
+          {packageGraph ? (
+            <Cytoscape
+              currentPackage={currentPackage}
+              setCurrentPackage={setCurrentPackage}
+              packageGraph={packageGraph}
+              cycleHighlights={auditRuleControls.highlights}
+            />
+          ) : (
+            <Loader />
+          )}
+          <AuditCycleInspector
+            cycle={auditRuleControls.inspectedCycle}
+            onClose={auditRuleControls.closeInspector}
           />
-        ) : (
-          <Loader />
-        )}
+        </div>
       </main>
     </>
   );
