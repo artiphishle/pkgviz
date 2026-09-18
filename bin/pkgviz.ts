@@ -4,8 +4,8 @@ import { fileURLToPath } from 'node:url';
 import * as net from 'node:net';
 import { dirname, resolve } from 'node:path';
 import { spawn } from 'child_process';
-import { resolveFileSystemPathWithinRoot, writeFileWithinRoot } from '@ankhorage/utility/node/fs';
-import { getAuditAction } from '../src/app/actions/audit.actions';
+import { formatAuditRuleFailures } from '../src/cli/formatAuditRuleFailures';
+import { runAuditAsync } from '../src/cli/runAuditAsync';
 
 interface Opts {
   out: string;
@@ -50,7 +50,7 @@ function parseArgs(argv: string[]): Opts {
 function printHelp() {
   console.log(`
 Usage:
-  bunx @your-scope/myapp [options]
+  bunx pkgviz [options]
 
 Options:
   -o, --out <file>   Output file (default: audit.json in caller's cwd)
@@ -64,14 +64,13 @@ Options:
   -h, --help         Show help
 
 Behavior:
-  - Starts the packaged Next.js app from inside this npm package.
-  - Passes ANALYZE_ROOT = process.cwd() (the caller's project root).
-  - Calls server action to retrieve JSON, writes it to --out, then exits (unless --open/--serve).
+  - Uses process.cwd() as the project root.
+  - Writes the audit before enforcing blocking rules, then exits (unless --open/--serve).
 `);
 }
 
 function logv(v: boolean, ...args: unknown[]) {
-  if (v) console.log('[myapp]', ...args);
+  if (v) console.log('[pkgviz]', ...args);
 }
 
 async function findFreePort(preferred?: number): Promise<number> {
@@ -132,22 +131,17 @@ async function main() {
   if (!opts.open && !opts.serve) {
     logv(opts.verbose, `Running audit for ${callerRoot}`);
 
-    // Set environment for the action
-    process.env.NEXT_PUBLIC_PROJECT_PATH = callerRoot;
-
-    // Call server action directly
-    const data = await getAuditAction();
-
-    // Write only inside the project selected by the caller.
-    const outPath = resolveFileSystemPathWithinRoot(callerRoot, opts.out);
-    const body = opts.pretty ? JSON.stringify(data, null, 2) : JSON.stringify(data);
-    await writeFileWithinRoot({
-      rootPath: callerRoot,
-      filePath: outPath,
-      body: new TextEncoder().encode(body),
-      exclusive: false,
+    const result = await runAuditAsync({
+      projectPath: callerRoot,
+      outputPath: opts.out,
+      pretty: opts.pretty,
     });
-    console.log(`✓ audit.json written → ${outPath}`);
+
+    console.log(`✓ audit.json written → ${result.artifactPath}`);
+    if (result.exitCode !== 0) {
+      console.error(formatAuditRuleFailures(result.audit.evaluation.rules, result.artifactPath));
+      process.exitCode = result.exitCode;
+    }
     return;
   }
 
@@ -205,6 +199,6 @@ async function main() {
 }
 
 main().catch(err => {
-  console.error('✖ myapp failed:', err?.message || err);
+  console.error('✖ pkgviz failed:', err?.message || err);
   process.exit(1);
 });
