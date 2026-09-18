@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   description: 'Package visualization',
 };
 
+/*** Renders the application root layout. */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>

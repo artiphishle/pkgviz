@@ -13,7 +13,7 @@ import { useLocalStorage } from '@/store/useLocalStorage';
 // Settings context
 const SettingsContext = createContext<ISettingsContext | null>(null);
 
-// Settings provider
+/*** Provides persisted graph settings to the application. */
 export const SettingsProvider = ({ children }: PropsWithChildren) => {
   const [maxSubPackageDepth, setMaxSubPackageDepth] = useLocalStorage<number>(
     'maxSubPackageDepth',
@@ -40,7 +40,9 @@ export const SettingsProvider = ({ children }: PropsWithChildren) => {
     getCytoscapeLayoutSpacing()
   );
 
+  /*** Toggles vendor package visibility. */
   const toggleShowVendorPackages = () => setShowVendorPackages(prev => !prev);
+  /*** Toggles compound node visibility. */
   const toggleShowCompoundNodes = () => setShowCompoundNodes(prev => !prev);
 
   return (
@@ -65,7 +67,7 @@ export const SettingsProvider = ({ children }: PropsWithChildren) => {
   );
 };
 
-// Hook to read/update settings
+/*** Returns the current graph settings context. */
 export function useSettings() {
   const context = use(SettingsContext);
   if (!context) throw new Error('useSettings() must be used within a SettingsProvider');

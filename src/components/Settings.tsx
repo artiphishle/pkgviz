@@ -10,6 +10,7 @@ import Switch from '@/components/Switch';
 import { useSettings } from '@/contexts/SettingsContext';
 import { t } from '@/i18n/i18n';
 
+/*** Renders the graph settings panel. */
 const Settings: React.FC = () => {
   const {
     cytoscapeLayout,
@@ -25,6 +26,7 @@ const Settings: React.FC = () => {
     toggleShowVendorPackages,
   } = useSettings();
 
+  /*** Downloads the current audit as JSON. */
   const handleDownloadJson = async () => {
     const { data, filename } = await downloadAuditJsonAction();
     const blob = new Blob([data], { type: 'application/json' });
@@ -36,6 +38,7 @@ const Settings: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
+  /*** Downloads the current audit as XML. */
   const handleDownloadXml = async () => {
     const { data, filename } = await downloadAuditXmlAction();
     const blob = new Blob([data], { type: 'application/xml' });

@@ -1,6 +1,6 @@
 import { toPosix } from '@/shared/utils/toPosix';
 
-/**
+/***
  * Extracts the package path from an import string.
  * @example 'lodash/debounce'     => 'lodash'
  * @example '@nestjs/common'      => '@nestjs/common'

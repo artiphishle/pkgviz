@@ -5,7 +5,7 @@ import path from 'node:path';
 import { extractPackageFromImport } from '@/app/utils/parser/kotlin/extractPackageFromImport';
 import type { ImportDefinition, MethodCall, MethodDefinition, ParsedFile } from '@/shared/types';
 
-/**
+/***
  * Extracts package declaration from Kotlin content.
  */
 function extractPackage(content: string): string {
@@ -13,7 +13,7 @@ function extractPackage(content: string): string {
   return packageMatch ? packageMatch[1] : '';
 }
 
-/**
+/***
  * Extracts import statements from Kotlin code.
  */
 function extractImports(content: string): ImportDefinition[] {
@@ -41,7 +41,7 @@ function extractImports(content: string): ImportDefinition[] {
   return imports;
 }
 
-/**
+/***
  * Extracts class, object, data class, or sealed class name from Kotlin content.
  */
 function extractClassName(content: string, fileName: string): string {
@@ -59,7 +59,7 @@ function extractClassName(content: string, fileName: string): string {
   return path.basename(fileName, path.extname(fileName));
 }
 
-/**
+/***
  * Extracts method/function definitions from Kotlin content.
  */
 function extractMethodDefinitions(content: string): MethodDefinition[] {
@@ -99,7 +99,7 @@ function extractMethodDefinitions(content: string): MethodDefinition[] {
   return methods;
 }
 
-/**
+/***
  * Extract method calls from Kotlin content.
  */
 function extractMethodCalls(content: string): MethodCall[] {
@@ -119,7 +119,7 @@ function extractMethodCalls(content: string): MethodCall[] {
   return calls;
 }
 
-/**
+/***
  * Parses a Kotlin file and returns metadata useful for diagram generation.
  */
 export async function parseKotlinFile(fullPath: string, projectRoot: string): Promise<ParsedFile> {

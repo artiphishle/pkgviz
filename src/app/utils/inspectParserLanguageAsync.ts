@@ -3,7 +3,7 @@ import { inspectProjectAsync } from '@ankhorage/project-detector/node';
 import type { ParserSelection } from '../../types/parserSelection';
 import { selectParserLanguage } from './selectParserLanguage';
 
-/** Inspect safely through the canonical detector, then apply pkgviz's parser selection policy. */
+/*** Inspect safely through the canonical detector, then apply pkgviz's parser selection policy. */
 export async function inspectParserLanguageAsync(projectPath: string): Promise<ParserSelection> {
   const inspection = await inspectProjectAsync(projectPath, {
     excludeDirectories: ['@types', '.github', 'examples', 'test'],

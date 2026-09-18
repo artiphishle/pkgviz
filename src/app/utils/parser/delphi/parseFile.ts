@@ -5,7 +5,7 @@ import path from 'node:path';
 import { extractPackageFromImport } from '@/app/utils/parser/delphi/extractPackageFromImport';
 import type { ImportDefinition, MethodCall, MethodDefinition, ParsedFile } from '@/shared/types';
 
-/**
+/***
  * Extracts package/unit path from Delphi file structure.
  */
 function extractUnitPath(filePath: string, projectRoot: string): string {
@@ -16,7 +16,7 @@ function extractUnitPath(filePath: string, projectRoot: string): string {
   return dir === '.' ? '' : dir.replace(/[/\\]/g, '.');
 }
 
-/**
+/***
  * Extracts uses clause imports from Delphi code.
  */
 function extractImports(content: string): ImportDefinition[] {
@@ -60,7 +60,7 @@ function extractImports(content: string): ImportDefinition[] {
   return imports;
 }
 
-/**
+/***
  * Extracts the unit/class name from Delphi content.
  */
 function extractClassName(content: string, fileName: string): string {
@@ -80,7 +80,7 @@ function extractClassName(content: string, fileName: string): string {
   return path.basename(fileName, path.extname(fileName));
 }
 
-/**
+/***
  * Extracts method/procedure/function definitions from Delphi content.
  */
 function extractMethodDefinitions(content: string): MethodDefinition[] {
@@ -134,7 +134,7 @@ function extractMethodDefinitions(content: string): MethodDefinition[] {
   return methods;
 }
 
-/**
+/***
  * Extract method calls from Delphi content.
  */
 function extractMethodCalls(content: string): MethodCall[] {
@@ -154,7 +154,7 @@ function extractMethodCalls(content: string): MethodCall[] {
   return calls;
 }
 
-/**
+/***
  * Parses a Delphi file and returns metadata useful for diagram generation.
  */
 export async function parseDelphiFile(fullPath: string, projectRoot: string): Promise<ParsedFile> {

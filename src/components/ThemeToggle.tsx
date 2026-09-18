@@ -2,6 +2,7 @@
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 
+/*** Renders the light and dark theme toggle. */
 export default function ThemeToggle() {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);

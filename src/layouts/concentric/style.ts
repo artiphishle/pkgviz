@@ -1,6 +1,7 @@
 import type { /* NodeSingular, */ StylesheetJson } from 'cytoscape';
 
 // No specific 'concentric' styles for now
+/*** Returns Cytoscape style overrides for this layout. */
 export function getStyle() {
   const style: StylesheetJson = [
     {

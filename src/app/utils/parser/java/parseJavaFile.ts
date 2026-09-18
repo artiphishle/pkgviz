@@ -6,7 +6,7 @@ import { extractJavaPackageFromImport } from '@/app/utils/parser/java/extractJav
 import { getIntrinsicPackagesRecursive } from '@/app/utils/parser/java/getIntrinsicPackagesRecursive';
 import type { MethodCall, MethodDefinition, ParsedFile } from '@/shared/types';
 
-/**
+/***
  * Extracts the package declaration from Java code.
  */
 function extractPackageName(content: string): string {
@@ -14,14 +14,14 @@ function extractPackageName(content: string): string {
   return match?.[1] || '';
 }
 
-/**
+/***
  * Extracts import statements from Java code.
  */
 function extractImports(content: string): string[] {
   return Array.from(content.matchAll(/^import\s+([a-zA-Z0-9_.*]+);/gm)).map(match => match[1]);
 }
 
-/**
+/***
  * Extracts the class name from the content and filename fallback.
  */
 function extractClassName(content: string, fileName: string): string {
@@ -33,7 +33,7 @@ function extractClassName(content: string, fileName: string): string {
   return fallback?.[2] || '';
 }
 
-/**
+/***
  * Extracts the method definitions from file content
  */
 function extractMethodDefinitions(content: string): MethodDefinition[] {
@@ -62,7 +62,7 @@ function extractMethodDefinitions(content: string): MethodDefinition[] {
   return methods;
 }
 
-/**
+/***
  * Extract method calls from file content
  */
 function extractMethodCalls(content: string): MethodCall[] {
@@ -79,7 +79,7 @@ function extractMethodCalls(content: string): MethodCall[] {
   return calls;
 }
 
-/**
+/***
  * Parses a Java file and returns metadata useful for diagram generation.
  */
 export async function parseJavaFile(fullPath: string, projectRoot: string) {

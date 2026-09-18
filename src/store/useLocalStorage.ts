@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+/*** Persists React state in local storage. */
 export function useLocalStorage<T>(key: string, initialValue: T) {
   const [storedValue, setStoredValue] = useState<T>(() => {
     if (typeof window === 'undefined') return initialValue;
@@ -13,6 +14,7 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
     }
   });
 
+  /*** Updates the persisted local-storage value. */
   const setValue = (value: T | ((val: T) => T)) => {
     try {
       const valueToStore = value instanceof Function ? value(storedValue) : value;

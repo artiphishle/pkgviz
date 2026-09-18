@@ -1,4 +1,4 @@
-/**
+/***
  * Extracts package name from Python import statement.
  *
  * Examples:

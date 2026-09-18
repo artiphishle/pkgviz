@@ -3,7 +3,7 @@ import type { ProjectDetection } from '@ankhorage/project-detector/types';
 import { Language } from '../../shared/types';
 import type { ParserSelection } from '../../types/parserSelection';
 
-/** Select a supported parser by evidence strength, evidence count, then stable parser order. */
+/*** Select a supported parser by evidence strength, evidence count, then stable parser order. */
 export function selectParserLanguage(detection: ProjectDetection): ParserSelection {
   const supported = [
     Language.TypeScript,

@@ -2,6 +2,7 @@
 import { Switch } from 'radix-ui';
 import React from 'react';
 
+/*** Renders the shared settings switch. */
 export default function RadixSwitch({ id, label, value, onToggle }: ISwitch) {
   return (
     <form>

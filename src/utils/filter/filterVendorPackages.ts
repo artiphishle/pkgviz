@@ -1,6 +1,6 @@
 import type { ElementsDefinition } from 'cytoscape';
 
-/**
+/***
  * Filters vendor packages by known package prefix
  */
 export function filterVendorPackages(elements: ElementsDefinition): ElementsDefinition {

@@ -5,6 +5,7 @@ import React from 'react';
 import { useCytoscape } from '@/components/useCytoscape';
 import ZoomInput from '@/components/ZoomInput';
 
+/*** Renders the interactive dependency graph. */
 export function Cytoscape({ currentPackage, packageGraph, setCurrentPackage }: CytoscapeProps) {
   const { cyRef, cyInstance } = useCytoscape(packageGraph, currentPackage, setCurrentPackage);
 
