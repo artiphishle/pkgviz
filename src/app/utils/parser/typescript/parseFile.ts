@@ -1,7 +1,6 @@
 import fs from 'node:fs/promises';
 import { basename, relative } from 'node:path';
 
-import { readTextFileWithinRoot } from '@ankhorage/utility/node/fs';
 import ts from 'typescript';
 
 import type { ImportDefinition, MethodCall, MethodDefinition, ParsedFile } from '@/shared/types';
