@@ -1,4 +1,4 @@
-import { useLocalStorage } from 'ankh-hooks';
+import { useLocalStorage } from 'ankh-hooks/store';
 import type { LayoutOptions } from 'cytoscape';
 import React, { createContext, type PropsWithChildren, use } from 'react';
 
