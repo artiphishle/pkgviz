@@ -26,7 +26,7 @@ export function AuditRuleList(props: AuditRuleListProps) {
     <>
       {props.evaluation.rules.map(rule => {
         const RuleRenderer = RULE_RENDERERS[rule.id] ?? GenericAuditRuleDetails;
-        return <RuleRenderer {...props} key={rule.id} rule={rule} />;
+        return <RuleRenderer {...props} key={rule.id + ':' + props.enabled} rule={rule} />;
       })}
     </>
   );
