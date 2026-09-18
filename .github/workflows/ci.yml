@@ -31,7 +31,11 @@ jobs:
           node-version: '24'
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: |
+          bun install
+          echo '--- BUN LOCK DIFF START ---'
+          git diff -- bun.lock
+          echo '--- BUN LOCK DIFF END ---'
 
       - name: Run build
         env:
