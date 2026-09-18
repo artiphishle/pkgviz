@@ -79,7 +79,7 @@ function withSettingsEnvironment(
   action: () => void,
 ) {
   const previous = Object.fromEntries(
-    SETTINGS_ENV_NAMES.map(name => [name, process.env[name]]),
+    SETTINGS_ENV_NAMES.map((name) => [name, process.env[name]]),
   ) as Record<(typeof SETTINGS_ENV_NAMES)[number], string | undefined>;
 
   try {
