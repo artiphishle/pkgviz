@@ -16,6 +16,19 @@
     "npm": ">=10.9.2"
   },
   "version": "0.7.7",
+  "description": "Analyze and visualize codebases, dependencies, architecture rules, and audit evidence.",
+  "keywords": [
+    "code-analysis",
+    "dependency-graph",
+    "architecture",
+    "visualization",
+    "static-analysis",
+    "cytoscape",
+    "developer-tools",
+    "typescript",
+    "audit",
+    "codebase"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
