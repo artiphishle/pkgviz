@@ -1,4 +1,4 @@
-import { findCyclicComponents, type Graph } from '@ankhorage/graph';
+import { findCyclePath, findCyclicComponents, type Graph } from '@ankhorage/graph';
 import type { ElementsDefinition } from 'cytoscape';
 
 import type { ParsedDirectory, ParsedFile } from '@/shared/types';
@@ -79,36 +79,6 @@ function adjacencyToGraph(
   };
 }
 
-/*** Find one simple cycle ordering inside a given SCC. */
-function findOneCycleInScc(
-  graph: Map<TUniquePackageName, Set<TUniquePackageName>>,
-  sccSet: Set<TUniquePackageName>
-): TUniquePackageName[] | null {
-  const nodes = Array.from(sccSet);
-  for (const start of nodes) {
-    const path: TUniquePackageName[] = [];
-    const seen = new Set<TUniquePackageName>();
-    /*** Searches the current strongly connected component for one concrete cycle. */
-    function dfs(v: TUniquePackageName): TUniquePackageName[] | null {
-      path.push(v);
-      seen.add(v);
-      for (const w of graph.get(v) ?? []) {
-        if (!sccSet.has(w)) continue;
-        if (w === start && path.length > 1) return [...path, start];
-        if (!seen.has(w)) {
-          const r = dfs(w);
-          if (r) return r;
-        }
-      }
-      path.pop();
-      return null;
-    }
-    const cyc = dfs(start);
-    if (cyc) return cyc;
-  }
-  return null;
-}
-
 /***
  * High-level API: build graph via `buildGraph`, detect package cycles,
  * and attach **member evidence** (files/imports) per cycle edge.
@@ -122,7 +92,8 @@ export function getPackageCyclesWithMembers(
   graph: ElementsDefinition; // for convenience (already built)
 } {
   const adj = elementsToAdj(graph);
-  const sccs = findCyclicComponents(adjacencyToGraph(adj));
+  const canonicalGraph = adjacencyToGraph(adj);
+  const sccs = findCyclicComponents(canonicalGraph);
   const evidence = buildEdgeEvidence(dir);
 
   const cycles: PackageCycleDetail[] = [];
@@ -130,8 +101,7 @@ export function getPackageCyclesWithMembers(
 
   for (const scc of sccs) {
     scc.forEach(p => packageSet.add(p));
-    const sccSet = new Set(scc);
-    const cycle = findOneCycleInScc(adj, sccSet) ?? [...scc, scc[0]];
+    const cycle = [...(findCyclePath(canonicalGraph, scc) ?? [...scc, scc[0]])];
 
     const edges: CycleEdgeEvidence[] = [];
     for (let i = 0; i < cycle.length - 1; i++) {
