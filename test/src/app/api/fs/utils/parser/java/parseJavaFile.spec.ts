@@ -1,3 +1,4 @@
+import { strict as assert } from 'node:assert';
 import { resolve } from 'node:path';
 import { describe, it } from 'node:test';
 import { expect } from '@artiphishle/testosterone/src/matchers';
@@ -16,5 +17,14 @@ describe('[parseJavaFile]', () => {
     expect(parsedJavaFile.methods.length).toBe(1);
     expect(parsedJavaFile.package).toBe('com.example.myapp');
     expect(parsedJavaFile.path).toBe('src/main/java/com/example/myapp/App.java');
+  });
+
+  it('rejects file reads outside the selected project root', async () => {
+    const projectPath = resolve(process.cwd(), 'examples/java/my-app');
+
+    await assert.rejects(
+      parseJavaFile(resolve(projectPath, '..', 'outside.java'), projectPath),
+      /Path escaped the allowed root/
+    );
   });
 });

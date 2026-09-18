@@ -1,6 +1,8 @@
 'use server';
-import fs from 'node:fs';
 import path from 'node:path';
+
+import { readTextFileWithinRoot } from '@ankhorage/utility/node/fs';
+import { escapeRegExp } from '@ankhorage/utility/regex';
 
 import { extractJavaPackageFromImport } from '@/app/utils/parser/java/extractJavaPackageFromImport';
 import { getIntrinsicPackagesRecursive } from '@/app/utils/parser/java/getIntrinsicPackagesRecursive';
@@ -26,7 +28,9 @@ function extractImports(content: string): string[] {
  * Extracts the class name from the content and filename fallback.
  */
 function extractClassName(content: string, fileName: string): string {
-  const classPattern = new RegExp(`(?:public\\s+)?(class|interface|enum|record)\\s+${fileName}\\b`);
+  const classPattern = new RegExp(
+    `(?:public\\s+)?(class|interface|enum|record)\\s+${escapeRegExp(fileName)}\\b`
+  );
   const classNameMatch = content.match(classPattern);
   if (classNameMatch) return fileName;
 
@@ -84,8 +88,11 @@ function extractMethodCalls(content: string): MethodCall[] {
  * Parses a Java file and returns metadata useful for diagram generation.
  */
 export async function parseJavaFile(fullPath: string, projectRoot: string) {
-  const content = fs.readFileSync(fullPath, 'utf-8');
-  const fileName = path.basename(fullPath, '.java');
+  const { content, path: resolvedPath } = readTextFileWithinRoot({
+    rootPath: projectRoot,
+    filePath: fullPath,
+  });
+  const fileName = path.basename(resolvedPath, '.java');
   const intrinsicPackages = await getIntrinsicPackagesRecursive();
 
   const className = extractClassName(content, fileName);
@@ -100,7 +107,7 @@ export async function parseJavaFile(fullPath: string, projectRoot: string) {
   });
   const methods = extractMethodDefinitions(content);
   const calls = extractMethodCalls(content);
-  const relativePath = toPosix(path.relative(projectRoot, fullPath));
+  const relativePath = toPosix(path.relative(projectRoot, resolvedPath));
 
   const file: ParsedFile = {
     className,

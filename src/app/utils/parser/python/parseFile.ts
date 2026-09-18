@@ -1,6 +1,7 @@
 'use server';
-import fs from 'node:fs';
 import path from 'node:path';
+
+import { readTextFileWithinRoot } from '@ankhorage/utility/node/fs';
 
 import { extractPythonPackageFromImport } from '@/app/utils/parser/python/extractPythonPackageFromImport';
 import type { ImportDefinition, MethodCall, MethodDefinition, ParsedFile } from '@/shared/types';
@@ -151,15 +152,18 @@ function extractMethodCalls(content: string): MethodCall[] {
  * Parses a Python file and returns metadata useful for diagram generation.
  */
 export async function parsePythonFile(fullPath: string, projectRoot: string): Promise<ParsedFile> {
-  const content = fs.readFileSync(fullPath, 'utf-8');
-  const fileName = path.basename(fullPath);
+  const { content, path: resolvedPath } = readTextFileWithinRoot({
+    rootPath: projectRoot,
+    filePath: fullPath,
+  });
+  const fileName = path.basename(resolvedPath);
 
   const className = extractClassName(content, fileName);
-  const modulePath = extractModulePath(fullPath, projectRoot);
+  const modulePath = extractModulePath(resolvedPath, projectRoot);
   const imports = extractImports(content);
   const methods = extractMethodDefinitions(content);
   const calls = extractMethodCalls(content);
-  const relativePath = toPosix(path.relative(projectRoot, fullPath));
+  const relativePath = toPosix(path.relative(projectRoot, resolvedPath));
 
   return {
     className,

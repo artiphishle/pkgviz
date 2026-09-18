@@ -1,10 +1,10 @@
 #!/usr/bin/env bun
 import { existsSync } from 'node:fs';
-import { mkdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import * as net from 'node:net';
 import { dirname, resolve } from 'node:path';
 import { spawn } from 'child_process';
+import { resolveFileSystemPathWithinRoot, writeFileWithinRoot } from '@ankhorage/utility/node/fs';
 import { getAuditAction } from '../src/app/actions/audit.actions';
 
 interface Opts {
@@ -138,11 +138,15 @@ async function main() {
     // Call server action directly
     const data = await getAuditAction();
 
-    // write to caller's directory
-    const outPath = resolve(callerRoot, opts.out);
-    await mkdir(dirname(outPath), { recursive: true });
+    // Write only inside the project selected by the caller.
+    const outPath = resolveFileSystemPathWithinRoot(callerRoot, opts.out);
     const body = opts.pretty ? JSON.stringify(data, null, 2) : JSON.stringify(data);
-    await writeFile(outPath, body, 'utf8');
+    await writeFileWithinRoot({
+      rootPath: callerRoot,
+      filePath: outPath,
+      body: new TextEncoder().encode(body),
+      exclusive: false,
+    });
     console.log(`✓ audit.json written → ${outPath}`);
     return;
   }
