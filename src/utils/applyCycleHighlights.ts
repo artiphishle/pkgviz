@@ -82,7 +82,9 @@ function collectContextNodeIds(
   for (const nodeId of nodeColors.keys()) {
     cy.getElementById(nodeId)
       .parents()
-      .forEach(parent => contextIds.add(parent.id()));
+      .forEach(parent => {
+        contextIds.add(parent.id());
+      });
   }
   return contextIds;
 }
