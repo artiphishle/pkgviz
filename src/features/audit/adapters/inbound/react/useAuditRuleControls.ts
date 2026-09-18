@@ -39,7 +39,7 @@ export function useAuditRuleControls(enabled: boolean): AuditRuleControlState {
     [evaluation, selectedCycleIds]
   );
   const highlights = useMemo(
-    () => enabled ? cycles.filter(cycle => cycle.selected).map(createHighlight) : [],
+    () => (enabled ? cycles.filter(cycle => cycle.selected).map(createHighlight) : []),
     [cycles, enabled]
   );
 
