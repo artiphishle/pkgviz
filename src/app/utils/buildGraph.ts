@@ -16,18 +16,14 @@ export function buildGraph(dir: ParsedDirectory): ElementsDefinition {
 }
 
 /*** Builds PKGViz package dependencies in the canonical Ankhorage graph model. */
-function buildCanonicalGraph(
-  dir: ParsedDirectory
-): Graph<PackageNodeData, PackageEdgeData> {
+function buildCanonicalGraph(dir: ParsedDirectory): Graph<PackageNodeData, PackageEdgeData> {
   const { nodes, edges } = buildGraphRecursively(dir);
 
   for (const edge of edges.values()) {
     for (const endpoint of [edge.source, edge.target]) {
       if (nodes.some(node => node.id === endpoint)) continue;
 
-      const parent = endpoint.includes('.')
-        ? endpoint.split('.').slice(0, -1).join('.')
-        : '';
+      const parent = endpoint.includes('.') ? endpoint.split('.').slice(0, -1).join('.') : '';
       const name = endpoint.split('.').pop() || endpoint;
 
       nodes.push({
