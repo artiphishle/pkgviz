@@ -5,6 +5,7 @@ import { relative, resolve } from 'node:path';
 import { JAVA_ROOT } from '@/shared/constants';
 import { parseProjectPath } from '@/shared/utils/parseProjectPath';
 
+/*** Collects intrinsic Java packages recursively. */
 export async function getIntrinsicPackagesRecursive(
   root: string = parseProjectPath(),
   currentPath?: string,

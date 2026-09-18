@@ -3,6 +3,7 @@
  */
 import type { parseJavaFile } from '@/app/utils/parser/java/parseJavaFile';
 
+/*** Finds the Java entry point in the parsed project. */
 export function findEntryPoint(files: JavaParsedFile[]): JavaParsedFile | null {
   for (const file of files) {
     const mainMethod = file.methods.find(

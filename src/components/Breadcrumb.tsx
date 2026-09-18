@@ -3,6 +3,7 @@ import { ChevronRight, Home } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
 
+/*** Renders package navigation breadcrumbs. */
 export default function Breadcrumb({ path, onNavigate }: BreadcrumbProps) {
   const parts = path.split('/') || [''];
 

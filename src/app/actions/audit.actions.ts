@@ -13,6 +13,7 @@ import { getProjectName } from '@/shared/utils/getProjectName';
 import { parseProjectPath } from '@/shared/utils/parseProjectPath';
 import type { ParserSelection } from '@/types/parserSelection';
 
+/*** Builds the audit payload for the configured project. */
 export async function getAuditAction(): Promise<Audit> {
   const projectPath = parseProjectPath();
   const projectName = getProjectName();
@@ -40,6 +41,7 @@ export async function getAuditAction(): Promise<Audit> {
   return audit as Audit;
 }
 
+/*** Serializes the current project audit as JSON. */
 export async function downloadAuditJsonAction(): Promise<{ data: string; filename: string }> {
   const audit = await getAuditAction();
   const jsonString = JSON.stringify(audit, null, 2);
@@ -48,6 +50,7 @@ export async function downloadAuditJsonAction(): Promise<{ data: string; filenam
   return { data: jsonString, filename };
 }
 
+/*** Serializes the current project audit as XML. */
 export async function downloadAuditXmlAction(): Promise<{ data: string; filename: string }> {
   const audit = await getAuditAction();
   const xmlString = js2xml({ audit }, { compact: true, spaces: 2 });

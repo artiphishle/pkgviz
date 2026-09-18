@@ -7,6 +7,7 @@ interface IZoomInput {
   readonly cyInstance: Core | null;
 }
 
+/*** Renders graph zoom controls. */
 export default function ZoomInput({ cyInstance }: IZoomInput) {
   const [zoom, setZoom] = useState<number>(1);
   const [minZoom, setMinZoom] = useState<number>(0.1);
@@ -21,6 +22,7 @@ export default function ZoomInput({ cyInstance }: IZoomInput) {
     setMinZoom(cyInstance.minZoom());
     setMaxZoom(cyInstance.maxZoom());
 
+    /*** Applies a zoom step to the graph. */
     const handleZoom = () => {
       setZoom(cyInstance.zoom());
     };
@@ -33,6 +35,7 @@ export default function ZoomInput({ cyInstance }: IZoomInput) {
   }, [cyInstance]);
 
   // Slider change -> set zoom, anchored at viewport centre
+  /*** Applies the slider value as the graph zoom level. */
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!cyInstance) return;
     const level = parseFloat(e.target.value);
@@ -51,6 +54,7 @@ export default function ZoomInput({ cyInstance }: IZoomInput) {
   };
 
   // Zoom to fit button
+  /*** Fits the graph into the available viewport. */
   const handleZoomToFit = () => {
     if (!cyInstance) return;
 

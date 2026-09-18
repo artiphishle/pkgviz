@@ -1,4 +1,4 @@
-/**
+/***
  * Extracts the package/namespace from a C++ include statement
  * For example: "myapp/utils/Helper.h" -> "myapp.utils"
  */

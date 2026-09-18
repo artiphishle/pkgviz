@@ -1,4 +1,4 @@
-/**
+/***
  * Extract the package name from a Kotlin import statement.
  * Examples:
  * - "com.example.models.User" -> "com.example.models"

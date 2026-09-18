@@ -10,6 +10,7 @@ import Loader from '@/components/Loader';
 import Settings from '@/components/Settings';
 import { SettingsProvider } from '@/contexts/SettingsContext';
 
+/*** Renders the PKGViz home screen. */
 export default function HomeScreen() {
   const [currentPackage, setCurrentPackage] = useState<string>('');
   const [packageGraph, setPackageGraph] = useState<ElementsDefinition | null>(null);

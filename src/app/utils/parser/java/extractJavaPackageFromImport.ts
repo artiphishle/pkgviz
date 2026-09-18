@@ -1,4 +1,4 @@
-/**
+/***
  * Extracts the package from a reversed import array
  * @example ['B', 'A', 'java', 'com'] => 'com.java'
  */
@@ -15,7 +15,7 @@ export function extractJavaPackageFromReversedImportArray(segments: string[]): s
   return pkgSegments.reverse().join('.');
 }
 
-/**
+/***
  * Extracts the package name from an import string
  * @example import 'some.package.*'   => 'some.package'
  * @example import 'some.package.A'   => 'some.package'

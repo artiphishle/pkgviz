@@ -21,6 +21,7 @@ import { filterVendorPackages } from '@/utils/filter/filterVendorPackages';
 import { toggleCompoundNodes } from '@/utils/filter/toggleCompoundNodes';
 import { hasChildren } from '@/utils/hasChildren';
 
+/*** Owns the Cytoscape instance, filtering, layout, styling, and interactions. */
 export function useCytoscape(
   elements: ElementsDefinition | null,
   currentPackage: string,
@@ -104,7 +105,7 @@ export function useCytoscape(
     setMaxSubPackageDepth,
   ]);
 
-  /** 2) Helper for layout options */
+  /*** 2) Helper for layout options */
   const makeLayoutOpts = useCallback(
     (name: LayoutOptions['name']): LayoutOptions & Record<string, unknown> => ({
       ...LAYOUTS[name],
@@ -117,7 +118,7 @@ export function useCytoscape(
     [cytoscapeLayoutSpacing]
   );
 
-  /** 3) Run (or re-run) layout safely; stop any previous instance */
+  /*** 3) Run (or re-run) layout safely; stop any previous instance */
   const runLayoutSafe = useCallback(
     (cy: Core, name: LayoutOptions['name']) => {
       try {
@@ -137,6 +138,7 @@ export function useCytoscape(
         const layout = cy.layout(makeLayoutOpts(name));
         layoutRef.current = layout;
 
+        /*** Fits the graph after the active layout completes. */
         const onStop = () => {
           if (cy.destroyed()) return;
           cy.fit(undefined, 50);
@@ -167,6 +169,7 @@ export function useCytoscape(
     setCyInstance(cy);
     cyRef.current.style.background = getCanvasBg('light');
 
+    /*** Refits the graph after its container is resized. */
     const handleResize = () => {
       if (cy.destroyed()) return;
       cy.fit(undefined, 50);
@@ -240,6 +243,7 @@ export function useCytoscape(
     if (!cyInstance) return;
     const cy = cyInstance;
 
+    /*** Updates graph highlighting from the current node selection. */
     const updateHighlights = () => {
       if (cy.destroyed()) return;
       const selectedNodes = cy.nodes(':selected');

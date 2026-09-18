@@ -1,3 +1,4 @@
+/*** Filters graph elements to the selected package prefix. */
 export function filterByPackagePrefix(
   allElements: cytoscape.ElementsDefinition,
   packagePrefix: string

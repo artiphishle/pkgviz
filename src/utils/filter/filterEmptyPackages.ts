@@ -1,6 +1,6 @@
 import type { ElementsDefinition } from 'cytoscape';
 
-/**
+/***
  * Returns root package if only one inside, or '' (root folder)
  */
 function getRootPackage(elements: ElementsDefinition) {
@@ -10,7 +10,7 @@ function getRootPackage(elements: ElementsDefinition) {
   return rootPackages.length > 1 ? '' : rootPackages[0].data.id!;
 }
 
-/**
+/***
  * Filter empty packages from graph (skip to next interesting package)
  */
 export function filterEmptyPackages(currentPackage: string, elements: ElementsDefinition): string {

@@ -5,7 +5,7 @@ import path from 'node:path';
 import { extractCppPackageFromImport } from '@/app/utils/parser/cpp/extractCppPackageFromImport';
 import type { ImportDefinition, MethodCall, MethodDefinition, ParsedFile } from '@/shared/types';
 
-/**
+/***
  * Extracts namespace from C++ code.
  */
 function extractNamespace(content: string): string {
@@ -13,7 +13,7 @@ function extractNamespace(content: string): string {
   return match?.[1]?.replace(/::/g, '.') || '';
 }
 
-/**
+/***
  * Extracts include statements from C++ code.
  */
 function extractIncludes(content: string, projectRoot: string): ImportDefinition[] {
@@ -39,7 +39,7 @@ function extractIncludes(content: string, projectRoot: string): ImportDefinition
   return includes;
 }
 
-/**
+/***
  * Extracts the class name from the content and filename fallback.
  */
 function extractClassName(content: string, fileName: string): string {
@@ -59,7 +59,7 @@ function extractClassName(content: string, fileName: string): string {
   return path.basename(fileName, path.extname(fileName));
 }
 
-/**
+/***
  * Extracts method definitions from C++ content.
  */
 function extractMethodDefinitions(content: string): MethodDefinition[] {
@@ -108,7 +108,7 @@ function extractMethodDefinitions(content: string): MethodDefinition[] {
   return methods;
 }
 
-/**
+/***
  * Extract method calls from C++ content.
  */
 function extractMethodCalls(content: string): MethodCall[] {
@@ -125,7 +125,7 @@ function extractMethodCalls(content: string): MethodCall[] {
   return calls;
 }
 
-/**
+/***
  * Parses a C++ file and returns metadata useful for diagram generation.
  */
 export async function parseCppFile(fullPath: string, projectRoot: string): Promise<ParsedFile> {

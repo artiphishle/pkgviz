@@ -1,4 +1,4 @@
-/**
+/***
  * Extracts the package/unit name from a Delphi uses clause import.
  *
  * Delphi imports are in the format:
@@ -6,8 +6,6 @@
  * - uses UnitName in 'path/to/UnitName.pas';
  * - uses Vcl.Forms, System.SysUtils;
  *
- * @param importStatement - The full import statement (e.g., "System.SysUtils")
- * @returns The package/namespace name
  */
 export function extractPackageFromImport(importStatement: string): string {
   const trimmed = importStatement.trim();

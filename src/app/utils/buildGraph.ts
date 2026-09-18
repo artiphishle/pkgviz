@@ -7,7 +7,7 @@ import type {
 
 import type { ParsedDirectory, ParsedFile } from '@/shared/types';
 
-/**
+/***
  * Builds a weighted dependency graph based on package-level imports.
  * - Adds intrinsic directory nodes (from folder structure)
  * - Aggregates edges (source pkg -> target pkg) with cumulative weight
@@ -15,7 +15,7 @@ import type { ParsedDirectory, ParsedFile } from '@/shared/types';
  * - Sanitizes: skips empty package ids and self-edges
  */
 export function buildGraph(dir: ParsedDirectory) {
-  /**
+  /***
    * Build graph (nodes/edges) recursively
    */
   function buildGraphRecursively(

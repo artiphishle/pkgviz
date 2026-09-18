@@ -7,7 +7,6 @@ export type ThemeKey = 'dark' | 'light';
 const palette = {
   light: {
     canvasBg: '#ffffff',
-    // edge: '#9E9E9E',
     edge: '#000',
     weightXs: '#000',
     weightMd: '#000',
@@ -44,8 +43,10 @@ const palette = {
   },
 } as const;
 
+/*** Returns the canvas background for the active theme. */
 export const getCanvasBg = (theme: ThemeKey) => palette[theme].canvasBg;
 
+/*** Builds the shared Cytoscape styles for the active theme. */
 export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey): StylesheetJson {
   const colors = palette[theme];
   const { thresholds } = getWeightBuckets(3, 'linear', filteredElements);
@@ -131,7 +132,8 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         'target-arrow-shape': 'chevron',
         'target-arrow-fill': 'filled',
         'line-color': colors.edge,
-        'curve-style': 'straight',
+        // Bezier routing keeps lifted self-loops and overlapping endpoints renderable.
+        'curve-style': 'bezier',
         opacity: 1,
         'line-opacity': 1,
       },
@@ -178,10 +180,6 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         'line-color': colors.weightXl,
         'target-arrow-color': colors.weightXl,
       },
-    },
-    {
-      selector: 'edge.packageCycle',
-      style: { 'line-color': '#d80303', 'target-arrow-color': '#d80303' },
     },
     {
       selector: 'edge.packageCycle',

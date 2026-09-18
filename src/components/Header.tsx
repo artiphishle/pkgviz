@@ -4,6 +4,7 @@ import ThemeToggle from '@/components/ThemeToggle';
 import { t } from '@/i18n/i18n';
 import { getProjectName } from '@/shared/utils/getProjectName';
 
+/*** Renders the application header. */
 export default function Header({ children, title }: HeaderProps) {
   const projectName = getProjectName();
 

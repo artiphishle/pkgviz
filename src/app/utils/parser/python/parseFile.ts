@@ -5,7 +5,7 @@ import path from 'node:path';
 import { extractPythonPackageFromImport } from '@/app/utils/parser/python/extractPythonPackageFromImport';
 import type { ImportDefinition, MethodCall, MethodDefinition, ParsedFile } from '@/shared/types';
 
-/**
+/***
  * Extracts module path from Python __init__.py structure.
  */
 function extractModulePath(filePath: string, projectRoot: string): string {
@@ -19,7 +19,7 @@ function extractModulePath(filePath: string, projectRoot: string): string {
   return parts.join('.');
 }
 
-/**
+/***
  * Extracts import statements from Python code.
  */
 function extractImports(content: string): ImportDefinition[] {
@@ -63,7 +63,7 @@ function extractImports(content: string): ImportDefinition[] {
   return imports;
 }
 
-/**
+/***
  * Extracts the class name from Python content.
  */
 function extractClassName(content: string, fileName: string): string {
@@ -77,7 +77,7 @@ function extractClassName(content: string, fileName: string): string {
   return path.basename(fileName, path.extname(fileName));
 }
 
-/**
+/***
  * Extracts method/function definitions from Python content.
  */
 function extractMethodDefinitions(content: string): MethodDefinition[] {
@@ -118,7 +118,7 @@ function extractMethodDefinitions(content: string): MethodDefinition[] {
   return methods;
 }
 
-/**
+/***
  * Extract method calls from Python content.
  */
 function extractMethodCalls(content: string): MethodCall[] {
@@ -146,7 +146,7 @@ function extractMethodCalls(content: string): MethodCall[] {
   return calls;
 }
 
-/**
+/***
  * Parses a Python file and returns metadata useful for diagram generation.
  */
 export async function parsePythonFile(fullPath: string, projectRoot: string): Promise<ParsedFile> {

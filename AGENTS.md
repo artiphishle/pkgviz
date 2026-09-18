@@ -114,7 +114,7 @@ bun run test
 bun run build
 ```
 
-The protected `CI / install-and-check` check is authoritative for pull requests to `main`.
+The protected `CI / validate` check is authoritative for pull requests to `main`.
 
 Keep pull requests narrow and independently revertible. For migration work, prefer tests-only
 baseline PRs before implementation PRs.

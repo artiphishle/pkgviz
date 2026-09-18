@@ -1,5 +1,6 @@
 import type { ElementsDefinition } from 'cytoscape';
 
+/*** Computes edge-weight thresholds and bucket counts. */
 export function getWeightBuckets(
   categoryCount: number,
   algorithm: 'linear' | 'log' | 'quantile' = 'linear',
@@ -49,6 +50,7 @@ export function getWeightBuckets(
   };
 }
 
+/*** Returns the largest edge weight in the graph. */
 function getMaxEdgeWeight(filteredElements: ElementsDefinition) {
   return (
     filteredElements?.edges.reduce((max, edge) => {

@@ -2,9 +2,10 @@ import type { ElementsDefinition } from 'cytoscape';
 
 import type { ParsedDirectory, ParsedFile } from '@/shared/types';
 
-/** Collect all files from your ParsedDirectory tree. */
+/*** Collect all files from your ParsedDirectory tree. */
 function collectFiles(root: ParsedDirectory): ParsedFile[] {
   const files: ParsedFile[] = [];
+  /*** Collects parsed files by traversing the parsed directory tree. */
   const walk = (dir: ParsedDirectory) => {
     for (const key in dir) {
       const entry = (dir as Record<string, unknown>)[key];
@@ -19,7 +20,7 @@ function collectFiles(root: ParsedDirectory): ParsedFile[] {
   return files;
 }
 
-/** Build per-edge evidence: key "from->to" → list of ImportEvidence. */
+/*** Build per-edge evidence: key "from->to" → list of ImportEvidence. */
 function buildEdgeEvidence(dir: ParsedDirectory): Map<string, ImportEvidence[]> {
   const files = collectFiles(dir);
   const map = new Map<string, ImportEvidence[]>();
@@ -42,7 +43,7 @@ function buildEdgeEvidence(dir: ParsedDirectory): Map<string, ImportEvidence[]> 
   return map;
 }
 
-/** Convert ElementsDefinition (from buildGraph) to adjacency map. */
+/*** Convert ElementsDefinition (from buildGraph) to adjacency map. */
 function elementsToAdj(elements: ElementsDefinition) {
   const adj = new Map<TUniquePackageName, Set<TUniquePackageName>>();
   for (const n of elements.nodes) {
@@ -59,7 +60,7 @@ function elementsToAdj(elements: ElementsDefinition) {
   return adj;
 }
 
-/** Tarjan SCC on adjacency. */
+/*** Tarjan SCC on adjacency. */
 function tarjanSCC(
   graph: Map<TUniquePackageName, Set<TUniquePackageName>>
 ): TUniquePackageName[][] {
@@ -70,6 +71,7 @@ function tarjanSCC(
   const onStack = new Set<TUniquePackageName>();
   const out: TUniquePackageName[][] = [];
 
+  /*** Visits one vertex while computing strongly connected components. */
   function strong(v: TUniquePackageName) {
     idx.set(v, index);
     low.set(v, index);
@@ -102,7 +104,7 @@ function tarjanSCC(
   return out;
 }
 
-/** Find one simple cycle ordering inside a given SCC. */
+/*** Find one simple cycle ordering inside a given SCC. */
 function findOneCycleInScc(
   graph: Map<TUniquePackageName, Set<TUniquePackageName>>,
   sccSet: Set<TUniquePackageName>
@@ -111,6 +113,7 @@ function findOneCycleInScc(
   for (const start of nodes) {
     const path: TUniquePackageName[] = [];
     const seen = new Set<TUniquePackageName>();
+    /*** Searches the current strongly connected component for one concrete cycle. */
     function dfs(v: TUniquePackageName): TUniquePackageName[] | null {
       path.push(v);
       seen.add(v);
@@ -131,7 +134,7 @@ function findOneCycleInScc(
   return null;
 }
 
-/**
+/***
  * High-level API: build graph via `buildGraph`, detect package cycles,
  * and attach **member evidence** (files/imports) per cycle edge.
  */
@@ -176,7 +179,7 @@ export function getPackageCyclesWithMembers(
   return { cycles, packageSet, graph };
 }
 
-/**
+/***
  * Annotate Cytoscape nodes:
  *  - adds class "packageCycle" for cyclic packages
  *  - sets data.packageCycle (boolean)
@@ -244,7 +247,7 @@ export function markCyclicPackagesWithEvidence(
   return { ...elements, nodes, edges };
 }
 
-/**
+/***
  * Convenience that only returns the set of cyclic packages (no evidence)
  */
 export function getCyclicPackageSet(

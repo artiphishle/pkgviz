@@ -15,7 +15,7 @@ import { toPosix } from '@/shared/utils/toPosix';
 
 import { inspectParserLanguageAsync } from './inspectParserLanguageAsync';
 
-/**
+/***
  * Returns resolved root
  */
 async function resolveRoot(dir: string, detectedLanguage: Language) {
@@ -85,7 +85,7 @@ async function resolveRoot(dir: string, detectedLanguage: Language) {
   }
 }
 
-/**
+/***
  * Read directory recursively
  */
 async function readDirRecursively(
@@ -190,7 +190,7 @@ async function readDirRecursively(
   return result;
 }
 
-/**
+/***
  * Entrypoint
  */
 export async function getParsedFileStructure(language?: Language) {

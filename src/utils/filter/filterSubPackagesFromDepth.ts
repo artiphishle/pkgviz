@@ -1,6 +1,6 @@
 import type { EdgeDefinition, ElementsDefinition } from 'cytoscape';
 
-/**
+/***
  * Compute the minimal set of "root" packages that have no ancestor in the list.
  * Example: ['x.y', 'x.y.z', 'a', 'a.c.x'] => ['a', 'x.y']
  */
@@ -16,7 +16,7 @@ function findRoots(packages: string[]): string[] {
   return roots;
 }
 
-/**
+/***
  * Ascend from a package to its nearest ancestor that is in the `roots` set.
  */
 function nearestRoot(pkg: string, roots: Set<string>): string {
@@ -31,7 +31,7 @@ function nearestRoot(pkg: string, roots: Set<string>): string {
   return pkg;
 }
 
-/**
+/***
  * Given a root and a leaf pkg, return the visible ancestor at `maxDepth`
  * under the root, preferring the deepest existing package <= target depth.
  *
@@ -59,7 +59,7 @@ function visibleAncestorForDepth(
   return root; // fallback
 }
 
-/**
+/***
  * Global maximum depth across all roots.
  * Depth is counted relative to the nearest root: root=1, root.child=2, etc.
  */
@@ -79,7 +79,7 @@ export function getMaxDepth(elements: ElementsDefinition): number {
   return maxDepth;
 }
 
-/**
+/***
  * Maximum depth per root, e.g. { 'a': 3, 'x.y': 2 }.
  */
 export function getMaxDepthByRoot(elements: ElementsDefinition): Record<string, number> {
@@ -96,12 +96,9 @@ export function getMaxDepthByRoot(elements: ElementsDefinition): Record<string, 
   return result;
 }
 
-/**
+/***
  * Filters sub-packages so only the desired number of levels under each root are shown.
  *
- * @param elements - Cytoscape elements
- * @param allowSelfLoops - Keep self loops after lifting/aggregation
- * @param maxDepth - Number of levels to keep under each root (1 = roots only, 2 = +children, etc.)
  */
 export function filterSubPackagesByDepth(
   elements: ElementsDefinition,

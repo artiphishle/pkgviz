@@ -8,7 +8,7 @@ import type { ImportDefinition, MethodCall, MethodDefinition, ParsedFile } from 
 import { parseProjectPath } from '@/shared/utils/parseProjectPath';
 import { toPosix } from '@/shared/utils/toPosix';
 
-/**
+/***
  * Extracts import statements from TypeScript code.
  */
 function extractImports(content: string, filename: string): ImportDefinition[] {
@@ -21,6 +21,7 @@ function extractImports(content: string, filename: string): ImportDefinition[] {
     const fullPath = toPosix(filename).split('/').slice(0, -1).join('/');
     const moduleSpecifier = (node.moduleSpecifier as ts.StringLiteral).text;
 
+    /*** Resolves a TypeScript import to a project-relative source path. */
     function resolveImportPath(curDir: string, specifier: string) {
       const root = parseProjectPath();
 
@@ -48,7 +49,7 @@ function extractImports(content: string, filename: string): ImportDefinition[] {
   return imports;
 }
 
-/**
+/***
  * Extracts the class name from the content and filename fallback.
  */
 function extractClassName(content: string, fileName: string): string {
@@ -60,13 +61,14 @@ function extractClassName(content: string, fileName: string): string {
   return basename(fileName, '.ts');
 }
 
-/**
+/***
  * Extracts method definitions from TypeScript content.
  */
 function extractMethodDefinitions(content: string): MethodDefinition[] {
   const sourceFile = ts.createSourceFile('temp.ts', content, ts.ScriptTarget.Latest, true);
   const methods: MethodDefinition[] = [];
 
+  /*** Visits syntax nodes while collecting parser metadata. */
   function visit(node: ts.Node) {
     if (ts.isMethodDeclaration(node) && node.name) {
       const name = node.name.getText();
@@ -89,13 +91,14 @@ function extractMethodDefinitions(content: string): MethodDefinition[] {
   return methods;
 }
 
-/**
+/***
  * Extracts method calls from TypeScript content.
  */
 function extractMethodCalls(content: string): MethodCall[] {
   const sourceFile = ts.createSourceFile('temp.ts', content, ts.ScriptTarget.Latest, true);
   const calls: MethodCall[] = [];
 
+  /*** Visits syntax nodes while collecting parser metadata. */
   function visit(node: ts.Node) {
     if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
       const callee = node.expression.expression.getText();
@@ -110,7 +113,7 @@ function extractMethodCalls(content: string): MethodCall[] {
   return calls;
 }
 
-/**
+/***
  * Parses a TypeScript file and returns metadata useful for diagram generation.
  */
 export async function parseFile(fullPath: string, projectRoot: string): Promise<ParsedFile> {
