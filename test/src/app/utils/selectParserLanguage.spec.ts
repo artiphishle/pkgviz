@@ -1,5 +1,4 @@
-import { strict as assert } from 'node:assert';
-import { describe, it } from 'node:test';
+import { assert, describe, it } from '@artiphishle/testosterone';
 import { detectProject } from '@ankhorage/project-detector';
 import { selectParserLanguage } from '../../../../src/app/utils/selectParserLanguage';
 import { Language } from '../../../../src/shared/types';
