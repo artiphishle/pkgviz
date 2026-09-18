@@ -17,11 +17,7 @@ export function ExportPanel() {
         />
       </SidebarRow>
       <SidebarRow>
-        <ExportButton
-          format="XML"
-          mimeType="application/xml"
-          onExport={downloadAuditXmlAction}
-        />
+        <ExportButton format="XML" mimeType="application/xml" onExport={downloadAuditXmlAction} />
       </SidebarRow>
     </div>
   );
