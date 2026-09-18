@@ -1,8 +1,8 @@
 import { describe, expect, it, render } from '@artiphishle/testosterone';
 import React from 'react';
 
-import { AuditRuleTabs } from '@/features/audit/adapters/inbound/react/AuditRuleTabs';
-import type { AuditRuleResult, PackageCycleDetail } from '@/types/audit';
+import { AuditRuleList } from '@/features/audit/adapters/inbound/react/AuditRuleList';
+import type { Audit, AuditRuleResult, PackageCycleDetail } from '@/types/audit';
 
 const cycles: readonly PackageCycleDetail[] = [
   {
@@ -33,26 +33,28 @@ const cycles: readonly PackageCycleDetail[] = [
   },
 ];
 
-describe('[AuditRuleTabs]', () => {
-  it('shows failed cycle status, multiple cycles, and existing import evidence', () => {
+describe('[AuditRuleList]', () => {
+  it('lists the rule and every cycle path with sidebar checkboxes', () => {
     const { container, getByText } = render(
-      <AuditRuleTabs cyclicPackages={cycles} rules={[failedRule]} />
+      <AuditRuleList
+        evaluation={failedEvaluation}
+        onCycleHighlightsChange={() => undefined}
+      />
     );
 
-    expect(container.querySelector('[role="tablist"]')?.getAttribute('aria-label')).toBe(
-      'Audit rules'
-    );
-    expect(container.querySelectorAll('[role="tab"]').length).toBe(1);
+    expect(getByText('Cyclic dependencies')).toBeDefined();
     expect(getByText('Failed')).toBeDefined();
     expect(getByText('app.a → app.b → app.a')).toBeDefined();
     expect(getByText('app.self → app.self')).toBeDefined();
-    expect(getByText('src/a.ts')).toBeDefined();
-    expect(getByText('app.b.B')).toBeDefined();
+    expect(container.querySelectorAll('input[type="checkbox"]').length).toBe(3);
   });
 
   it('shows the explicit satisfied state', () => {
     const { getByText } = render(
-      <AuditRuleTabs cyclicPackages={[]} rules={[passedRule]} />
+      <AuditRuleList
+        evaluation={passedEvaluation}
+        onCycleHighlightsChange={() => undefined}
+      />
     );
 
     expect(getByText('Passed')).toBeDefined();
@@ -76,4 +78,14 @@ const passedRule: AuditRuleResult = {
   message: 'No cyclic package dependencies detected.',
   details: [],
   evidence: { cycles: [] },
+};
+
+const failedEvaluation: Audit['evaluation'] = {
+  cyclicPackages: cycles,
+  rules: [failedRule],
+};
+
+const passedEvaluation: Audit['evaluation'] = {
+  cyclicPackages: [],
+  rules: [passedRule],
 };

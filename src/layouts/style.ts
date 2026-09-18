@@ -80,7 +80,13 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         'background-color': colors.nodeBgVendor,
       },
     },
-    { selector: 'node.packageCycle', style: { 'border-color': '#d80303', 'border-width': 3 } },
+    {
+      selector: 'node.auditCycle',
+      style: {
+        'border-color': 'data(auditCycleColor)',
+        'border-width': 4,
+      },
+    },
     { selector: 'node.isParent', style: { 'font-weight': 'bold' } },
     {
       selector: 'node:selected',
@@ -182,8 +188,15 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
       },
     },
     {
-      selector: 'edge.packageCycle',
-      style: { 'line-color': '#d80303', 'target-arrow-color': '#d80303' },
+      selector: 'edge.auditCycle',
+      style: {
+        width: 4,
+        'line-color': 'data(auditCycleColor)',
+        'target-arrow-color': 'data(auditCycleColor)',
+        color: 'data(auditCycleColor)',
+        label: 'data(auditCycleStep)',
+        'font-size': 10,
+      },
     },
   ];
 }

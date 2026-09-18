@@ -7,6 +7,7 @@ const en: ILanguage = {
 
   // Settings
   'settings.title': 'Settings',
+  'settings.rules': 'Rules',
   'settings.showCompoundNodes': 'Show Compound Nodes',
   'settings.showVendorPackages': 'Show Vendor',
   'settings.subPackageDepth': 'Subpackage depth',
@@ -24,6 +25,7 @@ const en: ILanguage = {
   'audit.passed': 'Passed',
   'audit.failed': 'Failed',
   'audit.cycle': 'Cycle',
+  'audit.cycles': 'Cycles',
   'audit.noEvidence': 'No source/import evidence available.',
   'audit.imports': 'imports',
   'audit.rule.cyclicDependencies': 'Cyclic dependencies',

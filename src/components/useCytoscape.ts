@@ -19,13 +19,16 @@ import { filterEmptyPackages } from '@/utils/filter/filterEmptyPackages';
 import { filterSubPackagesByDepth, getMaxDepth } from '@/utils/filter/filterSubPackagesFromDepth';
 import { filterVendorPackages } from '@/utils/filter/filterVendorPackages';
 import { toggleCompoundNodes } from '@/utils/filter/toggleCompoundNodes';
+import { getCycleFocus } from '@/utils/graph/getCycleFocus';
 import { hasChildren } from '@/utils/hasChildren';
+import type { CycleHighlight } from '@/types/auditVisualization';
 
 /*** Owns the Cytoscape instance, filtering, layout, styling, and interactions. */
 export function useCytoscape(
   elements: ElementsDefinition | null,
   currentPackage: string,
-  setCurrentPackage: (path: string) => void
+  setCurrentPackage: (path: string) => void,
+  cycleHighlights: readonly CycleHighlight[]
 ) {
   const cyRef = useRef<HTMLDivElement>(null);
   const [filteredElements, setFilteredElements] = useState<ElementsDefinition | null>(null);
@@ -47,12 +50,33 @@ export function useCytoscape(
     showVendorPackages,
     subPackageDepth,
     setMaxSubPackageDepth,
+    setSubPackageDepth,
   } = useSettings();
 
   const { resolvedTheme } = useTheme();
   const theme = resolvedTheme === 'dark' ? 'dark' : 'light';
 
-  /** 1) Compute filteredElements when inputs change */
+  /** 1) Reveal the nearest package scope and depth required by selected cycles. */
+  useEffect(() => {
+    const focus = getCycleFocus(cycleHighlights.map(highlight => highlight.cycle));
+    if (!focus) return;
+
+    const normalizedCurrentPackage = currentPackage.replace(/\//g, '.');
+    if (normalizedCurrentPackage !== focus.packagePath) {
+      setCurrentPackage(focus.packagePath);
+    }
+    if (subPackageDepth !== focus.subPackageDepth) {
+      setSubPackageDepth(focus.subPackageDepth);
+    }
+  }, [
+    cycleHighlights,
+    currentPackage,
+    setCurrentPackage,
+    setSubPackageDepth,
+    subPackageDepth,
+  ]);
+
+  /** 2) Compute filteredElements when inputs change */
   useEffect(() => {
     if (!elements) return;
 
@@ -105,7 +129,7 @@ export function useCytoscape(
     setMaxSubPackageDepth,
   ]);
 
-  /*** 2) Helper for layout options */
+  /*** 3) Helper for layout options */
   const makeLayoutOpts = useCallback(
     (name: LayoutOptions['name']): LayoutOptions & Record<string, unknown> => ({
       ...LAYOUTS[name],
@@ -118,7 +142,7 @@ export function useCytoscape(
     [cytoscapeLayoutSpacing]
   );
 
-  /*** 3) Run (or re-run) layout safely; stop any previous instance */
+  /*** 4) Run (or re-run) layout safely; stop any previous instance */
   const runLayoutSafe = useCallback(
     (cy: Core, name: LayoutOptions['name']) => {
       try {
@@ -151,7 +175,7 @@ export function useCytoscape(
     [makeLayoutOpts]
   );
 
-  /** 4) Init Cytoscape ONCE (step 1 already applied: [] deps) */
+  /** 5) Init Cytoscape ONCE (data filtering already applied before insertion) */
   useEffect(() => {
     if (!cyRef.current) return;
 
@@ -192,7 +216,7 @@ export function useCytoscape(
   }, []);
 
   /**
-   * 5) Data Update
+   * 6) Data Update
    * - This effect updates the elements and node classes/handlers
    * - It DOES NOT run layout anymore
    * - Layout runs only in effect (6) => avoids double layout runs
@@ -224,7 +248,7 @@ export function useCytoscape(
   }, [cyInstance, filteredElements, setCurrentPackage]);
 
   /**
-   * 6) Single Layout Trigger
+   * 7) Single Layout Trigger
    *
    * Runs when:
    * - filteredElements changes (new data)
@@ -238,7 +262,29 @@ export function useCytoscape(
     runLayoutSafe(cyInstance, cytoscapeLayout);
   }, [cyInstance, filteredElements, cytoscapeLayout, cytoscapeLayoutSpacing, runLayoutSafe]);
 
-  /** 7) Attach interactive event handlers once (using refs for latest data) */
+  /** 8) Apply selected cycle colors and fit the selected cycle set. */
+  useEffect(() => {
+    if (!cyInstance || !filteredElements || cyInstance.destroyed()) return;
+
+    const highlighted = applyCycleHighlights(cyInstance, cycleHighlights);
+    if (highlighted.empty()) return;
+
+    /*** Fits the viewport to the currently highlighted cycle elements. */
+    const fitHighlightedCycles = () => {
+      if (cyInstance.destroyed()) return;
+      const currentHighlights = cyInstance.elements('.auditCycle');
+      if (!currentHighlights.empty()) cyInstance.fit(currentHighlights, 80);
+    };
+
+    cyInstance.one('layoutstop', fitHighlightedCycles);
+    requestAnimationFrame(fitHighlightedCycles);
+
+    return () => {
+      cyInstance.off('layoutstop', fitHighlightedCycles);
+    };
+  }, [cyInstance, filteredElements, cycleHighlights]);
+
+  /** 9) Attach interactive event handlers once (using refs for latest data) */
   useEffect(() => {
     if (!cyInstance) return;
     const cy = cyInstance;
@@ -315,7 +361,7 @@ export function useCytoscape(
     };
   }, [cyInstance]);
 
-  /** 8) Theme + layout-style live update */
+  /** 10) Theme + layout-style live update */
   useEffect(() => {
     if (!cyInstance || !filteredElements || !cyRef.current) return;
 
@@ -335,4 +381,41 @@ export function useCytoscape(
   }, [cyInstance, filteredElements, theme, cytoscapeLayout]);
 
   return { cyRef, cyInstance };
+}
+
+
+/*** Applies selected audit-cycle metadata to existing Cytoscape nodes and directed edges. */
+function applyCycleHighlights(
+  cy: Core,
+  highlights: readonly CycleHighlight[]
+) {
+  const allElements = cy.elements();
+  allElements.removeClass('auditCycle');
+  allElements.removeData('auditCycleColor');
+  allElements.removeData('auditCycleStep');
+
+  for (const highlight of highlights) {
+    for (const packageName of new Set(highlight.cycle.packages)) {
+      const node = cy.getElementById(packageName);
+      if (node.empty()) continue;
+      node.addClass('auditCycle');
+      node.data('auditCycleColor', highlight.color);
+    }
+
+    highlight.cycle.edges.forEach((cycleEdge, index) => {
+      cy.edges()
+        .filter(
+          edge =>
+            edge.source().id() === cycleEdge.from &&
+            edge.target().id() === cycleEdge.to
+        )
+        .forEach(edge => {
+          edge.addClass('auditCycle');
+          edge.data('auditCycleColor', highlight.color);
+          edge.data('auditCycleStep', String(index + 1));
+        });
+    });
+  }
+
+  return cy.elements('.auditCycle');
 }

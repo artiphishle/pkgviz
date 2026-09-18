@@ -1,82 +1,172 @@
+'use client';
+import { useState } from 'react';
+
+import Setting from '@/components/Setting';
 import { t } from '@/i18n/i18n';
 import type {
+  Audit,
   AuditRuleResult,
   CycleEdgeEvidence,
   ImportEvidence,
   PackageCycleDetail,
 } from '@/types/audit';
+import type { CycleHighlight } from '@/types/auditVisualization';
 
-/*** Renders cycle paths and their existing source/import evidence. */
+/*** Renders cyclic-dependency rule controls using the existing sidebar row styling. */
 export function CyclicDependenciesRuleDetails({
-  cycles,
+  evaluation,
   rule,
+  onCycleHighlightsChange,
 }: CyclicDependenciesRuleDetailsProps) {
-  if (rule.status === 'passed') {
-    return <p className="text-xs text-green-700 dark:text-green-300">{rule.message}</p>;
-  }
+  const [enabled, setEnabled] = useState(true);
+  const [selectedCycleIds, setSelectedCycleIds] = useState<readonly string[]>([]);
+  const cycles = evaluation.cyclicPackages;
+  const failed = rule.status === 'failed';
 
   return (
-    <div className="space-y-3 text-xs">
-      <p className="text-red-700 dark:text-red-300">{rule.message}</p>
-      <ol className="space-y-3">
-        {cycles.map(cycle => (
-          <CycleDetail key={cycle.packages.join('→')} cycle={cycle} />
-        ))}
-      </ol>
-    </div>
+    <>
+      <Setting>
+        <label className="flex cursor-pointer items-center gap-2 text-xs">
+          <input
+            type="checkbox"
+            checked={enabled}
+            onChange={event => {
+              const nextEnabled = event.currentTarget.checked;
+              setEnabled(nextEnabled);
+              if (!nextEnabled) {
+                setSelectedCycleIds([]);
+                onCycleHighlightsChange([]);
+              }
+            }}
+          />
+          <span className="flex-1 font-medium">{t('audit.rule.cyclicDependencies')}</span>
+          <span className={failed ? 'text-red-700 dark:text-red-300' : 'text-green-700 dark:text-green-300'}>
+            {failed ? t('audit.failed') : t('audit.passed')}
+          </span>
+        </label>
+      </Setting>
+
+      {enabled && (
+        failed ? (
+          <>
+            <h3>{t('audit.cycles')}</h3>
+            {cycles.map((cycle, index) => {
+              const id = getCycleId(cycle);
+              const color = getCycleColor(index);
+              const selected = selectedCycleIds.includes(id);
+
+              return (
+                <Setting key={id}>
+                  <label className="flex cursor-pointer items-start gap-2 text-xs">
+                    <input
+                      type="checkbox"
+                      checked={selected}
+                      style={{ accentColor: color }}
+                      onChange={event => {
+                        const nextIds = event.currentTarget.checked
+                          ? [...selectedCycleIds, id]
+                          : selectedCycleIds.filter(selectedId => selectedId !== id);
+                        setSelectedCycleIds(nextIds);
+                        onCycleHighlightsChange(createCycleHighlights(cycles, nextIds));
+                      }}
+                    />
+                    <span className="min-w-0">
+                      <span className="flex items-center gap-1 font-medium">
+                        <span
+                          aria-hidden="true"
+                          className="inline-block h-2 w-2 rounded-full"
+                          style={{ backgroundColor: color }}
+                        />
+                        {t('audit.cycle')} {index + 1}
+                      </span>
+                      <code className="mt-1 block break-all text-[11px]">
+                        {cycle.packages.join(' → ')}
+                      </code>
+                      {selected && <CycleEvidence cycle={cycle} />}
+                    </span>
+                  </label>
+                </Setting>
+              );
+            })}
+          </>
+        ) : (
+          <Setting>
+            <p className="text-xs text-green-700 dark:text-green-300">{rule.message}</p>
+          </Setting>
+        )
+      )}
+    </>
   );
 }
 
-/*** Renders one concrete package cycle. */
-function CycleDetail({ cycle }: { readonly cycle: PackageCycleDetail }) {
+/*** Renders directed edge evidence for a selected cycle. */
+function CycleEvidence({ cycle }: { readonly cycle: PackageCycleDetail }) {
   return (
-    <li className="rounded-md border border-neutral-200 p-2 dark:border-neutral-700">
-      <div className="mb-2">
-        <span className="font-medium">{t('audit.cycle')}</span>
-        <code className="mt-1 block break-all text-[11px]">{cycle.packages.join(' → ')}</code>
-      </div>
-      <ul className="space-y-2">
-        {cycle.edges.map(edge => (
-          <CycleEdgeDetail key={`${edge.from}→${edge.to}`} edge={edge} />
-        ))}
-      </ul>
-    </li>
+    <ul className="mt-2 space-y-1 text-[11px] text-neutral-500 dark:text-neutral-400">
+      {cycle.edges.map(edge => (
+        <CycleEdgeEvidenceDetail key={`${edge.from}→${edge.to}`} edge={edge} />
+      ))}
+    </ul>
   );
 }
 
-/*** Renders one directed cycle edge and all available import evidence. */
-function CycleEdgeDetail({ edge }: { readonly edge: CycleEdgeEvidence }) {
+/*** Renders one directed cycle edge and its available source/import evidence. */
+function CycleEdgeEvidenceDetail({ edge }: { readonly edge: CycleEdgeEvidence }) {
   return (
     <li>
-      <code className="text-[11px]">{`${edge.from} → ${edge.to}`}</code>
-      {edge.via.length === 0 ? (
-        <p className="mt-1 text-neutral-500 dark:text-neutral-400">{t('audit.noEvidence')}</p>
-      ) : (
-        <ul className="mt-1 space-y-1 pl-2">
-          {edge.via.map(evidence => (
-            <ImportEvidenceDetail
-              key={`${evidence.filePath}:${evidence.fileClass}:${evidence.importName}`}
-              evidence={evidence}
-            />
-          ))}
-        </ul>
-      )}
+      <code>{`${edge.from} → ${edge.to}`}</code>
+      {edge.via.map(evidence => (
+        <ImportEvidenceDetail
+          key={`${evidence.filePath}:${evidence.fileClass}:${evidence.importName}`}
+          evidence={evidence}
+        />
+      ))}
     </li>
   );
 }
 
-/*** Renders the source file and import that prove one dependency edge. */
+/*** Renders one source/import proof for a cycle edge. */
 function ImportEvidenceDetail({ evidence }: { readonly evidence: ImportEvidence }) {
   return (
-    <li className="break-all text-[11px] text-neutral-600 dark:text-neutral-300">
+    <span className="block break-all pl-2">
       <code>{evidence.filePath}</code>
       <span> {t('audit.imports')} </span>
       <code>{evidence.importName}</code>
-    </li>
+    </span>
   );
 }
 
+/*** Builds stable colored graph highlights for the currently selected cycle IDs. */
+function createCycleHighlights(
+  cycles: readonly PackageCycleDetail[],
+  selectedCycleIds: readonly string[]
+): readonly CycleHighlight[] {
+  return cycles.flatMap((cycle, index) => {
+    const id = getCycleId(cycle);
+    if (!selectedCycleIds.includes(id)) return [];
+
+    return [{
+      id,
+      color: getCycleColor(index),
+      cycle,
+    }];
+  });
+}
+
+/*** Returns a stable distinct color for one cycle while keeping the first cycle PKGViz red. */
+function getCycleColor(index: number): string {
+  if (index === 0) return '#d80303';
+  const hue = Math.round((index * 137.508) % 360);
+  return `hsl(${hue} 68% 45%)`;
+}
+
+/*** Returns the stable UI identity for one directed cycle path. */
+function getCycleId(cycle: PackageCycleDetail): string {
+  return cycle.packages.join('→');
+}
+
 interface CyclicDependenciesRuleDetailsProps {
-  readonly cycles: readonly PackageCycleDetail[];
+  readonly evaluation: Audit['evaluation'];
   readonly rule: AuditRuleResult;
+  readonly onCycleHighlightsChange: (highlights: readonly CycleHighlight[]) => void;
 }

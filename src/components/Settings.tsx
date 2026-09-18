@@ -1,7 +1,7 @@
 'use client';
 import { ChevronDownIcon, DownloadIcon } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { Select, Slider } from 'radix-ui';
+import { Select, Slider, Tabs } from 'radix-ui';
 import type React from 'react';
 
 import {
@@ -14,9 +14,10 @@ import Switch from '@/components/Switch';
 import { useSettings } from '@/contexts/SettingsContext';
 import { AuditRulePanel } from '@/features/audit/adapters/inbound/react/AuditRulePanel';
 import { t } from '@/i18n/i18n';
+import type { CycleHighlight } from '@/types/auditVisualization';
 
 /*** Renders the graph settings panel. */
-const Settings: React.FC = () => {
+const Settings: React.FC<SettingsProps> = ({ onCycleHighlightsChange }) => {
   const {
     cytoscapeLayout,
     cytoscapeLayoutSpacing,
@@ -57,11 +58,26 @@ const Settings: React.FC = () => {
 
   return (
     <div className="md:pt-14 border-r bg-neutral-100 border-r-neutral-200 dark:border-r-neutral-800 dark:bg-neutral-950">
-      <h3>{t('settings.audit')}</h3>
-      <Setting>
-        <AuditRulePanel loadAudit={getAuditEvaluationAction} />
-      </Setting>
+      <Tabs.Root defaultValue="settings">
+        <Tabs.List
+          aria-label={t('settings.title')}
+          className="ml-[.8rem] flex border-b border-neutral-200 dark:border-neutral-800"
+        >
+          <Tabs.Trigger
+            value="settings"
+            className="flex-1 border-b-2 border-transparent px-3 py-2 text-xs text-neutral-500 data-[state=active]:border-blue-600 data-[state=active]:text-neutral-900 dark:text-neutral-400 dark:data-[state=active]:border-blue-400 dark:data-[state=active]:text-neutral-100"
+          >
+            {t('settings.title')}
+          </Tabs.Trigger>
+          <Tabs.Trigger
+            value="rules"
+            className="flex-1 border-b-2 border-transparent px-3 py-2 text-xs text-neutral-500 data-[state=active]:border-blue-600 data-[state=active]:text-neutral-900 dark:text-neutral-400 dark:data-[state=active]:border-blue-400 dark:data-[state=active]:text-neutral-100"
+          >
+            {t('settings.rules')}
+          </Tabs.Trigger>
+        </Tabs.List>
 
+        <Tabs.Content value="settings" className="outline-none">
       {/* Audit Download */}
       <h3>{t('settings.download')}</h3>
       <div>
@@ -194,9 +210,22 @@ const Settings: React.FC = () => {
           <Slider.Thumb className="block h-4 w-4 rounded-full border border-neutral-300 bg-white shadow focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-100" />
         </Slider.Root>
       </Setting>
+        </Tabs.Content>
+
+        <Tabs.Content value="rules" className="outline-none">
+          <AuditRulePanel
+            loadAudit={getAuditEvaluationAction}
+            onCycleHighlightsChange={onCycleHighlightsChange}
+          />
+        </Tabs.Content>
+      </Tabs.Root>
     </div>
   );
 };
+
+interface SettingsProps {
+  readonly onCycleHighlightsChange: (highlights: readonly CycleHighlight[]) => void;
+}
 
 export default dynamic(() => Promise.resolve(Settings), {
   ssr: false,
