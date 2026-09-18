@@ -100,11 +100,12 @@ async function resolveRoot(dir: string, detectedLanguage: Language) {
  */
 async function readDirRecursively(
   dir: string,
-  result: ParsedDirectory = {},
   projectRoot: string,
   language: Language,
   typeScriptImportsByFile?: ReadonlyMap<string, readonly ImportDefinition[]>
 ): Promise<ParsedDirectory> {
+  const result: ParsedDirectory = Object.create(null);
+
   // 1. Read the current directory through the shared rooted-filesystem boundary.
   const { entries, path: resolvedDir } = readDirectoryWithinRoot({
     rootPath: projectRoot,
@@ -133,7 +134,6 @@ async function readDirRecursively(
     if (entry.isDirectory()) {
       result[entry.name] = await readDirRecursively(
         fullPath,
-        {},
         projectRoot,
         language,
         typeScriptImportsByFile
@@ -241,5 +241,5 @@ export async function getParsedFileStructure(language?: Language) {
       : undefined;
 
   // 3. Read directory recursively (pass resolved root as both dir and projectRoot)
-  return await readDirRecursively(rootDir, {}, rootDir, detectedLanguage, typeScriptImportsByFile);
+  return await readDirRecursively(rootDir, rootDir, detectedLanguage, typeScriptImportsByFile);
 }
