@@ -32,3 +32,14 @@ it('reports incomplete scans rather than treating partial evidence as complete',
     await rm(root, { recursive: true, force: true });
   }
 });
+
+
+it('normalizes an unavailable inspection root to a project path error', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'pkgviz-missing-'));
+  await rm(root, { recursive: true, force: true });
+
+  await assert.rejects(
+    inspectParserLanguageAsync(root),
+    new RegExp(`Invalid or unavailable project path: ${root}`)
+  );
+});
