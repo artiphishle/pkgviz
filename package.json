@@ -23,7 +23,7 @@
     "lint": "ankhorage-eslint . --max-warnings=0",
     "format:check": "ankhorage-prettier --check .",
     "format:write": "ankhorage-prettier --write \"**/*.{js,jsx,ts,tsx,json,md,yml,yaml,mjs,cjs,html,css,scss,mdx}\"",
-    "test": "npx @artiphishle/testosterone@0.3.1",
+    "test": "testosterone",
     "test:cov": "c8 --reporter=text --reporter=text-summary tsx --test",
     "test:cov:html": "c8 --report-dir=./test/coverage --reporter=html tsx --test",
     "lint:fix": "ankhorage-eslint . --fix --max-warnings=0",
@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "@ankhorage/project-detector": "^0.1.0",
-    "@artiphishle/testosterone": "^0.3.1",
+    "@artiphishle/testosterone": "^0.3.9",
     "cytoscape": "^3.33.1",
     "cytoscape-elk": "^2.3.0",
     "lucide-react": "^0.487.0",
