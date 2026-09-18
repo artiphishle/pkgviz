@@ -8,7 +8,7 @@ import { Cytoscape } from '@/components/Cytoscape';
 import Header from '@/components/Header';
 import Loader from '@/components/Loader';
 import Settings from '@/components/Settings';
-import { useSettings, SettingsProvider } from '@/contexts/SettingsContext';
+import { SettingsProvider, useSettings } from '@/contexts/SettingsContext';
 import { AuditRulesSettings } from '@/features/audit/adapters/inbound/react/AuditRulesSettings';
 import { useAuditRuleControls } from '@/features/audit/adapters/inbound/react/useAuditRuleControls';
 
@@ -48,7 +48,10 @@ function HomeContent() {
           <AuditRulesSettings
             controls={auditRuleControls}
             enabled={rulesEnabled}
-            onToggleEnabled={toggleRulesEnabled}
+            onToggleEnabled={() => {
+              auditRuleControls.clearSelection();
+              toggleRulesEnabled();
+            }}
           />
         </Settings>
 
