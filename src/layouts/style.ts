@@ -226,7 +226,7 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         'font-weight': 'bold',
         'text-background-color': colors.canvasBg,
         'text-background-opacity': 0.9,
-        'text-background-padding': 3,
+        'text-background-padding': '3px',
         'z-index': 999,
       },
     },
