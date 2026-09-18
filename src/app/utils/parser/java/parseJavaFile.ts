@@ -87,13 +87,13 @@ function extractMethodCalls(content: string): MethodCall[] {
 /***
  * Parses a Java file and returns metadata useful for diagram generation.
  */
-export async function parseJavaFile(fullPath: string, projectRoot: string) {
+export async function parseJavaFile(fullPath: string, projectRoot: string, analysisRoot: string) {
   const { content, path: resolvedPath } = readTextFileWithinRoot({
     rootPath: projectRoot,
     filePath: fullPath,
   });
   const fileName = path.basename(resolvedPath, '.java');
-  const intrinsicPackages = await getIntrinsicPackagesRecursive();
+  const intrinsicPackages = await getIntrinsicPackagesRecursive(analysisRoot);
 
   const className = extractClassName(content, fileName);
   const pkg = extractPackageName(content);
