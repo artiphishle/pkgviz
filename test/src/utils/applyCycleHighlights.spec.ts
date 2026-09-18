@@ -41,4 +41,23 @@ describe('[applyCycleHighlights]', () => {
     expect(cy.getElementById('a-b').style('label')).toBe('1');
     expect(Number(cy.getElementById('a-other').style('opacity'))).toBe(0.05);
   });
+  it('leaves the current projection unchanged when selected cycles are outside its scope', () => {
+    const cy = cytoscape({
+      headless: true,
+      styleEnabled: true,
+      elements: [{ data: { id: 'visible' } }],
+    });
+
+    applyCycleHighlights(cy, [
+      {
+        id: 'hidden-cycle',
+        color: '#d80303',
+        nodeIds: ['hidden.a', 'hidden.b'],
+        edges: [{ source: 'hidden.a', step: 1, target: 'hidden.b' }],
+      },
+    ]);
+
+    expect(Number(cy.getElementById('visible').style('opacity'))).toBe(1);
+  });
+
 });
