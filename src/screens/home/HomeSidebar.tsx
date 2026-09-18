@@ -39,8 +39,7 @@ function SidebarToolTabs({
   onCycleInspectionChange,
   onValueChange,
 }: SidebarToolTabsProps) {
-  const violatedRuleCount =
-    evaluation?.rules.filter(rule => rule.status === 'failed').length ?? 0;
+  const violatedRuleCount = evaluation?.rules.filter(rule => rule.status === 'failed').length ?? 0;
 
   return (
     <SidebarTabs
