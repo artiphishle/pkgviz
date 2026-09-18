@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import React from 'react';
 
 import Setting from '@/components/Setting';
 import { AuditRuleList } from '@/features/audit/adapters/inbound/react/AuditRuleList';
@@ -9,10 +9,10 @@ import type { CycleHighlight } from '@/types/auditVisualization';
 
 /*** Loads the serializable audit evaluation and renders the sidebar rule controls. */
 export function AuditRulePanel({ loadAudit, onCycleHighlightsChange }: AuditRulePanelProps) {
-  const [evaluation, setEvaluation] = useState<Audit['evaluation'] | null>(null);
-  const [loadFailed, setLoadFailed] = useState(false);
+  const [evaluation, setEvaluation] = React.useState<Audit['evaluation'] | null>(null);
+  const [loadFailed, setLoadFailed] = React.useState(false);
 
-  useEffect(() => {
+  React.useEffect(() => {
     void loadAudit().then(setEvaluation, () => setLoadFailed(true));
   }, [loadAudit]);
 

@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import React from 'react';
 
 import Setting from '@/components/Setting';
 import { t } from '@/i18n/i18n';
@@ -18,8 +18,8 @@ export function CyclicDependenciesRuleDetails({
   rule,
   onCycleHighlightsChange,
 }: CyclicDependenciesRuleDetailsProps) {
-  const [enabled, setEnabled] = useState(true);
-  const [selectedCycleIds, setSelectedCycleIds] = useState<readonly string[]>([]);
+  const [enabled, setEnabled] = React.useState(true);
+  const [selectedCycleIds, setSelectedCycleIds] = React.useState<readonly string[]>([]);
   const cycles = evaluation.cyclicPackages;
   const failed = rule.status === 'failed';
 

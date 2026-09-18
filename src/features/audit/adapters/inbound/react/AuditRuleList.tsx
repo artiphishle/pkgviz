@@ -1,5 +1,5 @@
 'use client';
-import type { ComponentType } from 'react';
+import React from 'react';
 
 import Setting from '@/components/Setting';
 import { CyclicDependenciesRuleDetails } from '@/features/audit/adapters/inbound/react/CyclicDependenciesRuleDetails';
@@ -7,7 +7,7 @@ import { t } from '@/i18n/i18n';
 import type { Audit, AuditRuleResult } from '@/types/audit';
 import type { CycleHighlight } from '@/types/auditVisualization';
 
-const RULE_RENDERERS: Readonly<Record<string, ComponentType<AuditRuleRendererProps>>> = {
+const RULE_RENDERERS: Readonly<Record<string, React.ComponentType<AuditRuleRendererProps>>> = {
   'cyclic-dependencies': CyclicDependenciesRuleDetails,
 };
 
