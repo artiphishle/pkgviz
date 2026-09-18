@@ -71,7 +71,7 @@ bun dev
 
 Find the official documentation at Github Pages here:
 
-[artiphishle.github.io/forensics-docs](https://artiphishle.github.io/forensics-docs/)
+[artiphishle.github.io/forensics-docs](https://artiphishle.github.io/pkgviz-docs/)
 
 ## Just get the analysis
 
