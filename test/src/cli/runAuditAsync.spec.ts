@@ -1,9 +1,8 @@
 import { cp, mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
-import { afterEach, describe, it } from 'node:test';
-
-import { expect } from '@artiphishle/testosterone';
+import { join } from 'node:path';
+import { afterEach } from 'node:test';
+import { describe, expect, it, resolve } from '@artiphishle/testosterone';
 
 import { runAuditAsync } from '@/cli/runAuditAsync';
 import type { Audit } from '@/types/audit';
