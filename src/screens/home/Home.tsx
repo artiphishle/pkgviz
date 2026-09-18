@@ -5,11 +5,9 @@ import { useEffect, useState } from 'react';
 import { getAuditEvaluationAction } from '@/app/actions/audit.actions';
 import { getGraphAction } from '@/app/actions/graph.actions';
 import Breadcrumb from '@/components/Breadcrumb';
-import { Cytoscape } from '@/components/Cytoscape';
 import Header from '@/components/Header';
-import Loader from '@/components/Loader';
 import { SettingsProvider } from '@/contexts/SettingsContext';
-import { CycleInspector } from '@/features/audit/adapters/inbound/react/CycleInspector';
+import { HomeGraph } from '@/screens/home/HomeGraph';
 import { HomeSidebar } from '@/screens/home/HomeSidebar';
 import type { Audit } from '@/types/audit';
 import type { CycleHighlight, CycleInspection } from '@/types/auditVisualization';
@@ -35,7 +33,6 @@ export default function HomeScreen() {
           onNavigate={(path: string) => setCurrentPackage(path.replace(/\//g, '.'))}
         />
       </Header>
-
       <SettingsProvider>
         <main data-testid="main" className="flex min-w-0 flex-1 flex-row dark:bg-[#171717]">
           <HomeSidebar
@@ -43,24 +40,14 @@ export default function HomeScreen() {
             onCycleHighlightsChange={setCycleHighlights}
             onCycleInspectionChange={setCycleInspection}
           />
-          {packageGraph ? (
-            <Cytoscape
-              currentPackage={currentPackage}
-              setCurrentPackage={setCurrentPackage}
-              packageGraph={packageGraph}
-              cycleHighlights={cycleHighlights}
-              overlay={
-                cycleInspection === null ? null : (
-                  <CycleInspector
-                    inspection={cycleInspection}
-                    onClose={() => setCycleInspection(null)}
-                  />
-                )
-              }
-            />
-          ) : (
-            <Loader />
-          )}
+          <HomeGraph
+            currentPackage={currentPackage}
+            cycleHighlights={cycleHighlights}
+            cycleInspection={cycleInspection}
+            packageGraph={packageGraph}
+            setCurrentPackage={setCurrentPackage}
+            onCloseInspection={() => setCycleInspection(null)}
+          />
         </main>
       </SettingsProvider>
     </>
