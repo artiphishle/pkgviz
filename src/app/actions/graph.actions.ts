@@ -11,4 +11,3 @@ export async function getGraphAction(): Promise<ElementsDefinition> {
 
   return graph;
 }
-
