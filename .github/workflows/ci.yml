@@ -31,7 +31,13 @@ jobs:
           node-version: '24'
 
       - name: Inspect graph package integrity
-        run: npm view @ankhorage/graph@0.2.0 dist.integrity
+        run: npm view @ankhorage/graph@0.2.0 dist.integrity | tee graph-integrity.txt
+
+      - name: Upload graph package integrity
+        uses: actions/upload-artifact@v4
+        with:
+          name: graph-integrity
+          path: graph-integrity.txt
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
