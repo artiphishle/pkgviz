@@ -6,7 +6,7 @@ import { dirname, resolve } from 'node:path';
 import { spawn } from 'child_process';
 import { resolveFileSystemPathWithinRoot, writeFileWithinRoot } from '@ankhorage/utility/node/fs';
 import { getAuditAction } from '../src/app/actions/audit.actions';
-import { openBrowser } from '../src/cli/openBrowser';
+import { openBrowser } from '@ankhorage/utility/node/process';
 
 interface Opts {
   out: string;
