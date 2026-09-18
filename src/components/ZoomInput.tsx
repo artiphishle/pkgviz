@@ -1,7 +1,7 @@
 'use client';
-import React, { useEffect, useState } from 'react';
-import { Core } from 'cytoscape';
+import type { Core } from 'cytoscape';
 import { CircleDotDashedIcon } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 
 interface IZoomInput {
   readonly cyInstance: Core | null;

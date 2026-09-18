@@ -1,9 +1,9 @@
 'use server';
-import type { ParsedFile, MethodCall, MethodDefinition, ImportDefinition } from '@/shared/types';
-
 import fs from 'node:fs';
 import path from 'node:path';
+
 import { extractPackageFromImport } from '@/app/utils/parser/delphi/extractPackageFromImport';
+import type { ImportDefinition, MethodCall, MethodDefinition, ParsedFile } from '@/shared/types';
 
 /**
  * Extracts package/unit path from Delphi file structure.
@@ -65,13 +65,13 @@ function extractImports(content: string): ImportDefinition[] {
  */
 function extractClassName(content: string, fileName: string): string {
   // Try to find unit name
-  const unitMatch = content.match(/\bunit\s+([A-Za-z_][A-Za-z0-9_]*)\s*;/i);
+  const unitMatch = /\bunit\s+([A-Za-z_][A-Za-z0-9_]*)\s*;/i.exec(content);
   if (unitMatch) {
     return unitMatch[1];
   }
 
   // Try to find primary class name in type section
-  const classMatch = content.match(/\bT([A-Za-z_][A-Za-z0-9_]*)\s*=\s*class/i);
+  const classMatch = /\bT([A-Za-z_][A-Za-z0-9_]*)\s*=\s*class/i.exec(content);
   if (classMatch) {
     return 'T' + classMatch[1];
   }

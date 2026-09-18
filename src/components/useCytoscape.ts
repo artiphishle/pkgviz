@@ -1,17 +1,10 @@
 'use client';
+import type { Core, LayoutOptions } from 'cytoscape';
+import cytoscape, { type ElementsDefinition, type Layouts } from 'cytoscape';
 import { useTheme } from 'next-themes';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import cytoscape, {
-  Core,
-  LayoutOptions,
-  type ElementsDefinition,
-  type NodeDefinition,
-  type Layouts,
-} from 'cytoscape';
-
 import { useSettings } from '@/contexts/SettingsContext';
-import { getStyle as getCommonStyle, getCanvasBg } from '@/layouts/style';
 import {
   getBreadthfirstStyle,
   getCircleStyle,
@@ -20,11 +13,11 @@ import {
   getGridStyle,
 } from '@/layouts';
 import { LAYOUTS } from '@/layouts/constants';
-
+import { getCanvasBg, getStyle as getCommonStyle } from '@/layouts/style';
 import { filterByPackagePrefix } from '@/utils/filter/filterByPackagePrefix';
-import { filterVendorPackages } from '@/utils/filter/filterVendorPackages';
 import { filterEmptyPackages } from '@/utils/filter/filterEmptyPackages';
 import { filterSubPackagesByDepth, getMaxDepth } from '@/utils/filter/filterSubPackagesFromDepth';
+import { filterVendorPackages } from '@/utils/filter/filterVendorPackages';
 import { toggleCompoundNodes } from '@/utils/filter/toggleCompoundNodes';
 import { hasChildren } from '@/utils/hasChildren';
 
@@ -56,7 +49,7 @@ export function useCytoscape(
   } = useSettings();
 
   const { resolvedTheme } = useTheme();
-  const theme = (resolvedTheme === 'dark' ? 'dark' : 'light') as 'dark' | 'light';
+  const theme = resolvedTheme === 'dark' ? 'dark' : 'light';
 
   /** 1) Compute filteredElements when inputs change */
   useEffect(() => {
@@ -94,7 +87,7 @@ export function useCytoscape(
           group: 'nodes',
           classes: node.classes || '',
           data: { ...node.data, label },
-        } as NodeDefinition;
+        };
       }),
       edges: afterVendorPkgFilter.edges,
     };
@@ -113,7 +106,7 @@ export function useCytoscape(
 
   /** 2) Helper for layout options */
   const makeLayoutOpts = useCallback(
-    (name: LayoutOptions['name']): LayoutOptions & { [k: string]: unknown } => ({
+    (name: LayoutOptions['name']): LayoutOptions & Record<string, unknown> => ({
       ...LAYOUTS[name],
       spacingFactor: cytoscapeLayoutSpacing,
       nodeDimensionsIncludeLabels: true,
@@ -167,7 +160,7 @@ export function useCytoscape(
       minZoom: 0.01,
       maxZoom: 2,
       selectionType: 'additive',
-      style: getCommonStyle({ nodes: [], edges: [] } as ElementsDefinition, 'light'),
+      style: getCommonStyle({ nodes: [], edges: [] }, 'light'),
       userPanningEnabled: true,
     });
 
@@ -213,7 +206,7 @@ export function useCytoscape(
     cyInstance.nodes().forEach(node => {
       const rawNode = filteredElementsRef.current?.nodes.find(
         elm => elm.data.id === node.data().id
-      ) as NodeDefinition | undefined;
+      );
 
       const allNodes = elementsRef.current?.nodes ?? [];
       node.removeClass('isParent');
@@ -239,7 +232,7 @@ export function useCytoscape(
    */
   useEffect(() => {
     if (!cyInstance || !filteredElements || cyInstance.destroyed()) return;
-    runLayoutSafe(cyInstance, cytoscapeLayout as LayoutOptions['name']);
+    runLayoutSafe(cyInstance, cytoscapeLayout);
   }, [cyInstance, filteredElements, cytoscapeLayout, cytoscapeLayoutSpacing, runLayoutSafe]);
 
   /** 7) Attach interactive event handlers once (using refs for latest data) */
@@ -268,9 +261,7 @@ export function useCytoscape(
 
       const fe = filteredElementsRef.current;
       const el = elementsRef.current;
-      const rawNode = fe?.nodes.find(n => n.data.id === node.data().id) as
-        | NodeDefinition
-        | undefined;
+      const rawNode = fe?.nodes.find(n => n.data.id === node.data().id);
 
       if (rawNode && el && hasChildren(rawNode, el.nodes)) {
         document.body.style.cursor = 'pointer';

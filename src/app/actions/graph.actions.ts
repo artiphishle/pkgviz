@@ -1,25 +1,13 @@
 'use server';
 import type { ElementsDefinition } from 'cytoscape';
 
-import { markCyclicPackagesWithEvidence } from '@/app/utils/markCyclicPackages';
-import { getParsedFileStructure } from '@/app/utils/getParsedFileStructure';
 import { buildGraph } from '@/app/utils/buildGraph';
-import { relative } from 'node:path';
-import { inspectParserLanguageAsync } from '@/app/utils/inspectParserLanguageAsync';
-import { resolveRoot } from '@/app/utils/getParsedFileStructure';
-import { parseProjectPath } from '@/shared/utils/parseProjectPath';
+import { getParsedFileStructure } from '@/app/utils/getParsedFileStructure';
+import { markCyclicPackagesWithEvidence } from '@/app/utils/markCyclicPackages';
 
 export async function getGraphAction(): Promise<ElementsDefinition> {
   const files = await getParsedFileStructure();
   const graph = markCyclicPackagesWithEvidence(buildGraph(files), files);
 
   return graph;
-}
-
-export async function getRootAction(): Promise<string> {
-  const projectRoot = parseProjectPath();
-  const { language } = await inspectParserLanguageAsync(projectRoot);
-  const relativeRootDir = relative(projectRoot, await resolveRoot(projectRoot, language));
-
-  return relativeRootDir;
 }

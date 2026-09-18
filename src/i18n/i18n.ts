@@ -7,6 +7,4 @@ export function t(term: string) {
   return activeLang[term] || `{${term}}`;
 }
 
-export interface ILanguage {
-  readonly [key: string]: string;
-}
+export type ILanguage = Readonly<Record<string, string>>;

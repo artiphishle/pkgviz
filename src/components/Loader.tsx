@@ -1,5 +1,5 @@
-import React from 'react';
 import { LucideLoader } from 'lucide-react';
+import React from 'react';
 
 export default function Loader() {
   return (

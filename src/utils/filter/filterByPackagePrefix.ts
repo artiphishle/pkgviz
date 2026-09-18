@@ -8,7 +8,7 @@ export function filterByPackagePrefix(
   // Active filtering (subpackage view)
   const pkgPrefix = packagePrefix.endsWith('.') ? packagePrefix : packagePrefix + '.';
   const allowedNodes = allElements.nodes.filter(node => {
-    return (node.data.id as string).startsWith(pkgPrefix);
+    return node.data.id!.startsWith(pkgPrefix);
   });
 
   const allowedNodeIds = new Set(allowedNodes.map(node => node.data.id));

@@ -1,4 +1,5 @@
 import type { ElementsDefinition } from 'cytoscape';
+
 import type { ParsedDirectory, ParsedFile } from '@/shared/types';
 
 /** Collect all files from your ParsedDirectory tree. */
@@ -24,9 +25,9 @@ function buildEdgeEvidence(dir: ParsedDirectory): Map<string, ImportEvidence[]> 
   const map = new Map<string, ImportEvidence[]>();
 
   for (const f of files) {
-    const from = f.package as TUniquePackageName;
+    const from = f.package;
     for (const imp of f.imports ?? []) {
-      const to = imp.pkg as TUniquePackageName;
+      const to = imp.pkg;
       if (!to || to === from) continue;
       const key = `${from}->${to}`;
       if (!map.has(key)) map.set(key, []);
@@ -45,12 +46,12 @@ function buildEdgeEvidence(dir: ParsedDirectory): Map<string, ImportEvidence[]> 
 function elementsToAdj(elements: ElementsDefinition) {
   const adj = new Map<TUniquePackageName, Set<TUniquePackageName>>();
   for (const n of elements.nodes) {
-    const id = String(n.data.id) as TUniquePackageName;
+    const id = String(n.data.id);
     if (!adj.has(id)) adj.set(id, new Set());
   }
   for (const e of elements.edges) {
-    const s = String(e.data.source) as TUniquePackageName;
-    const t = String(e.data.target) as TUniquePackageName;
+    const s = String(e.data.source);
+    const t = String(e.data.target);
     if (!adj.has(s)) adj.set(s, new Set());
     if (!adj.has(t)) adj.set(t, new Set());
     adj.get(s)!.add(t);
@@ -202,7 +203,7 @@ export function markCyclicPackagesWithEvidence(
   }
 
   const nodes = (elements.nodes ?? []).map(n => {
-    const id = String(n.data.id) as TUniquePackageName;
+    const id = String(n.data.id);
     const isCyclic = packageSet.has(id);
     const existing = n.classes ? String(n.classes) : '';
     const classes = isCyclic ? (existing ? `${existing} packageCycle` : 'packageCycle') : existing;
@@ -219,8 +220,8 @@ export function markCyclicPackagesWithEvidence(
   });
 
   const edges = (elements.edges ?? []).map(e => {
-    const source = String(e.data.source) as TUniquePackageName;
-    const target = String(e.data.target) as TUniquePackageName;
+    const source = String(e.data.source);
+    const target = String(e.data.target);
     const isCycleEdge = cycleEdgeKeys.has(`${source}→${target}`);
 
     const existing = e.classes ? String(e.classes) : '';

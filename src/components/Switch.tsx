@@ -1,6 +1,6 @@
 'use client';
-import React from 'react';
 import { Switch } from 'radix-ui';
+import React from 'react';
 
 export default function RadixSwitch({ id, label, value, onToggle }: ISwitch) {
   return (

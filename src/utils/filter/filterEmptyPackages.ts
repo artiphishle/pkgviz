@@ -1,4 +1,4 @@
-import { ElementsDefinition } from 'cytoscape';
+import type { ElementsDefinition } from 'cytoscape';
 
 /**
  * Returns root package if only one inside, or '' (root folder)
@@ -7,7 +7,7 @@ function getRootPackage(elements: ElementsDefinition) {
   const rootPackages = elements.nodes.filter(n => {
     return !n.data.id?.includes('.');
   });
-  return rootPackages.length > 1 ? '' : (rootPackages[0].data.id as string);
+  return rootPackages.length > 1 ? '' : rootPackages[0].data.id!;
 }
 
 /**

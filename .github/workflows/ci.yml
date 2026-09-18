@@ -1,39 +1,103 @@
 name: CI
 
 on:
-  push:
-    branches: [main, develop, feature/**]
   pull_request:
-    branches: [main, develop]
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
-  install-and-check:
+  validate:
     runs-on: ubuntu-latest
 
     steps:
-      - name: ⬇️ Checkout repository
+      - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: 🔧 Setup Bun
-        uses: oven-sh/setup-bun@v1
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.2'
 
-      - name: 📥 Install dependencies (scripts disabled)
-        env:
-          # Protect vs SHA1-Hulud attack
-          BUN_INSTALL_POSTINSTALL: '0'
-          BUN_INSTALL_PREINSTALL: '0'
-        run: bun install --no-save # noch weniger Angriffsfläche
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
 
-      - name: 🧹 Lint
-        run: bun run lint
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
 
-      - name: 🎨 Format check
-        run: bun run format:check
-
-      - name: ✅ Test
-        run: bun run test
-
-      - name: 🏗️ Build
+      - name: Run build
         env:
           NEXT_PUBLIC_PROJECT_PATH: ${{ github.workspace }}
-        run: bun run build
+        run: |
+          if node -e "const p=require('./package.json'); process.exit(p.scripts?.build ? 0 : 1)"; then
+            bun run build
+          else
+            echo "No build script found; skipping."
+          fi
+
+      - name: Validate opted-in APM owner release
+        run: |
+          if node -e "const p=require('./package.json'); process.exit(p.ankh?.apm === undefined ? 1 : 0)"; then
+            bun run test:apm
+            ./node_modules/.bin/ankhorage-apm-release validate . --allow-owner-code
+          fi
+
+      - name: Validate Ankhorage repository
+        run: BUN_INSTALL_CACHE_DIR="${RUNNER_TEMP}/doctor-cache" bunx @ankhorage/doctor@0.10.14 validate .
+
+      - name: Run lint
+        run: |
+          if node -e "const p=require('./package.json'); process.exit(p.scripts?.lint ? 0 : 1)"; then
+            bun run lint
+          else
+            echo "No lint script found; skipping."
+          fi
+
+      - name: Run format check
+        run: |
+          if node -e "const p=require('./package.json'); process.exit(p.scripts?.['format:check'] ? 0 : 1)"; then
+            bun run format:check
+          else
+            echo "No format:check script found; skipping."
+          fi
+
+      - name: Run Knip
+        run: |
+          if node -e "const p=require('./package.json'); process.exit(p.scripts?.['knip:check'] ? 0 : 1)"; then
+            bun run knip:check
+          else
+            echo "No knip:check script found; skipping."
+          fi
+
+      - name: Run tests
+        run: |
+          if node -e "const p=require('./package.json'); process.exit(p.scripts?.test ? 0 : 1)"; then
+            bun run test
+          else
+            echo "No test script found; skipping."
+          fi
+
+      - name: Run typecheck
+        run: |
+          if node -e "const p=require('./package.json'); process.exit(p.scripts?.typecheck ? 0 : 1)"; then
+            bun run typecheck
+          else
+            echo "No typecheck script found; skipping."
+          fi
+
+      - name: Check changesets
+        if: github.event_name == 'pull_request'
+        run: |
+          if node -e "const p=require('./package.json'); process.exit(p.scripts?.['changeset:status'] ? 0 : 1)"; then
+            bun run changeset:status
+          else
+            echo "No changeset:status script found; skipping."
+          fi

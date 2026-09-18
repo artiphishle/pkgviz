@@ -49,7 +49,7 @@ export function getWeightBuckets(
   };
 }
 
-export function getMaxEdgeWeight(filteredElements: ElementsDefinition) {
+function getMaxEdgeWeight(filteredElements: ElementsDefinition) {
   return (
     filteredElements?.edges.reduce((max, edge) => {
       return edge.data.weight > max ? edge.data.weight : max;

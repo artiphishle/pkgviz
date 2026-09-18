@@ -1,7 +1,7 @@
 'use client';
-import React from 'react';
 import { ChevronRight, Home } from 'lucide-react';
 import Link from 'next/link';
+import React from 'react';
 
 export default function Breadcrumb({ path, onNavigate }: BreadcrumbProps) {
   const parts = path.split('/') || [''];

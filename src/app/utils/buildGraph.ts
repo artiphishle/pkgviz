@@ -4,6 +4,7 @@ import type {
   ElementsDefinition,
   NodeDefinition,
 } from 'cytoscape';
+
 import type { ParsedDirectory, ParsedFile } from '@/shared/types';
 
 /**
@@ -21,7 +22,7 @@ export function buildGraph(dir: ParsedDirectory) {
     currentDir: ParsedDirectory,
     currentPath = '',
     nodes: NodeDefinition[] = [],
-    edges: Map<string, EdgeDefinition> = new Map()
+    edges = new Map<string, EdgeDefinition>()
   ) {
     Object.keys(currentDir).forEach(key => {
       const dirOrFile = (currentDir as Record<string, ParsedDirectory | ParsedFile>)[key];

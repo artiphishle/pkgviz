@@ -1,15 +1,15 @@
 'use server';
-import type { ParsedFile, MethodCall, MethodDefinition, ImportDefinition } from '@/shared/types';
-
 import fs from 'node:fs';
 import path from 'node:path';
+
 import { extractCppPackageFromImport } from '@/app/utils/parser/cpp/extractCppPackageFromImport';
+import type { ImportDefinition, MethodCall, MethodDefinition, ParsedFile } from '@/shared/types';
 
 /**
  * Extracts namespace from C++ code.
  */
 function extractNamespace(content: string): string {
-  const match = content.match(/namespace\s+([a-zA-Z0-9_:]+)\s*\{/);
+  const match = /namespace\s+([a-zA-Z0-9_:]+)\s*\{/.exec(content);
   return match?.[1]?.replace(/::/g, '.') || '';
 }
 
@@ -44,13 +44,13 @@ function extractIncludes(content: string, projectRoot: string): ImportDefinition
  */
 function extractClassName(content: string, fileName: string): string {
   // Try to find class declaration
-  const classMatch = content.match(/class\s+([A-Za-z0-9_]+)/);
+  const classMatch = /class\s+([A-Za-z0-9_]+)/.exec(content);
   if (classMatch) {
     return classMatch[1];
   }
 
   // Try to find struct declaration
-  const structMatch = content.match(/struct\s+([A-Za-z0-9_]+)/);
+  const structMatch = /struct\s+([A-Za-z0-9_]+)/.exec(content);
   if (structMatch) {
     return structMatch[1];
   }
