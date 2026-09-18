@@ -11,69 +11,12 @@ import {
 } from '@/shared/utils/parseEnv';
 import { useLocalStorage } from '@/store/useLocalStorage';
 
-// Settings context
 const SettingsContext = createContext<ISettingsContext | null>(null);
 
 /*** Provides persisted graph settings to the application. */
 export const SettingsProvider = ({ children }: PropsWithChildren) => {
-  const [maxSubPackageDepth, setMaxSubPackageDepth] = useLocalStorage<number>(
-    'maxSubPackageDepth',
-    1
-  );
-  const [rulesEnabled, setRulesEnabled] = useLocalStorage<boolean>(
-    'rulesEnabled',
-    getRulesEnabled()
-  );
-  const [showCompoundNodes, setShowCompoundNodes] = useLocalStorage<boolean>(
-    'showCompoundNodes',
-    getShowCompoundNodes()
-  );
-  const [showVendorPackages, setShowVendorPackages] = useLocalStorage<boolean>(
-    'showVendorPackages',
-    getShowVendorPackages()
-  );
-  const [subPackageDepth, setSubPackageDepth] = useLocalStorage<number>(
-    'subPackageDepth',
-    getSubPackageDepth() || 1
-  );
-  const [cytoscapeLayout, setCytoscapeLayout] = useLocalStorage<LayoutOptions['name']>(
-    'cytoscapeLayout',
-    getCytoscapeLayout()
-  );
-  const [cytoscapeLayoutSpacing, setCytoscapeLayoutSpacing] = useLocalStorage<number>(
-    'cytoscapeLayoutSpacing',
-    getCytoscapeLayoutSpacing()
-  );
-
-  /*** Toggles audit rule controls. */
-  const toggleRulesEnabled = () => setRulesEnabled(prev => !prev);
-  /*** Toggles vendor package visibility. */
-  const toggleShowVendorPackages = () => setShowVendorPackages(prev => !prev);
-  /*** Toggles compound node visibility. */
-  const toggleShowCompoundNodes = () => setShowCompoundNodes(prev => !prev);
-
-  return (
-    <SettingsContext
-      value={{
-        cytoscapeLayout,
-        cytoscapeLayoutSpacing,
-        maxSubPackageDepth,
-        rulesEnabled,
-        showCompoundNodes,
-        showVendorPackages,
-        subPackageDepth,
-        setCytoscapeLayout,
-        setCytoscapeLayoutSpacing,
-        setMaxSubPackageDepth,
-        setSubPackageDepth,
-        toggleRulesEnabled,
-        toggleShowCompoundNodes,
-        toggleShowVendorPackages,
-      }}
-    >
-      {children}
-    </SettingsContext>
-  );
+  const value = useSettingsValue();
+  return <SettingsContext value={value}>{children}</SettingsContext>;
 };
 
 /*** Returns the current graph settings context. */
@@ -81,6 +24,52 @@ export function useSettings() {
   const context = use(SettingsContext);
   if (!context) throw new Error('useSettings() must be used within a SettingsProvider');
   return context;
+}
+
+/*** Creates the persisted settings value while keeping provider composition small. */
+function useSettingsValue(): ISettingsContext {
+  const [maxSubPackageDepth, setMaxSubPackageDepth] = useLocalStorage<number>(
+    'maxSubPackageDepth',
+    1
+  );
+  const [rulesEnabled, setRulesEnabled] = useLocalStorage('rulesEnabled', getRulesEnabled());
+  const [showCompoundNodes, setShowCompoundNodes] = useLocalStorage(
+    'showCompoundNodes',
+    getShowCompoundNodes()
+  );
+  const [showVendorPackages, setShowVendorPackages] = useLocalStorage(
+    'showVendorPackages',
+    getShowVendorPackages()
+  );
+  const [subPackageDepth, setSubPackageDepth] = useLocalStorage(
+    'subPackageDepth',
+    getSubPackageDepth() || 1
+  );
+  const [cytoscapeLayout, setCytoscapeLayout] = useLocalStorage<LayoutOptions['name']>(
+    'cytoscapeLayout',
+    getCytoscapeLayout()
+  );
+  const [cytoscapeLayoutSpacing, setCytoscapeLayoutSpacing] = useLocalStorage(
+    'cytoscapeLayoutSpacing',
+    getCytoscapeLayoutSpacing()
+  );
+
+  return {
+    cytoscapeLayout,
+    cytoscapeLayoutSpacing,
+    maxSubPackageDepth,
+    rulesEnabled,
+    showCompoundNodes,
+    showVendorPackages,
+    subPackageDepth,
+    setCytoscapeLayout,
+    setCytoscapeLayoutSpacing,
+    setMaxSubPackageDepth,
+    setSubPackageDepth,
+    toggleRulesEnabled: () => setRulesEnabled(previous => !previous),
+    toggleShowCompoundNodes: () => setShowCompoundNodes(previous => !previous),
+    toggleShowVendorPackages: () => setShowVendorPackages(previous => !previous),
+  };
 }
 
 interface ISettingsContext {
