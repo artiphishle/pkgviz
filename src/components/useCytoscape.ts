@@ -377,4 +377,3 @@ export function useCytoscape(
 
   return { cyRef, cyInstance };
 }
-

@@ -79,11 +79,7 @@ function RuleToggle({ enabled, failed, onEnabledChange }: RuleToggleProps) {
 }
 
 /*** Renders every detected cycle as an independently selectable sidebar row. */
-function CycleList({
-  cycles,
-  selectedCycleIds,
-  onSelectedCycleIdsChange,
-}: CycleListProps) {
+function CycleList({ cycles, selectedCycleIds, onSelectedCycleIdsChange }: CycleListProps) {
   return (
     <>
       <h3>{t('audit.cycles')}</h3>

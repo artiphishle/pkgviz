@@ -102,7 +102,7 @@ const Settings: React.FC<SettingsProps> = ({ onCycleHighlightsChange }) => {
               </button>
             </Setting>
           </div>
-    
+
           <h3>{t('settings.filter')}</h3>
           {/* Whether to show vendor packages */}
           <Setting>
@@ -115,7 +115,7 @@ const Settings: React.FC<SettingsProps> = ({ onCycleHighlightsChange }) => {
               value={showVendorPackages}
             />
           </Setting>
-    
+
           {/* Whether to show compound nodes */}
           <Setting>
             <Switch
@@ -127,7 +127,7 @@ const Settings: React.FC<SettingsProps> = ({ onCycleHighlightsChange }) => {
               value={showCompoundNodes}
             />
           </Setting>
-    
+
           {/* How many sub package levels to show */}
           <>
             <h3>{`${t('settings.subPackageDepth')}: ${subPackageDepth}`}</h3>
@@ -149,7 +149,7 @@ const Settings: React.FC<SettingsProps> = ({ onCycleHighlightsChange }) => {
               </Slider.Root>
             </Setting>
           </>
-    
+
           <h3>{t('settings.layout')}</h3>
           <Setting>
             <Select.Root value={cytoscapeLayout} onValueChange={setCytoscapeLayout}>
@@ -188,7 +188,7 @@ const Settings: React.FC<SettingsProps> = ({ onCycleHighlightsChange }) => {
               </Select.Portal>
             </Select.Root>
           </Setting>
-    
+
           <h3>
             {t('settings.layoutSpacing')}: {cytoscapeLayoutSpacing}
           </h3>
