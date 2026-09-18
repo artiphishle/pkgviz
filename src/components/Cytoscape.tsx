@@ -4,14 +4,15 @@ import React from 'react';
 
 import { useCytoscape } from '@/components/useCytoscape';
 import ZoomInput from '@/components/ZoomInput';
-import type { GraphCycleHighlight } from '@/types/graphCycleHighlight';
+import type { CycleHighlight } from '@/types/auditVisualization';
 
-/*** Renders the interactive dependency graph. */
+/*** Renders the interactive dependency graph and optional inspection overlay. */
 export function Cytoscape({
   currentPackage,
-  cycleHighlights,
   packageGraph,
   setCurrentPackage,
+  cycleHighlights,
+  overlay,
 }: CytoscapeProps) {
   const { cyRef, cyInstance } = useCytoscape(
     packageGraph,
@@ -21,8 +22,11 @@ export function Cytoscape({
   );
 
   return (
-    <div className="flex flex-col w-full px-8 flex-1 gap-2">
-      <div ref={cyRef} className="h-[calc(100%-65px)]" />
+    <div className="flex min-w-0 flex-1 flex-col gap-2 px-8">
+      <div className="relative h-[calc(100%-65px)]">
+        <div ref={cyRef} className="h-full" />
+        {overlay}
+      </div>
       <ZoomInput cyInstance={cyInstance} />
     </div>
   );
@@ -30,7 +34,8 @@ export function Cytoscape({
 
 interface CytoscapeProps {
   readonly currentPackage: string;
-  readonly cycleHighlights: readonly GraphCycleHighlight[];
   readonly packageGraph: ElementsDefinition | null;
   readonly setCurrentPackage: (path: string) => void;
+  readonly cycleHighlights: readonly CycleHighlight[];
+  readonly overlay?: React.ReactNode;
 }

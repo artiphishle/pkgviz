@@ -4,8 +4,8 @@ import { join } from 'node:path';
 
 import { assert, describe, it } from '@artiphishle/testosterone';
 
+import { getAuditEvaluationAction } from '@/app/actions/audit.actions';
 import { getGraphAction } from '@/app/actions/graph.actions';
-import { getAuditEvaluationAction } from '@/features/audit/adapters/inbound/next/getAuditEvaluationAction';
 
 describe('[project analysis actions]', () => {
   it('returns a serializable failure for a missing project root', async () => {

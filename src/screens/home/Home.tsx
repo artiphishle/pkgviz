@@ -3,57 +3,59 @@ import { toErrorMessage } from '@ankhorage/utility/error';
 import type { ElementsDefinition } from 'cytoscape';
 import { useEffect, useState } from 'react';
 
+import { getAuditEvaluationAction } from '@/app/actions/audit.actions';
 import { getGraphAction } from '@/app/actions/graph.actions';
 import Breadcrumb from '@/components/Breadcrumb';
-import { Cytoscape } from '@/components/Cytoscape';
 import Header from '@/components/Header';
-import Loader from '@/components/Loader';
 import ProjectLoadError from '@/components/ProjectLoadError';
-import Settings from '@/components/Settings';
-import { SettingsProvider, useSettings } from '@/contexts/SettingsContext';
-import { AuditRulesSettings } from '@/features/audit/adapters/inbound/react/AuditRulesSettings';
-import { useAuditRuleControls } from '@/features/audit/adapters/inbound/react/useAuditRuleControls';
+import { SettingsProvider } from '@/contexts/SettingsContext';
+import { HomeGraph } from '@/screens/home/HomeGraph';
+import { HomeSidebar } from '@/screens/home/HomeSidebar';
+import type { Audit } from '@/types/audit';
+import type { CycleHighlight, CycleInspection } from '@/types/auditVisualization';
 
-/*** Renders the PKGViz home screen within persisted settings state. */
+/*** Renders the PKGViz home screen and composes sidebar diagnostics with the graph. */
 export default function HomeScreen() {
-  return (
-    <SettingsProvider>
-      <HomeContent />
-    </SettingsProvider>
-  );
-}
-
-/*** Composes graph settings, audit-rule controls, and graph visualization at the screen boundary. */
-function HomeContent() {
   const [currentPackage, setCurrentPackage] = useState<string>('');
   const [packageGraph, setPackageGraph] = useState<ElementsDefinition | null>(null);
-  const [graphError, setGraphError] = useState<string | null>(null);
-  const { rulesEnabled, toggleRulesEnabled } = useSettings();
-  const auditRuleControls = useAuditRuleControls(rulesEnabled);
+  const [auditEvaluation, setAuditEvaluation] = useState<Audit['evaluation'] | null>(null);
+  const [projectError, setProjectError] = useState<string | null>(null);
+  const [cycleHighlights, setCycleHighlights] = useState<readonly CycleHighlight[]>([]);
+  const [cycleInspection, setCycleInspection] = useState<CycleInspection | null>(null);
 
   useEffect(() => {
-    if (packageGraph !== null || graphError !== null) return;
-
     let cancelled = false;
+
     void getGraphAction()
       .then(result => {
         if (cancelled) return;
         if (result.ok) {
           setPackageGraph(result.value);
         } else {
-          setGraphError(result.error);
+          setProjectError(result.error);
         }
       })
       .catch(error => {
-        if (!cancelled) {
-          setGraphError(toErrorMessage(error, 'Unable to load project graph.'));
+        if (!cancelled) setProjectError(toErrorMessage(error, 'Unable to load project graph.'));
+      });
+
+    void getAuditEvaluationAction()
+      .then(result => {
+        if (cancelled) return;
+        if (result.ok) {
+          setAuditEvaluation(result.value);
+        } else {
+          setProjectError(result.error);
         }
+      })
+      .catch(error => {
+        if (!cancelled) setProjectError(toErrorMessage(error, 'Unable to load project audit.'));
       });
 
     return () => {
       cancelled = true;
     };
-  }, [graphError, packageGraph]);
+  }, []);
 
   return (
     <>
@@ -63,32 +65,27 @@ function HomeContent() {
           onNavigate={(path: string) => setCurrentPackage(path.replace(/\//g, '.'))}
         />
       </Header>
-
-      <main data-testid="main" className="flex flex-1 flex-row dark:bg-[#171717]">
-        <Settings>
-          <AuditRulesSettings
-            controls={auditRuleControls}
-            enabled={rulesEnabled}
-            onToggleEnabled={() => {
-              auditRuleControls.clearSelection();
-              toggleRulesEnabled();
-            }}
+      <SettingsProvider>
+        <main data-testid="main" className="flex min-w-0 flex-1 flex-row dark:bg-[#171717]">
+          <HomeSidebar
+            evaluation={auditEvaluation}
+            onCycleHighlightsChange={setCycleHighlights}
+            onCycleInspectionChange={setCycleInspection}
           />
-        </Settings>
-
-        {graphError ? (
-          <ProjectLoadError message={graphError} />
-        ) : packageGraph ? (
-          <Cytoscape
-            currentPackage={currentPackage}
-            setCurrentPackage={setCurrentPackage}
-            packageGraph={packageGraph}
-            cycleHighlights={auditRuleControls.highlights}
-          />
-        ) : (
-          <Loader />
-        )}
-      </main>
+          {projectError ? (
+            <ProjectLoadError message={projectError} />
+          ) : (
+            <HomeGraph
+              currentPackage={currentPackage}
+              cycleHighlights={cycleHighlights}
+              cycleInspection={cycleInspection}
+              packageGraph={packageGraph}
+              setCurrentPackage={setCurrentPackage}
+              onCloseInspection={() => setCycleInspection(null)}
+            />
+          )}
+        </main>
+      </SettingsProvider>
     </>
   );
 }

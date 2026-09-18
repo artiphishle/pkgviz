@@ -64,18 +64,6 @@ export const getShowVendorPackages = () => {
 };
 
 /***
- * Determines whether audit rule controls are enabled.
- */
-export const getRulesEnabled = () => {
-  const env = parseEnv(
-    'NEXT_PUBLIC_SETTINGS_RULES_ENABLED',
-    process.env.NEXT_PUBLIC_SETTINGS_RULES_ENABLED
-  );
-
-  return env === false ? false : true;
-};
-
-/***
  * Determines how many subpackage levels to show.
  */
 export const getSubPackageDepth = () => {

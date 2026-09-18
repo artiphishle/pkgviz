@@ -1,16 +1,16 @@
-import type { ReactNode } from 'react';
+import React from 'react';
 
-/*** Renders one titled section in the fixed PKGViz sidebar. */
+/*** Renders a non-collapsible application-sidebar category. */
 export function SidebarSection({ children, title }: SidebarSectionProps) {
   return (
     <section>
-      <h3>{title}</h3>
+      <h3 className="mx-6 mt-6 mb-2 text-sm font-bold">{title}</h3>
       {children}
     </section>
   );
 }
 
 interface SidebarSectionProps {
-  readonly children: ReactNode;
-  readonly title: ReactNode;
+  readonly children: React.ReactNode;
+  readonly title: React.ReactNode;
 }

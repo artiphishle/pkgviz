@@ -4,10 +4,19 @@ import { js2xml } from 'xml-js';
 import { createAuditAsync } from '@/features/audit/application/use-cases/createAuditAsync';
 import { parseProjectPath } from '@/shared/utils/parseProjectPath';
 import type { Audit } from '@/types/audit';
+import type { ProjectAnalysisActionResult } from '@/types/projectAnalysisActionResult';
+import { runProjectAnalysisActionAsync } from '@/utils/runProjectAnalysisActionAsync';
 
 /*** Builds the audit payload for the configured project. */
 export async function getAuditAction(): Promise<Audit> {
   return await createAuditAsync(parseProjectPath());
+}
+
+/*** Returns the serializable audit evaluation required by the client rule panel. */
+export async function getAuditEvaluationAction(): Promise<
+  ProjectAnalysisActionResult<Audit['evaluation']>
+> {
+  return runProjectAnalysisActionAsync(async () => (await getAuditAction()).evaluation);
 }
 
 /*** Serializes the current project audit as JSON. */
