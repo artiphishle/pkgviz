@@ -1,8 +1,7 @@
-import { strict as assert } from 'node:assert';
 import { mkdtemp, mkdir, writeFile, rm, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { it } from 'node:test';
+import { assert, it } from '@artiphishle/testosterone';
 import { inspectParserLanguageAsync } from '../../../../src/app/utils/inspectParserLanguageAsync';
 import { Language } from '../../../../src/shared/types';
 
