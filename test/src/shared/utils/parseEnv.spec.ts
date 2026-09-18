@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@artiphishle/testosterone';
-import { parseEnv } from '@/shared/utils/parseEnv';
+import { getRulesEnabled, parseEnv } from '@/shared/utils/parseEnv';
 
 describe('[parseEnv]', () => {
   it('parses "" correctly to undefined', () => {
@@ -30,5 +30,21 @@ describe('[parseEnv]', () => {
 
     const result = parseEnv('test', process.env.NEXT_PUBLIC_TEST);
     expect(result).toBe(123);
+  });
+
+  it('uses NEXT_PUBLIC_SETTINGS_RULES_ENABLED as the rules default', () => {
+    const previous = process.env.NEXT_PUBLIC_SETTINGS_RULES_ENABLED;
+
+    process.env.NEXT_PUBLIC_SETTINGS_RULES_ENABLED = 'false';
+    expect(getRulesEnabled()).toBe(false);
+
+    process.env.NEXT_PUBLIC_SETTINGS_RULES_ENABLED = 'true';
+    expect(getRulesEnabled()).toBe(true);
+
+    if (previous === undefined) {
+      delete process.env.NEXT_PUBLIC_SETTINGS_RULES_ENABLED;
+    } else {
+      process.env.NEXT_PUBLIC_SETTINGS_RULES_ENABLED = previous;
+    }
   });
 });
