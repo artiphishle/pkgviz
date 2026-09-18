@@ -8,10 +8,11 @@ import type { AuditRuleResult, PackageCycleDetail } from '@/types/audit';
 
 /*** Presents enabled audit rules as accessible status tabs. */
 export function AuditRuleTabs({ cyclicPackages, rules }: AuditRuleTabsProps) {
-  const [firstRule] = rules;
-  if (firstRule === undefined) {
+  if (rules.length === 0) {
     return <p className="text-xs text-neutral-500 dark:text-neutral-400">{t('audit.noRules')}</p>;
   }
+
+  const [firstRule] = rules;
 
   return (
     <Tabs.Root defaultValue={firstRule.id}>
@@ -26,10 +27,7 @@ export function AuditRuleTabs({ cyclicPackages, rules }: AuditRuleTabsProps) {
 
       {rules.map(rule => (
         <Tabs.Content key={rule.id} value={rule.id} className="pt-3 outline-none">
-          <AuditRuleTabContent
-            cyclicPackages={cyclicPackages}
-            rule={rule}
-          />
+          <AuditRuleTabContent cyclicPackages={cyclicPackages} rule={rule} />
         </Tabs.Content>
       ))}
     </Tabs.Root>
