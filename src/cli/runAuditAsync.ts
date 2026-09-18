@@ -7,16 +7,16 @@ import type { Audit, ResolveAuditConfigurationInput } from '@/types/audit';
 /*** Creates, writes, and evaluates an audit while retaining the artifact on rule failure. */
 export async function runAuditAsync(input: RunAuditInput): Promise<RunAuditResult> {
   const audit = await createAuditAsync(input.projectPath, input.configuration);
-  const artifactPath = resolveFileSystemPathWithinRoot(input.projectPath, input.outputPath);
   const body = input.pretty ? JSON.stringify(audit, null, 2) : JSON.stringify(audit);
 
   await writeFileWithinRoot({
     rootPath: input.projectPath,
-    filePath: artifactPath,
+    filePath: input.outputPath,
     body: new TextEncoder().encode(body),
     exclusive: false,
   });
 
+  const artifactPath = resolveFileSystemPathWithinRoot(input.projectPath, input.outputPath);
   const shouldFail =
     audit.configuration.failOnRuleViolation && hasBlockingAuditRuleFailure(audit.evaluation.rules);
 
