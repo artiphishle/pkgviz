@@ -1,17 +1,13 @@
-import { defineConfig, globalIgnores } from 'eslint/config';
-import nextVitals from 'eslint-config-next/core-web-vitals';
-import nextTs from 'eslint-config-next/typescript';
+import { createConfig } from '@ankhorage/devtools/eslint';
+import localConfig from './eslint.local.config.mjs';
 
-const eslintConfig = defineConfig([
-  ...nextVitals,
-  ...nextTs,
-  {
-    rules: {
-      'react-hooks/refs': 'off',
-      'react-hooks/set-state-in-effect': 'off',
-    },
-  },
-  globalIgnores(['.next/**', 'out/**', 'build/**', 'next-env.d.ts']),
-]);
+const localEntries = Array.isArray(localConfig) ? localConfig : [localConfig];
 
-export default eslintConfig;
+export default [
+  ...createConfig({
+    files: ['src/**/*.{ts,tsx}'],
+    project: ['./tsconfig.json'],
+    tsconfigRootDir: import.meta.dirname,
+  }),
+  ...localEntries,
+];
