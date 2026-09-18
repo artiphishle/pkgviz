@@ -37,7 +37,7 @@ export function SidebarTabs({ ariaLabel, onValueChange, tabs, value }: SidebarTa
   );
 }
 
-export interface SidebarTab {
+interface SidebarTab {
   readonly badge?: number;
   readonly badgeTone?: 'danger' | 'neutral';
   readonly content: React.ReactNode;
