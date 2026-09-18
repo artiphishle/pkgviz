@@ -20,8 +20,8 @@ export function CyclicDependenciesRuleDetails({
   onCycleHighlightsChange,
   onCycleInspectionChange,
 }: CyclicDependenciesRuleDetailsProps) {
-  const [selectedCycleIds, setSelectedCycleIds] = React.useState<readonly string[]>(
-    () => cycles.map(getCycleId)
+  const [selectedCycleIds, setSelectedCycleIds] = React.useState<readonly string[]>(() =>
+    cycles.map(getCycleId)
   );
 
   React.useEffect(() => {
