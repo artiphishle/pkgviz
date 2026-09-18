@@ -1,7 +1,7 @@
 import { strict as assert } from 'node:assert';
 import { resolve } from 'node:path';
 import { describe, it } from 'node:test';
-import { expect } from '@artiphishle/testosterone/src/matchers';
+import { expect } from '@artiphishle/testosterone';
 import { parseJavaFile } from '@/app/utils/parser/java/parseJavaFile';
 import { parseProjectPath } from '@/shared/utils/parseProjectPath';
 
@@ -10,7 +10,7 @@ describe('[parseJavaFile]', () => {
     process.env.NEXT_PUBLIC_PROJECT_PATH = resolve(process.cwd(), 'examples/java/my-app');
     const projectPath = parseProjectPath();
     const javaFile = resolve(projectPath, 'src/main/java/com/example/myapp/App.java');
-    const parsedJavaFile = await parseJavaFile(javaFile, projectPath);
+    const parsedJavaFile = await parseJavaFile(javaFile, projectPath, projectPath);
 
     expect(parsedJavaFile.className).toBe('App');
     expect(parsedJavaFile.imports.length).toBe(1);
@@ -23,7 +23,7 @@ describe('[parseJavaFile]', () => {
     const projectPath = resolve(process.cwd(), 'examples/java/my-app');
 
     await assert.rejects(
-      parseJavaFile(resolve(projectPath, '..', 'outside.java'), projectPath),
+      parseJavaFile(resolve(projectPath, '..', 'outside.java'), projectPath, projectPath),
       /Path escaped the allowed root/
     );
   });

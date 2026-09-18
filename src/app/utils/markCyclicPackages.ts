@@ -2,6 +2,7 @@ import { findCyclicComponents, type Graph } from '@ankhorage/graph';
 import type { ElementsDefinition } from 'cytoscape';
 
 import type { ParsedDirectory, ParsedFile } from '@/shared/types';
+import type { CycleEdgeEvidence, ImportEvidence, PackageCycleDetail } from '@/types/audit';
 
 /*** Collect all files from your ParsedDirectory tree. */
 function collectFiles(root: ParsedDirectory): ParsedFile[] {
@@ -230,21 +231,3 @@ export function getCyclicPackageSet(
 }
 
 type TUniquePackageName = string;
-
-interface ImportEvidence {
-  readonly filePath: string; // ParsedFile.path (relative to project)
-  readonly fileClass: string; // ParsedFile.className
-  readonly importName: string; // IJavaImport.name
-  readonly isIntrinsic?: boolean; // IJavaImport.isIntrinsic
-}
-
-interface CycleEdgeEvidence {
-  readonly from: TUniquePackageName;
-  readonly to: TUniquePackageName;
-  readonly via: ImportEvidence[]; // files in `from` that import `to`
-}
-
-export interface PackageCycleDetail {
-  readonly packages: TUniquePackageName[]; // ordered cycle incl. closing node, e.g. ["A","B","A"]
-  readonly edges: CycleEdgeEvidence[]; // evidence aligned with packages[i] -> packages[i+1]
-}
