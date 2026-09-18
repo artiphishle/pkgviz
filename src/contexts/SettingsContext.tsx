@@ -4,7 +4,7 @@ import React, { createContext, type PropsWithChildren, use } from 'react';
 import {
   getCytoscapeLayout,
   getCytoscapeLayoutSpacing,
-  getRulesEnabled,
+  getCyclicDependenciesRuleEnabled,
   getShowCompoundNodes,
   getShowVendorPackages,
   getSubPackageDepth,
@@ -32,7 +32,10 @@ function useSettingsValue(): ISettingsContext {
     'maxSubPackageDepth',
     1
   );
-  const [rulesEnabled, setRulesEnabled] = useLocalStorage('rulesEnabled', getRulesEnabled());
+  const [cyclicDependenciesEnabled, setCyclicDependenciesEnabled] = useLocalStorage(
+    'cyclicDependenciesEnabled',
+    getCyclicDependenciesRuleEnabled()
+  );
   const [showCompoundNodes, setShowCompoundNodes] = useLocalStorage(
     'showCompoundNodes',
     getShowCompoundNodes()
@@ -58,7 +61,7 @@ function useSettingsValue(): ISettingsContext {
     cytoscapeLayout,
     cytoscapeLayoutSpacing,
     maxSubPackageDepth,
-    rulesEnabled,
+    cyclicDependenciesEnabled,
     showCompoundNodes,
     showVendorPackages,
     subPackageDepth,
@@ -66,7 +69,7 @@ function useSettingsValue(): ISettingsContext {
     setCytoscapeLayoutSpacing,
     setMaxSubPackageDepth,
     setSubPackageDepth,
-    toggleRulesEnabled: () => setRulesEnabled(previous => !previous),
+    toggleCyclicDependenciesEnabled: () => setCyclicDependenciesEnabled(previous => !previous),
     toggleShowCompoundNodes: () => setShowCompoundNodes(previous => !previous),
     toggleShowVendorPackages: () => setShowVendorPackages(previous => !previous),
   };
@@ -76,7 +79,7 @@ interface ISettingsContext {
   readonly cytoscapeLayout: LayoutOptions['name'];
   readonly cytoscapeLayoutSpacing: number;
   readonly maxSubPackageDepth: number;
-  readonly rulesEnabled: boolean;
+  readonly cyclicDependenciesEnabled: boolean;
   readonly subPackageDepth: number;
   readonly showCompoundNodes: boolean;
   readonly showVendorPackages: boolean;
@@ -84,7 +87,7 @@ interface ISettingsContext {
   readonly setCytoscapeLayoutSpacing: (layoutSpacing: number) => void;
   readonly setMaxSubPackageDepth: (depth: number) => void;
   readonly setSubPackageDepth: (depth: number) => void;
-  readonly toggleRulesEnabled: () => void;
+  readonly toggleCyclicDependenciesEnabled: () => void;
   readonly toggleShowCompoundNodes: () => void;
   readonly toggleShowVendorPackages: () => void;
 }
