@@ -23,7 +23,7 @@ export function createGraphViewStyles(
 function toGraphViewStyleRule(rule: StylesheetJson[number]): GraphViewStyleRule {
   return {
     selector: rule.selector,
-    style: { ...rule.style },
+    style: { ...('style' in rule ? rule.style : rule.css) },
   };
 }
 
