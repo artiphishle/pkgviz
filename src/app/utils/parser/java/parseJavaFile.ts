@@ -4,9 +4,7 @@ import path from 'node:path';
 import { readTextFileWithinRoot } from '@ankhorage/utility/node/fs';
 import { escapeRegExp } from '@ankhorage/utility/regex';
 
-import { extractJavaPackageFromImport } from '@/app/utils/parser/java/extractJavaPackageFromImport';
-import { getIntrinsicPackagesRecursive } from '@/app/utils/parser/java/getIntrinsicPackagesRecursive';
-import type { MethodCall, MethodDefinition, ParsedFile } from '@/shared/types';
+import type { ImportDefinition, MethodCall, MethodDefinition, ParsedFile } from '@/shared/types';
 import { toPosix } from '@/shared/utils/toPosix';
 
 /***
@@ -15,13 +13,6 @@ import { toPosix } from '@/shared/utils/toPosix';
 function extractPackageName(content: string): string {
   const match = /^package\s+([a-zA-Z0-9_.]+);/m.exec(content);
   return match?.[1] || '';
-}
-
-/***
- * Extracts import statements from Java code.
- */
-function extractImports(content: string): string[] {
-  return Array.from(content.matchAll(/^import\s+([a-zA-Z0-9_.*]+);/gm)).map(match => match[1]);
 }
 
 /***
@@ -68,7 +59,7 @@ function extractMethodDefinitions(content: string): MethodDefinition[] {
 }
 
 /***
- * Extract method calls from file content
+ * Extract method calls from Java content.
  */
 function extractMethodCalls(content: string): MethodCall[] {
   const callRegex = /(\b\w+)\.(\w+)\s*\(/g;
@@ -85,37 +76,26 @@ function extractMethodCalls(content: string): MethodCall[] {
 }
 
 /***
- * Parses a Java file and returns metadata useful for diagram generation.
+ * Parses Java class/method/call metadata while consuming canonical dependency imports.
  */
-export async function parseJavaFile(fullPath: string, projectRoot: string, analysisRoot: string) {
+export async function parseJavaFile(
+  fullPath: string,
+  projectRoot: string,
+  imports: readonly ImportDefinition[]
+): Promise<ParsedFile> {
   const { content, path: resolvedPath } = readTextFileWithinRoot({
     rootPath: projectRoot,
     filePath: fullPath,
   });
   const fileName = path.basename(resolvedPath, '.java');
-  const intrinsicPackages = await getIntrinsicPackagesRecursive(analysisRoot);
-
-  const className = extractClassName(content, fileName);
-  const pkg = extractPackageName(content);
-  const imports = extractImports(content).map(imp => {
-    const pkgFromImport = extractJavaPackageFromImport(imp);
-    return {
-      name: imp,
-      pkg: pkgFromImport,
-      isIntrinsic: intrinsicPackages.includes(pkgFromImport),
-    };
-  });
-  const methods = extractMethodDefinitions(content);
-  const calls = extractMethodCalls(content);
-  const relativePath = toPosix(path.relative(projectRoot, resolvedPath));
 
   const file: ParsedFile = {
-    className,
-    package: pkg,
-    imports,
-    methods,
-    calls,
-    path: relativePath,
+    className: extractClassName(content, fileName),
+    package: extractPackageName(content),
+    imports: [...imports],
+    methods: extractMethodDefinitions(content),
+    calls: extractMethodCalls(content),
+    path: toPosix(path.relative(projectRoot, resolvedPath)),
   };
 
   return file;
