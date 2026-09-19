@@ -62,7 +62,7 @@ function labelVisibleNodes(
   return {
     nodes: elements.nodes.map(node => ({
       group: 'nodes',
-      classes: node.classes || '',
+      classes: node.classes ?? '',
       data: {
         ...node.data,
         label: currentPackage.length
