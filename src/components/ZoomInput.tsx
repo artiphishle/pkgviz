@@ -52,7 +52,6 @@ export default function ZoomInput({ cyInstance }: IZoomInput) {
     };
 
     cyInstance.zoom({ level: clamped, renderedPosition });
-    setZoom(clamped);
   };
 
   // Zoom to fit button
@@ -61,12 +60,6 @@ export default function ZoomInput({ cyInstance }: IZoomInput) {
     if (!cyInstance) return;
 
     fitGraph(cyInstance);
-
-    const nextZoom = cyInstance.zoom();
-    setZoom(nextZoom);
-    // If you want, you could also refresh min/max here:
-    // setMinZoom(cyInstance.minZoom());
-    // setMaxZoom(cyInstance.maxZoom());
   };
 
   return (
