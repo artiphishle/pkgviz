@@ -251,11 +251,5 @@ export async function getParsedFileStructure(
         : undefined;
 
   // 3. Read directory recursively (pass resolved root as both dir and projectRoot)
-  return await readDirRecursively(
-    rootDir,
-    rootDir,
-    detectedLanguage,
-    projectPath,
-    importsByFile
-  );
+  return await readDirRecursively(rootDir, rootDir, detectedLanguage, projectPath, importsByFile);
 }
