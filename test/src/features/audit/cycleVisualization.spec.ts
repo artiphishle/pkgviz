@@ -66,7 +66,9 @@ describe('[createCycleFocus]', () => {
       edges: [],
     };
 
-    expect(createCycleFocus([highlight(firstCycle, 'first'), highlight(secondCycle, 'second')])).toEqual({
+    expect(
+      createCycleFocus([highlight(firstCycle, 'first'), highlight(secondCycle, 'second')])
+    ).toEqual({
       currentPackage: 'app',
       packageDepth: 3,
     });
