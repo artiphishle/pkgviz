@@ -81,18 +81,6 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
       },
     },
     {
-      selector: 'node.auditCycleMuted',
-      style: {
-        opacity: 0.18,
-      },
-    },
-    {
-      selector: 'node.auditCycleContext',
-      style: {
-        opacity: 0.5,
-      },
-    },
-    {
       selector: 'node.auditCycle',
       style: {
         'border-color': 'data(auditCycleColor)',
@@ -204,13 +192,6 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         width: 8,
         'line-color': colors.weightXl,
         'target-arrow-color': colors.weightXl,
-      },
-    },
-    {
-      selector: 'edge.auditCycleMuted',
-      style: {
-        opacity: 0.06,
-        'line-opacity': 0.06,
       },
     },
     {

@@ -1,7 +1,7 @@
 'use client';
 import { toErrorMessage } from '@ankhorage/utility/error';
 import type { ElementsDefinition } from 'cytoscape';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { getAuditEvaluationAction } from '@/app/actions/audit.actions';
 import { getProjectVisualizationAction } from '@/app/actions/project.actions';
@@ -81,6 +81,12 @@ export default function HomeScreen() {
     });
   };
 
+  /*** Activates cycle diagnostics without retaining stale tree-driven viewport focus. */
+  const updateCycleHighlights = useCallback((highlights: readonly CycleHighlight[]) => {
+    if (highlights.length > 0) setGraphRevealRequest(null);
+    setCycleHighlights(highlights);
+  }, []);
+
   return (
     <>
       <Header title="nav.packages">
@@ -96,9 +102,8 @@ export default function HomeScreen() {
             projectTree={projectTree}
             selectedTreeId={selectedTreeId}
             onProjectTreeSelect={selectProjectTreeNode}
-            onCycleHighlightsChange={setCycleHighlights}
+            onCycleHighlightsChange={updateCycleHighlights}
             onCycleInspectionChange={setCycleInspection}
-            setCurrentPackage={navigateToPackage}
           />
           {projectError ? (
             <ProjectLoadError message={projectError} />

@@ -46,7 +46,7 @@
     "changeset:status": "ankhorage-changeset status --since=origin/main",
     "version-packages": "ankhorage-changeset version",
     "test:maven": "mvn -B -f maven-plugin/pom.xml test",
-    "zora:materialize": "bunx @ankhorage/ankh@0.10.4 zora create tree-view --web --out .generated/zora/tree-view"
+    "zora:materialize": "bunx @ankhorage/ankh@0.10.4 zora create tree-view --web --out .generated/zora/tree-view && bunx @ankhorage/ankh@0.10.4 zora create graph-view --web --out .generated/zora/graph-view"
   },
   "dependencies": {
     "@ankhorage/dependency-graph": "^0.6.0",
