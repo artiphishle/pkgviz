@@ -39,4 +39,38 @@ describe('[getStyle]', () => {
       cy.destroy();
     }
   });
+
+  it('renders active cycle edges above ordinary compound graph content', () => {
+    const elements = {
+      nodes: [{ data: { id: 'a' } }, { data: { id: 'b' } }],
+      edges: [
+        {
+          classes: 'auditCycle',
+          data: {
+            id: 'cycle',
+            source: 'a',
+            target: 'b',
+            weight: 1,
+            auditCycleColor: '#dc2626',
+            auditCycleStep: '1',
+          },
+        },
+      ],
+    };
+    const cy = cytoscape({
+      elements,
+      headless: true,
+      style: getStyle(elements, 'light'),
+      styleEnabled: true,
+    });
+
+    try {
+      const edge = cy.getElementById('cycle');
+      expect(edge.style('z-compound-depth')).toBe('top');
+      expect(edge.style('z-index-compare')).toBe('manual');
+      expect(edge.style('z-index')).toBe('9999');
+    } finally {
+      cy.destroy();
+    }
+  });
 });

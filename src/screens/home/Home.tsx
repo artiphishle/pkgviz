@@ -11,7 +11,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { getAuditEvaluationAction } from '@/app/actions/audit.actions';
 import { getProjectVisualizationAction } from '@/app/actions/project.actions';
 import { SettingsProvider } from '@/contexts/SettingsContext';
-import { getGraphRevealScope } from '@/features/project-tree/utils/getGraphRevealScope';
+import { findProjectTreeNodeByGraphPackage } from '@/features/project-tree/utils/findProjectTreeNodeByGraphPackage';
 import { t } from '@/i18n/i18n';
 import { HomeGraph } from '@/screens/home/HomeGraph';
 import { HomeSidebar } from '@/screens/home/HomeSidebar';
@@ -75,20 +75,24 @@ export default function HomeScreen() {
     };
   }, []);
 
-  /*** Navigates manually and clears any stale tree-driven graph reveal request. */
+  /*** Navigates graph scope and mirrors the matching package selection in the project tree. */
   const navigateToPackage = (path: string) => {
+    const packageName = normalizeGraphPackage(path);
+    const matchingTreeNode = findProjectTreeNodeByGraphPackage(projectTree, packageName);
     setGraphRevealRequest(null);
-    setCurrentPackage(path);
+    setCurrentPackage(packageName);
+    setSelectedTreeId(matchingTreeNode?.id ?? null);
   };
 
-  /*** Selects a project-tree node and reveals its owning package in the graph. */
+  /*** Selects a project-tree node and navigates the graph to the same package scope. */
   const selectProjectTreeNode = (node: ProjectTreeNode) => {
     setSelectedTreeId(node.id);
     if (!node.graphPackage) return;
 
-    setCurrentPackage(getGraphRevealScope(node.graphPackage));
+    const packageName = normalizeGraphPackage(node.graphPackage);
+    setCurrentPackage(packageName);
     setGraphRevealRequest({
-      packageId: node.graphPackage,
+      packageId: packageName,
       treeNodeId: node.id,
     });
   };
@@ -126,7 +130,10 @@ export default function HomeScreen() {
         />
       </AppBar>
       <SettingsProvider>
-        <main data-testid="main" className="flex min-w-0 flex-1 flex-row dark:bg-[#171717]">
+        <main
+          data-testid="main"
+          className="flex min-h-0 min-w-0 flex-1 flex-row overflow-hidden dark:bg-[#171717]"
+        >
           <HomeSidebar
             evaluation={auditEvaluation}
             projectTree={projectTree}
@@ -164,7 +171,7 @@ export default function HomeScreen() {
 
 /*** Creates interactive package breadcrumbs with a stable project and Packages root. */
 function createBreadcrumbItems(currentPackage: string): readonly BreadcrumbItem[] {
-  const packageSegments = currentPackage === '' ? [] : currentPackage.split('.');
+  const packageSegments = normalizeGraphPackage(currentPackage).split('.').filter(Boolean);
   const packageItems = packageSegments.map((label, index) => ({
     id: packageSegments.slice(0, index + 1).join('.'),
     label,
@@ -183,6 +190,11 @@ function createBreadcrumbItems(currentPackage: string): readonly BreadcrumbItem[
     },
     ...packageItems,
   ];
+}
+
+/*** Normalizes graph navigation paths to the package-id representation used by Cytoscape. */
+function normalizeGraphPackage(path: string): string {
+  return path.replaceAll('/', '.').split('.').filter(Boolean).join('.');
 }
 
 interface BreadcrumbItem {

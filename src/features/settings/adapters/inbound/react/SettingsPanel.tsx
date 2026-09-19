@@ -1,11 +1,11 @@
 'use client';
-import type { LayoutOptions } from 'cytoscape';
-import { Slider } from 'radix-ui';
-import React from 'react';
 import { Select } from '@zora/select';
 import { Switch } from '@zora/switch';
 import { Text } from '@zora/text';
 import { View } from '@zora/view';
+import type { LayoutOptions } from 'cytoscape';
+import { Slider } from 'radix-ui';
+import React from 'react';
 
 import { useSettings } from '@/contexts/SettingsContext';
 import { t } from '@/i18n/i18n';
@@ -91,13 +91,18 @@ function SubPackageDepthSettings({ mode }: SettingsPanelProps) {
 function LayoutSettings({ mode }: SettingsPanelProps) {
   const { cytoscapeLayout, setCytoscapeLayout } = useSettings();
 
+  /*** Lets the Select close immediately before starting a potentially expensive graph layout. */
+  const selectLayout = (layout: LayoutOptions['name']) => {
+    React.startTransition(() => setCytoscapeLayout(layout));
+  };
+
   return (
     <SettingsSection mode={mode} title={t('settings.layout')}>
       <Select
         mode={mode}
         value={cytoscapeLayout}
         options={LAYOUT_OPTIONS.map(value => ({ label: t(value), value }))}
-        onValueChange={(value: LayoutOptions['name']) => setCytoscapeLayout(value)}
+        onValueChange={selectLayout}
         testID="cytoscape-layout"
       />
     </SettingsSection>

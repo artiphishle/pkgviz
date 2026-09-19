@@ -1,9 +1,9 @@
 'use client';
-import { useTheme } from 'next-themes';
-import React from 'react';
 import { Surface } from '@zora/surface';
 import { Tab, TabList, TabPanel, Tabs } from '@zora/tabs';
 import { View } from '@zora/view';
+import { useTheme } from 'next-themes';
+import React from 'react';
 
 import { AuditExportPanel } from '@/features/audit/adapters/inbound/react/AuditExportPanel';
 import { AuditRulePanel } from '@/features/audit/adapters/inbound/react/AuditRulePanel';
@@ -30,7 +30,7 @@ export function HomeSidebar(props: HomeSidebarProps) {
   };
 
   return (
-    <aside className="w-[18rem] min-w-[18rem] max-w-[18rem] shrink-0 overflow-y-auto border-r border-neutral-200 md:pt-14 dark:border-neutral-800">
+    <aside className="flex min-h-0 w-[18rem] min-w-[18rem] max-w-[18rem] shrink-0 self-stretch flex-col overflow-y-auto border-r border-r-neutral-200 md:pt-14 dark:border-r-neutral-800">
       <Surface mode={mode} variant="subtle">
         <SidebarToolTabs {...props} activeTool={activeTool} mode={mode} onValueChange={selectTool} />
         <SettingsPanel mode={mode} />

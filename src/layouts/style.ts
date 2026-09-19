@@ -210,7 +210,9 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         'text-background-color': colors.canvasBg,
         'text-background-opacity': 0.9,
         'text-background-padding': '3px',
-        'z-index': 999,
+        'z-compound-depth': 'top',
+        'z-index-compare': 'manual',
+        'z-index': 9999,
       },
     },
   ];

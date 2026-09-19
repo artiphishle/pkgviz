@@ -102,22 +102,31 @@ function useGraphViewPresentation(input: GraphViewPresentationInput) {
 function DependencyGraphCanvas(props: DependencyGraphCanvasProps) {
   const [controller, setController] = useState<GraphViewController | null>(null);
   const [zoom, setZoom] = useState(1);
+  const handledRevealRequestRef = React.useRef<string | null>(null);
+
+  React.useEffect(() => {
+    if (props.graphRevealRequest === null) handledRevealRequestRef.current = null;
+  }, [props.graphRevealRequest]);
 
   /*** Handles structural graph navigation without touching the rendering engine. */
   const handleNodeEvent = (event: GraphViewElementEvent) => {
     if (event.type !== 'double-press' || !props.model.parentNodeIds.has(event.id)) return;
-    props.setCurrentPackage(event.id.replace(/\./g, '/'));
+    props.setCurrentPackage(event.id);
   };
 
-  /*** Applies explicit tree reveal after ZORA has completed its canonical layout fit. */
+  /*** Applies each explicit tree reveal once instead of refitting it after unrelated graph updates. */
   const handleLayoutComplete = (nextController: GraphViewController) => {
-    if (props.cycleHighlights.length > 0 || props.graphRevealRequest === null) return;
-    nextController.fit({ nodeIds: [props.graphRevealRequest.packageId], padding: 140 });
+    const revealRequest = props.graphRevealRequest;
+    if (props.cycleHighlights.length > 0 || revealRequest === null) return;
+    if (handledRevealRequestRef.current === revealRequest.treeNodeId) return;
+
+    handledRevealRequestRef.current = revealRequest.treeNodeId;
+    nextController.fit({ nodeIds: [revealRequest.packageId], padding: 140 });
   };
 
   return (
-    <div className="flex min-w-0 flex-1 flex-col gap-2 px-8">
-      <div className="relative h-[calc(100%-65px)]">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2 overflow-hidden px-8">
+      <div className="relative min-h-0 flex-1 overflow-hidden">
         <GraphView
           edges={props.model.edges}
           layout={props.layout}
@@ -138,7 +147,13 @@ function DependencyGraphCanvas(props: DependencyGraphCanvasProps) {
         />
         {props.overlay}
       </div>
-      <GraphZoomControls controller={controller} maxZoom={MAX_ZOOM} minZoom={MIN_ZOOM} mode={props.theme} zoom={zoom} />
+      <GraphZoomControls
+        controller={controller}
+        maxZoom={MAX_ZOOM}
+        minZoom={MIN_ZOOM}
+        mode={props.theme}
+        zoom={zoom}
+      />
     </div>
   );
 }

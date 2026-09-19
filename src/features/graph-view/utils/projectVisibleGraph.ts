@@ -43,17 +43,25 @@ function labelVisibleNodes(
   elements: ElementsDefinition,
   currentPackage: string
 ): ElementsDefinition {
+  const normalizedPackage = currentPackage.replaceAll('/', '.');
+
   return {
     nodes: elements.nodes.map(node => ({
       group: 'nodes',
       classes: node.classes ?? '',
       data: {
         ...node.data,
-        label: currentPackage.length
-          ? node.data.id?.slice(currentPackage.length + 1)
-          : node.data.id,
+        label: getRelativeNodeLabel(String(node.data.id ?? ''), normalizedPackage),
       },
     })),
     edges: elements.edges,
   };
+}
+
+/*** Resolves a readable label for the active package itself and for its descendants. */
+function getRelativeNodeLabel(id: string, currentPackage: string): string {
+  if (!currentPackage) return id;
+  if (id === currentPackage) return id.split('.').at(-1) ?? id;
+  const descendantPrefix = currentPackage + '.';
+  return id.startsWith(descendantPrefix) ? id.slice(descendantPrefix.length) : id;
 }
