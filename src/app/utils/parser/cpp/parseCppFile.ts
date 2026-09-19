@@ -12,8 +12,13 @@ function extractNamespace(content: string): string {
   return match?.[1]?.replace(/::/g, '.') || '';
 }
 
-/*** Retains includes that intentionally have no graphable package target. */
-function extractPresentationOnlyIncludes(content: string): ImportDefinition[] {
+/*** Retains include metadata canonical graph topology intentionally omits. */
+function extractPresentationOnlyIncludes(
+  content: string,
+  namespace: string,
+  canonicalImports: readonly ImportDefinition[]
+): ImportDefinition[] {
+  const canonicalNames = new Set(canonicalImports.map(({ name }) => name));
   const includeRegex = /#include\s+(["<])([^">]+)[">]/g;
   const imports: ImportDefinition[] = [];
   let match;
@@ -21,10 +26,15 @@ function extractPresentationOnlyIncludes(content: string): ImportDefinition[] {
   while ((match = includeRegex.exec(content)) !== null) {
     const delimiter = match[1];
     const specifier = match[2];
-    if (specifier.includes('/')) continue;
+    if (canonicalNames.has(specifier)) continue;
+
+    const segments = specifier.replace(/\.(h|hpp|hxx)$/u, '').split('/');
+    const pkg = segments.length > 1 ? segments.slice(0, -1).join('.') : '';
+    if (pkg !== '' && pkg !== namespace) continue;
+
     imports.push({
       name: specifier,
-      pkg: '',
+      pkg,
       isIntrinsic: delimiter === '"',
     });
   }
@@ -35,11 +45,13 @@ function extractPresentationOnlyIncludes(content: string): ImportDefinition[] {
 /*** Restores complete include metadata in source declaration order. */
 function mergeImports(
   content: string,
+  namespace: string,
   canonicalImports: readonly ImportDefinition[]
 ): readonly ImportDefinition[] {
-  return [...canonicalImports, ...extractPresentationOnlyIncludes(content)].sort(
-    (left, right) => content.indexOf(left.name) - content.indexOf(right.name)
-  );
+  return [
+    ...canonicalImports,
+    ...extractPresentationOnlyIncludes(content, namespace, canonicalImports),
+  ].sort((left, right) => content.indexOf(left.name) - content.indexOf(right.name));
 }
 
 /*** Extracts the class name from the content and filename fallback. */
@@ -107,10 +119,12 @@ export async function parseCppFile(
   });
   const fileName = path.basename(resolvedPath);
 
+  const namespace = extractNamespace(content);
+
   return {
     className: extractClassName(content, fileName),
-    package: extractNamespace(content),
-    imports: [...mergeImports(content, imports)],
+    package: namespace,
+    imports: [...mergeImports(content, namespace, imports)],
     methods: extractMethodDefinitions(content),
     calls: extractMethodCalls(content),
     path: toPosix(path.relative(projectRoot, resolvedPath)),
