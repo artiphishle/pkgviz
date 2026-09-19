@@ -125,8 +125,8 @@ function DependencyGraphCanvas(props: DependencyGraphCanvasProps) {
   };
 
   return (
-    <div className="flex min-w-0 flex-1 flex-col gap-2 px-8">
-      <div className="relative h-[calc(100%-65px)]">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2 overflow-hidden px-8">
+      <div className="relative min-h-0 flex-1 overflow-hidden">
         <GraphView
           edges={props.model.edges}
           layout={props.layout}

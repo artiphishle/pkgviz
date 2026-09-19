@@ -21,7 +21,7 @@ export function GraphZoomControls({ controller, maxZoom, minZoom, zoom }: GraphZ
   };
 
   return (
-    <div className="p-4 flex items-center justify-center gap-2 border-t border-t-gray-200 dark:border-t-gray-800">
+    <div className="flex shrink-0 items-center justify-center gap-2 border-t border-t-gray-200 p-4 dark:border-t-gray-800">
       <label htmlFor="zoom">Zoom:</label>
       <button
         type="button"
