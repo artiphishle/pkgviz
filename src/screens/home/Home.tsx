@@ -97,7 +97,10 @@ export default function HomeScreen() {
         <Breadcrumb path={currentPackage.replace(/\./g, '/')} onNavigate={navigateToPackage} />
       </Header>
       <SettingsProvider>
-        <main data-testid="main" className="flex min-h-0 min-w-0 flex-1 flex-row overflow-hidden dark:bg-[#171717]">
+        <main
+          data-testid="main"
+          className="flex min-h-0 min-w-0 flex-1 flex-row overflow-hidden dark:bg-[#171717]"
+        >
           <HomeSidebar
             evaluation={auditEvaluation}
             projectTree={projectTree}

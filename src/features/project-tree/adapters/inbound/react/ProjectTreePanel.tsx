@@ -10,17 +10,19 @@ import type { ProjectTreeNode } from '@/types/projectTree';
 /*** Adapts PKGViz's serializable project tree to the generated ZORA browser TreeView. */
 export function ProjectTreePanel({ nodes, onSelect, selectedId }: ProjectTreePanelProps) {
   const treeNodes = React.useMemo(() => nodes.map(toTreeItemNode), [nodes]);
-  const [expandedIds, setExpandedIds] = React.useState<readonly string[]>([]);
-
-  React.useEffect(() => {
-    setExpandedIds(nodes.filter(node => node.kind === 'directory').map(node => node.id));
-  }, [nodes]);
-
-  React.useEffect(() => {
-    if (selectedId === null) return;
-    const ancestorIds = getProjectTreeAncestorIds(nodes, selectedId);
-    setExpandedIds(currentIds => [...new Set([...currentIds, ...ancestorIds])]);
-  }, [nodes, selectedId]);
+  const defaultExpandedIds = React.useMemo(
+    () => nodes.filter(node => node.kind === 'directory').map(node => node.id),
+    [nodes]
+  );
+  const selectedAncestorIds = React.useMemo(
+    () => (selectedId === null ? [] : getProjectTreeAncestorIds(nodes, selectedId)),
+    [nodes, selectedId]
+  );
+  const [userExpandedIds, setUserExpandedIds] = React.useState<readonly string[] | null>(null);
+  const expandedIds = React.useMemo(
+    () => [...new Set([...(userExpandedIds ?? defaultExpandedIds), ...selectedAncestorIds])],
+    [defaultExpandedIds, selectedAncestorIds, userExpandedIds]
+  );
 
   return (
     <div className="px-2 pt-2 text-xs">
@@ -29,7 +31,7 @@ export function ProjectTreePanel({ nodes, onSelect, selectedId }: ProjectTreePan
         expandedIds={expandedIds}
         nodes={treeNodes}
         selectedId={selectedId ?? undefined}
-        onExpandedChange={setExpandedIds}
+        onExpandedChange={setUserExpandedIds}
         onSelect={id => {
           const node = findProjectTreeNode(nodes, id);
           if (node) onSelect(node);
