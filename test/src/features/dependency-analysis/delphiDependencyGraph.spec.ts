@@ -1,12 +1,24 @@
 import { describe, expect, it, resolve } from '@artiphishle/testosterone';
 
 import { parseDelphiFile } from '@/app/utils/parser/delphi/parseFile';
+import { analyzeDependencyImportsAsync } from '@/features/dependency-analysis/adapters/outbound/dependency-graph/analyzeDependencyImportsAsync';
 
-describe('[Delphi dependency graph baseline]', () => {
-  it('locks current Delphi unit/import semantics before analyzer migration', async () => {
-    const projectRoot = resolve(process.cwd(), 'examples/delphi/my-app/src');
+describe('[Delphi dependency graph migration]', () => {
+  it('preserves locked Delphi unit/import semantics through the canonical analyzer', async () => {
+    const appRoot = resolve(process.cwd(), 'examples/delphi/my-app');
+    const projectRoot = resolve(appRoot, 'src');
     const file = resolve(projectRoot, 'Services/UserService.pas');
-    const parsed = await parseDelphiFile(file, projectRoot);
+    const importsByFile = await analyzeDependencyImportsAsync(
+      appRoot,
+      projectRoot,
+      'specifier',
+      'delphi-standard-library'
+    );
+    const parsed = await parseDelphiFile(
+      file,
+      projectRoot,
+      importsByFile.get('Services/UserService.pas') ?? []
+    );
 
     expect(parsed.package).toBe('Services');
     expect(parsed.imports).toEqual([
