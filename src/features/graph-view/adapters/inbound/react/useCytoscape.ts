@@ -25,8 +25,6 @@ export function useCytoscape(
   const visibleElements = useGraphProjection({
     currentPackage,
     elements,
-    revealPackageId,
-    setCurrentPackage,
     setMaxSubPackageDepth: settings.setMaxSubPackageDepth,
     showCompoundNodes: settings.showCompoundNodes,
     showVendorPackages: settings.showVendorPackages,
@@ -39,7 +37,6 @@ export function useCytoscape(
     cy: cyInstance,
     cycleHighlights,
     currentPackage,
-    revealPackageId,
     setCurrentPackage,
     setCytoscapeLayoutSpacing: settings.setCytoscapeLayoutSpacing,
     setSubPackageDepth: settings.setSubPackageDepth,
