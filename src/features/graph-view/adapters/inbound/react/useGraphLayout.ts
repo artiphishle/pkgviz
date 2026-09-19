@@ -116,7 +116,7 @@ interface UseGraphLayoutInput {
   readonly spacing: number;
 }
 
-interface RunGraphLayoutInput extends UseGraphLayoutInput {
+interface RunGraphLayoutInput extends Omit<UseGraphLayoutInput, 'spacing'> {
   readonly layoutRef: { current: Layouts | null };
   readonly layoutRunningRef: { current: boolean };
   readonly layoutStopHandlerRef: { current: (() => void) | null };
