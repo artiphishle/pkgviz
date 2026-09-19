@@ -35,7 +35,7 @@ export function useCytoscape(
   const { cyRef, cyInstance } = useCytoscapeInstance();
 
   useGraphElements({ allElements: elements, cy: cyInstance, setCurrentPackage, visibleElements });
-  useGraphFocus({ containerRef: cyRef, cy: cyInstance, cycleHighlights, revealPackageId, visibleElements });
+  useGraphFocus({ cy: cyInstance, cycleHighlights, revealPackageId, visibleElements });
   useGraphLayout({
     cy: cyInstance,
     elements: visibleElements,
@@ -44,7 +44,6 @@ export function useCytoscape(
     spacing: settings.cytoscapeLayoutSpacing,
   });
   useGraphStyles({
-    containerRef: cyRef,
     cy: cyInstance,
     layout: settings.cytoscapeLayout,
     visibleElements,
