@@ -63,6 +63,12 @@ export default function HomeScreen() {
     };
   }, []);
 
+  /*** Navigates manually and clears any stale tree-driven graph reveal request. */
+  const navigateToPackage = (path: string) => {
+    setGraphRevealRequest(null);
+    setCurrentPackage(path);
+  };
+
   /*** Selects a project-tree node and reveals its owning package in the graph. */
   const selectProjectTreeNode = (node: ProjectTreeNode) => {
     setSelectedTreeId(node.id);
@@ -80,7 +86,7 @@ export default function HomeScreen() {
       <Header title="nav.packages">
         <Breadcrumb
           path={currentPackage.replace(/\./g, '/')}
-          onNavigate={(path: string) => setCurrentPackage(path.replace(/\//g, '.'))}
+          onNavigate={(path: string) => navigateToPackage(path.replace(/\//g, '.'))}
         />
       </Header>
       <SettingsProvider>
@@ -92,6 +98,7 @@ export default function HomeScreen() {
             onProjectTreeSelect={selectProjectTreeNode}
             onCycleHighlightsChange={setCycleHighlights}
             onCycleInspectionChange={setCycleInspection}
+            setCurrentPackage={navigateToPackage}
           />
           {projectError ? (
             <ProjectLoadError message={projectError} />
@@ -102,7 +109,7 @@ export default function HomeScreen() {
               cycleInspection={cycleInspection}
               graphRevealRequest={graphRevealRequest}
               packageGraph={packageGraph}
-              setCurrentPackage={setCurrentPackage}
+              setCurrentPackage={navigateToPackage}
               onCloseInspection={() => setCycleInspection(null)}
             />
           )}
