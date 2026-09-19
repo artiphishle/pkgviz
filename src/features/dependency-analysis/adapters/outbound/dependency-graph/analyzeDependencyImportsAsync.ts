@@ -118,9 +118,19 @@ function readSourceTextAsync(
   const cached = cache.get(sourceFile);
   if (cached !== undefined) return cached;
 
-  const sourceText = readFile(sourceFile, 'utf8');
+  const sourceText = readOptionalSourceTextAsync(sourceFile);
   cache.set(sourceFile, sourceText);
   return sourceText;
+}
+
+/*** Missing evidence source files retain canonical ordering instead of failing analysis. */
+async function readOptionalSourceTextAsync(sourceFile: string): Promise<string> {
+  try {
+    return await readFile(sourceFile, 'utf8');
+  } catch (error) {
+    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') return '';
+    throw error;
+  }
 }
 
 /*** Preserves PKGViz presentation semantics independently from canonical graph classification. */
