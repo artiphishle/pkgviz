@@ -105,6 +105,7 @@ function DependencyGraphCanvas(props: DependencyGraphCanvasProps) {
   const [controller, setController] = useState<GraphViewController | null>(null);
   const [zoom, setZoom] = useState(1);
   const handledRevealRequestRef = React.useRef<string | null>(null);
+  const previousLayoutRef = React.useRef(props.layout);
 
   React.useEffect(() => {
     if (props.graphRevealRequest === null) handledRevealRequestRef.current = null;
@@ -116,14 +117,23 @@ function DependencyGraphCanvas(props: DependencyGraphCanvasProps) {
     props.setCurrentPackage(event.id);
   };
 
-  /*** Applies each explicit tree reveal once instead of refitting it after unrelated graph updates. */
+  /*** Fits explicit reveals once and recenters after an intentional layout-algorithm change. */
   const handleLayoutComplete = (nextController: GraphViewController) => {
-    const revealRequest = props.graphRevealRequest;
-    if (props.cycleHighlights.length > 0 || revealRequest === null) return;
-    if (handledRevealRequestRef.current === revealRequest.treeNodeId) return;
+    const layoutChanged = previousLayoutRef.current !== props.layout;
+    previousLayoutRef.current = props.layout;
 
-    handledRevealRequestRef.current = revealRequest.treeNodeId;
-    nextController.fit({ nodeIds: [revealRequest.packageId], padding: 140 });
+    const revealRequest = props.graphRevealRequest;
+    if (
+      props.cycleHighlights.length === 0 &&
+      revealRequest !== null &&
+      handledRevealRequestRef.current !== revealRequest.treeNodeId
+    ) {
+      handledRevealRequestRef.current = revealRequest.treeNodeId;
+      nextController.fit({ nodeIds: [revealRequest.packageId], padding: 140 });
+      return;
+    }
+
+    if (layoutChanged) nextController.fit();
   };
 
   return (
