@@ -2,7 +2,10 @@ import type { ParsedDirectory, ParsedFile } from '@/shared/types';
 import type { ProjectTreeNode } from '@/types/projectTree';
 
 /*** Converts parsed-project data into the serializable hierarchy consumed by the sidebar. */
-export function buildProjectTree(directory: ParsedDirectory, parentPath = ''): readonly ProjectTreeNode[] {
+export function buildProjectTree(
+  directory: ParsedDirectory,
+  parentPath = ''
+): readonly ProjectTreeNode[] {
   return Object.entries(directory)
     .sort(compareEntries)
     .map(([name, value]) => {
