@@ -7,14 +7,13 @@ import { getAdaptiveCycleLayoutSpacing } from '@/features/audit/utils/getAdaptiv
 import type { CycleHighlight } from '@/types/auditVisualization';
 import { applyCycleHighlights } from '@/utils/graph/applyCycleHighlights';
 import { fitGraph } from '@/utils/graph/fitGraph';
-import { fitGraphViewport, revealGraphPackage } from '@/utils/graph/fitGraphViewport';
+import { revealGraphPackage } from '@/utils/graph/fitGraphViewport';
 
 /*** Owns cycle highlighting, adaptive cycle focus, tree reveal focus, and resize fitting. */
 export function useGraphFocus(input: UseGraphFocusInput) {
   const handledCycleSignatureRef = useRef<string | null>(null);
   useCycleDiagnosticFocus(input, handledCycleSignatureRef);
   useTreeRevealFocus(input);
-  useResizeFocus(input);
 }
 
 /*** Applies one cycle-focus transition per active-cycle set without fighting later manual navigation. */
@@ -131,12 +130,6 @@ function useTreeRevealFocus(input: UseGraphFocusInput) {
   }, [cy, hasActiveCycles, revealPackageId, visibleElements]);
 }
 
-/*** Re-fits the active non-selection viewport policy when the graph container changes size. */
-function useResizeFocus(input: UseGraphFocusInput) {
-  const { cy, revealPackageId } = input;
-  useEffect(() => observeGraphResize(cy, revealPackageId), [cy, revealPackageId]);
-}
-
 /*** Returns a stable identity for the current active-cycle set. */
 function getCycleSignature(highlights: readonly CycleHighlight[]): string {
   return highlights
@@ -203,19 +196,6 @@ function getCycleLayoutMetrics(cy: Core) {
         ? 0
         : distances.reduce((sum, distance) => sum + distance, 0) / distances.length,
   };
-}
-
-/*** Observes graph resizing and reapplies the current non-cycle viewport focus policy. */
-function observeGraphResize(cy: Core | null, revealPackageId?: string) {
-  if (cy === null || cy.destroyed()) return undefined;
-  const container = cy.container();
-  if (container === null) return undefined;
-
-  const observer = new ResizeObserver(() => {
-    requestAnimationFrame(() => fitGraphViewport(cy, revealPackageId));
-  });
-  observer.observe(container);
-  return () => observer.disconnect();
 }
 
 interface UseGraphFocusInput {
