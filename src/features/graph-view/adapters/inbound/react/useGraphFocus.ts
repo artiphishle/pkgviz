@@ -33,9 +33,7 @@ export function useGraphFocus(input: UseGraphFocusInput) {
       return;
     }
     if (ensureCycleProjection(input)) return;
-    const frame = requestAnimationFrame(() =>
-      focusCycleViewport(input, focusSignatureRef)
-    );
+    const frame = requestAnimationFrame(() => focusCycleViewport(input, focusSignatureRef));
     return () => cancelAnimationFrame(frame);
   }, [
     cy,
@@ -88,10 +86,7 @@ function ensureCycleProjection(input: UseGraphFocusInput): boolean {
 }
 
 /*** Fits the whole graph, measures the cycle, and applies at most one spacing reduction. */
-function focusCycleViewport(
-  input: UseGraphFocusInput,
-  signatureRef: { current: string | null }
-) {
+function focusCycleViewport(input: UseGraphFocusInput, signatureRef: { current: string | null }) {
   if (input.cy === null || input.cy.destroyed()) return;
   fitGraph(input.cy);
 
@@ -122,9 +117,7 @@ function getCycleLayoutMetrics(cy: Core) {
   });
   const positions = cycleNodes.map(node => node.renderedPosition());
   const distances = positions.flatMap((position, index) =>
-    positions.slice(index + 1).map(other =>
-      Math.hypot(position.x - other.x, position.y - other.y)
-    )
+    positions.slice(index + 1).map(other => Math.hypot(position.x - other.x, position.y - other.y))
   );
 
   return {

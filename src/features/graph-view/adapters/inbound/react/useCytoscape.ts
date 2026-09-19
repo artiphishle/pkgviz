@@ -21,8 +21,7 @@ export function useCytoscape(
   graphRevealRequest: GraphRevealRequest | null
 ) {
   const settings = useSettings();
-  const revealPackageId =
-    cycleHighlights.length > 0 ? undefined : graphRevealRequest?.packageId;
+  const revealPackageId = cycleHighlights.length > 0 ? undefined : graphRevealRequest?.packageId;
   const visibleElements = useGraphProjection({
     currentPackage,
     elements,
