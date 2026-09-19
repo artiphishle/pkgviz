@@ -70,7 +70,8 @@ export async function analyzeDependencyImportsAsync(
 }
 
 type ImportNameMode = 'package' | 'specifier';
-type ImportIntrinsicMode = 'canonical' | 'kotlin-standard-library' | 'python-legacy';
+type ImportIntrinsicMode =
+  'canonical' | 'delphi-standard-library' | 'kotlin-standard-library' | 'python-legacy';
 
 /*** Adds one canonical evidence item while retaining the original source declaration position. */
 async function appendEvidenceAsync(input: AppendEvidenceInput): Promise<number> {
@@ -137,6 +138,15 @@ async function readOptionalSourceTextAsync(sourceFile: string): Promise<string> 
 function isIntrinsicImport(evidence: DependencyImportEvidence, mode: ImportIntrinsicMode): boolean {
   if (mode === 'canonical') return evidence.classification === 'intrinsic';
   if (mode === 'python-legacy') return evidence.specifier.startsWith('.');
+  if (mode === 'delphi-standard-library') {
+    return (
+      evidence.specifier.startsWith('System.') ||
+      evidence.specifier.startsWith('Vcl.') ||
+      evidence.specifier.startsWith('FMX.') ||
+      evidence.specifier.startsWith('Data.') ||
+      evidence.specifier.startsWith('Web.')
+    );
+  }
 
   return (
     evidence.specifier.startsWith('kotlin.') ||

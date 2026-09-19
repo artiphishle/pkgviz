@@ -3,93 +3,30 @@ import path from 'node:path';
 
 import { readTextFileWithinRoot } from '@ankhorage/utility/node/fs';
 
-import { extractPackageFromImport } from '@/app/utils/parser/delphi/extractPackageFromImport';
 import type { ImportDefinition, MethodCall, MethodDefinition, ParsedFile } from '@/shared/types';
 import { toPosix } from '@/shared/utils/toPosix';
 
-/***
- * Extracts package/unit path from Delphi file structure.
- */
+/*** Extracts package/unit path from Delphi file structure. */
 function extractUnitPath(filePath: string, projectRoot: string): string {
   const relativePath = toPosix(path.relative(projectRoot, filePath));
   const dir = path.posix.dirname(relativePath);
-
-  // Convert path separators to dots for Delphi unit notation
   return dir === '.' ? '' : dir.replace(/\//g, '.');
 }
 
-/***
- * Extracts uses clause imports from Delphi code.
- */
-function extractImports(content: string): ImportDefinition[] {
-  const imports: ImportDefinition[] = [];
-
-  // Match uses clause: uses Unit1, Unit2, Unit3;
-  // Can appear in interface and implementation sections
-  const usesRegex = /\buses\s+([\s\S]*?);/gi;
-
-  let match;
-  while ((match = usesRegex.exec(content)) !== null) {
-    const usesClause = match[1];
-
-    // Split by comma and extract unit names
-    const units = usesClause.split(',').map(u => u.trim());
-
-    for (const unit of units) {
-      // Remove "in 'path'" suffix if present
-      const unitName = unit.replace(/\s+in\s+['"].*?['"]/gi, '').trim();
-
-      if (unitName) {
-        const pkg = extractPackageFromImport(unitName);
-
-        // Determine if it's a standard RTL/VCL/FMX unit
-        const isIntrinsic =
-          unitName.startsWith('System.') ||
-          unitName.startsWith('Vcl.') ||
-          unitName.startsWith('FMX.') ||
-          unitName.startsWith('Data.') ||
-          unitName.startsWith('Web.');
-
-        imports.push({
-          name: unitName,
-          pkg,
-          isIntrinsic,
-        });
-      }
-    }
-  }
-
-  return imports;
-}
-
-/***
- * Extracts the unit/class name from Delphi content.
- */
+/*** Extracts the unit/class name from Delphi content. */
 function extractClassName(content: string, fileName: string): string {
-  // Try to find unit name
   const unitMatch = /\bunit\s+([A-Za-z_][A-Za-z0-9_]*)\s*;/i.exec(content);
-  if (unitMatch) {
-    return unitMatch[1];
-  }
+  if (unitMatch) return unitMatch[1];
 
-  // Try to find primary class name in type section
   const classMatch = /\bT([A-Za-z_][A-Za-z0-9_]*)\s*=\s*class/i.exec(content);
-  if (classMatch) {
-    return 'T' + classMatch[1];
-  }
+  if (classMatch) return 'T' + classMatch[1];
 
-  // Fallback to filename without extension
   return path.basename(fileName, path.extname(fileName));
 }
 
-/***
- * Extracts method/procedure/function definitions from Delphi content.
- */
+/*** Extracts method/procedure/function definitions from Delphi content. */
 function extractMethodDefinitions(content: string): MethodDefinition[] {
   const methods: MethodDefinition[] = [];
-
-  // Match procedure/function declarations in interface or class definition
-  // procedure MethodName(Params); or function MethodName: ReturnType;
   const methodRegex =
     /\b(procedure|function)\s+([A-Za-z_][A-Za-z0-9_]*)\s*(?:$$(.*?)$$)?\s*(?::\s*([A-Za-z_][A-Za-z0-9_.<>]+))?\s*;/gi;
 
@@ -99,25 +36,16 @@ function extractMethodDefinitions(content: string): MethodDefinition[] {
     const name = match[2];
     const paramsStr = match[3] || '';
     const returnType = match[4] || (kind === 'procedure' ? 'void' : 'Unknown');
-
-    // Parse parameters (format: Name: Type; Name2: Type2)
     const params = paramsStr
       .split(';')
       .map(p => p.trim())
       .filter(p => p)
       .map(p => {
-        // Extract parameter name (before colon)
         const colonIdx = p.indexOf(':');
-        if (colonIdx > 0) {
-          return p.substring(0, colonIdx).trim();
-        }
-        return p;
+        return colonIdx > 0 ? p.substring(0, colonIdx).trim() : p;
       });
 
-    // Determine visibility based on section or keywords
     let visibility: 'public' | 'protected' | 'private' | 'default' = 'public';
-
-    // Look backwards in content to find visibility section
     const beforeMethod = content.substring(0, match.index);
     if (/\bprivate\b(?!.*\bpublic\b)(?!.*\bprotected\b)/is.test(beforeMethod)) {
       visibility = 'private';
@@ -125,60 +53,43 @@ function extractMethodDefinitions(content: string): MethodDefinition[] {
       visibility = 'protected';
     }
 
-    methods.push({
-      name,
-      returnType,
-      parameters: params,
-      visibility,
-    });
+    methods.push({ name, returnType, parameters: params, visibility });
   }
 
   return methods;
 }
 
-/***
- * Extract method calls from Delphi content.
- */
+/*** Extracts method calls from Delphi content. */
 function extractMethodCalls(content: string): MethodCall[] {
   const calls: MethodCall[] = [];
-
-  // Match: Object.Method( or Object.Property
   const callRegex = /([A-Za-z_][A-Za-z0-9_]*)\.([A-Za-z_][A-Za-z0-9_]*)\s*\(/g;
-
   let match;
-  while ((match = callRegex.exec(content)) !== null) {
-    const callee = match[1];
-    const method = match[2];
 
-    calls.push({ callee, method });
+  while ((match = callRegex.exec(content)) !== null) {
+    calls.push({ callee: match[1], method: match[2] });
   }
 
   return calls;
 }
 
-/***
- * Parses a Delphi file and returns metadata useful for diagram generation.
- */
-export async function parseDelphiFile(fullPath: string, projectRoot: string): Promise<ParsedFile> {
+/*** Parses Delphi metadata while consuming canonical dependency imports. */
+export async function parseDelphiFile(
+  fullPath: string,
+  projectRoot: string,
+  imports: readonly ImportDefinition[]
+): Promise<ParsedFile> {
   const { content, path: resolvedPath } = readTextFileWithinRoot({
     rootPath: projectRoot,
     filePath: fullPath,
   });
   const fileName = path.basename(resolvedPath);
 
-  const className = extractClassName(content, fileName);
-  const unitPath = extractUnitPath(resolvedPath, projectRoot);
-  const imports = extractImports(content);
-  const methods = extractMethodDefinitions(content);
-  const calls = extractMethodCalls(content);
-  const relativePath = toPosix(path.relative(projectRoot, resolvedPath));
-
   return {
-    className,
-    package: unitPath,
-    imports,
-    methods,
-    calls,
-    path: relativePath,
+    className: extractClassName(content, fileName),
+    package: extractUnitPath(resolvedPath, projectRoot),
+    imports: [...imports],
+    methods: extractMethodDefinitions(content),
+    calls: extractMethodCalls(content),
+    path: toPosix(path.relative(projectRoot, resolvedPath)),
   };
 }

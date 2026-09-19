@@ -207,7 +207,12 @@ async function readDirRecursively(
           entry.name.endsWith('.pp') ||
           entry.name.endsWith('.dpr')
         ) {
-          result[entry.name] = await parseDelphiFile(fullPath, projectRoot);
+          if (importsByFile === undefined) {
+            throw new Error('Missing canonical Delphi dependency analysis.');
+          }
+          const relativeFile = toPosix(path.relative(projectRoot, fullPath));
+          const imports = importsByFile.get(relativeFile) ?? [];
+          result[entry.name] = await parseDelphiFile(fullPath, projectRoot, imports);
         }
         break;
 
@@ -279,7 +284,14 @@ export async function getParsedFileStructure(
               )
             : detectedLanguage === Language.Cpp
               ? await analyzeDependencyImportsAsync(projectPath, rootDir, 'specifier')
-              : undefined;
+              : detectedLanguage === Language.Delphi
+                ? await analyzeDependencyImportsAsync(
+                    projectPath,
+                    rootDir,
+                    'specifier',
+                    'delphi-standard-library'
+                  )
+                : undefined;
 
   // 3. Read directory recursively (pass resolved root as both dir and projectRoot)
   return await readDirRecursively(rootDir, rootDir, detectedLanguage, projectPath, importsByFile);
