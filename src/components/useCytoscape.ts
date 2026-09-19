@@ -36,16 +36,16 @@ export function useCytoscape(
   const [filteredElements, setFilteredElements] = useState<ElementsDefinition | null>(null);
   const [cyInstance, setCyInstance] = useState<Core | null>(null);
 
-  // Keep the running layout so we can stop it on swap
   const layoutRef = useRef<Layouts | null>(null);
   const graphRevealRequestRef = useRef<GraphRevealRequest | null>(null);
+  const cycleHighlightsRef = useRef<readonly CycleHighlight[]>([]);
 
-  // Refs for latest data so event handlers don't need to be re-created
   const elementsRef = useRef<ElementsDefinition | null>(null);
   const filteredElementsRef = useRef<ElementsDefinition | null>(null);
   elementsRef.current = elements;
   filteredElementsRef.current = filteredElements;
   graphRevealRequestRef.current = graphRevealRequest;
+  cycleHighlightsRef.current = cycleHighlights;
 
   const {
     cytoscapeLayout,
@@ -150,12 +150,22 @@ export function useCytoscape(
         const layout = cy.layout(makeLayoutOpts(name));
         layoutRef.current = layout;
 
-        /*** Fits the graph after the active layout completes. */
+        /*** Fits active cycles first, then a tree reveal, otherwise the complete graph. */
         const onStop = () => {
           if (cy.destroyed()) return;
-          cy.fit(undefined, 50);
+          const cycleElements = cy.elements('.auditCycle');
+          if (!cycleElements.empty()) {
+            cy.fit(cycleElements, 80);
+            return;
+          }
+
           const revealRequest = graphRevealRequestRef.current;
-          if (revealRequest) revealGraphPackage(cy, revealRequest.packageId);
+          if (revealRequest) {
+            revealGraphPackage(cy, revealRequest.packageId);
+            return;
+          }
+
+          cy.fit(undefined, 50);
         };
         cy.one('layoutstop', onStop);
 
@@ -186,6 +196,16 @@ export function useCytoscape(
     /*** Refits the graph after its container is resized. */
     const handleResize = () => {
       if (cy.destroyed()) return;
+      const cycleElements = cy.elements('.auditCycle');
+      if (!cycleElements.empty()) {
+        cy.fit(cycleElements, 80);
+        return;
+      }
+      const revealRequest = graphRevealRequestRef.current;
+      if (revealRequest && cycleHighlightsRef.current.length === 0) {
+        revealGraphPackage(cy, revealRequest.packageId);
+        return;
+      }
       cy.fit(undefined, 50);
     };
     const observer = new ResizeObserver(() => requestAnimationFrame(handleResize));
@@ -219,7 +239,6 @@ export function useCytoscape(
       cyInstance.add(filteredElements);
     });
 
-    // Mark parents + dblclick handler based on latest elementsRef
     cyInstance.nodes().forEach(node => {
       const rawNode = filteredElementsRef.current?.nodes.find(
         elm => elm.data.id === node.data().id
@@ -252,17 +271,31 @@ export function useCytoscape(
     runLayoutSafe(cyInstance, cytoscapeLayout);
   }, [cyInstance, filteredElements, cytoscapeLayout, cytoscapeLayoutSpacing, runLayoutSafe]);
 
-  /** 7) Applies cycle highlighting without changing graph scope, depth, layout, or zoom. */
+  /** 7) Applies cycle highlighting and fits the viewport to active cycles without selecting nodes. */
   useEffect(() => {
     if (!cyInstance || !filteredElements || cyInstance.destroyed()) return;
-    applyCycleHighlights(cyInstance, cycleHighlights);
+    const highlightedElements = applyCycleHighlights(cyInstance, cycleHighlights);
+    if (highlightedElements.empty()) return;
+
+    requestAnimationFrame(() => {
+      if (cyInstance.destroyed()) return;
+      cyInstance.fit(cyInstance.elements('.auditCycle'), 80);
+    });
   }, [cyInstance, filteredElements, cycleHighlights]);
 
-  /** 8) Reveals tree-driven package selection after graph filtering and layout changes. */
+  /** 8) Reveals tree selection only while cycle focus is inactive. */
   useEffect(() => {
-    if (!cyInstance || !filteredElements || !graphRevealRequest || cyInstance.destroyed()) return;
+    if (
+      !cyInstance ||
+      !filteredElements ||
+      !graphRevealRequest ||
+      cycleHighlights.length > 0 ||
+      cyInstance.destroyed()
+    ) {
+      return;
+    }
     revealGraphPackage(cyInstance, graphRevealRequest.packageId);
-  }, [cyInstance, filteredElements, graphRevealRequest]);
+  }, [cyInstance, filteredElements, graphRevealRequest, cycleHighlights]);
 
   /** 9) Attach interactive event handlers once (using refs for latest data) */
   useEffect(() => {
