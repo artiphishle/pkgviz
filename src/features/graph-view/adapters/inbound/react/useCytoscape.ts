@@ -59,12 +59,7 @@ export function useCytoscape(
     spacing: settings.cytoscapeLayoutSpacing,
     visibleElements,
   });
-  useGraphStyles({
-    cy: cyInstance,
-    layout: settings.cytoscapeLayout,
-    visibleElements,
-  });
+  useGraphStyles({ cy: cyInstance, layout: settings.cytoscapeLayout, visibleElements });
   useGraphInteractions({ allElements: elements, cy: cyInstance, visibleElements });
-
   return { cyRef, cyInstance };
 }
