@@ -59,8 +59,11 @@ export function DependencyGraphView(props: DependencyGraphViewProps) {
   return (
     <DependencyGraphCanvas
       {...props}
-      {...presentation}
+      layout={presentation.layout}
+      layoutOptions={presentation.layoutOptions}
+      model={presentation.model}
       spacingFactor={settings.cytoscapeLayoutSpacing}
+      styles={presentation.styles}
       theme={theme}
     />
   );
@@ -82,7 +85,10 @@ function useGraphViewPresentation(input: GraphViewPresentationInput) {
         : createGraphViewStyles(input.visibleElements, input.theme, input.layout),
     [input.layout, input.theme, input.visibleElements]
   );
-  const layoutOptions = useMemo(() => ({ ...LAYOUTS[input.layout] }), [input.layout]);
+  const layoutOptions = useMemo<Readonly<Record<string, unknown>>>(
+    () => ({ ...LAYOUTS[input.layout] }),
+    [input.layout]
+  );
 
   return {
     layout: readGraphViewLayout(input.layout),
@@ -165,7 +171,7 @@ interface GraphViewPresentationInput {
 
 interface DependencyGraphCanvasProps extends DependencyGraphViewProps {
   readonly layout: GraphViewLayoutName;
-  readonly layoutOptions: LayoutOptions;
+  readonly layoutOptions: Readonly<Record<string, unknown>>;
   readonly model: NonNullable<ReturnType<typeof createGraphViewModel>>;
   readonly spacingFactor: number;
   readonly styles: ReturnType<typeof createGraphViewStyles>;
