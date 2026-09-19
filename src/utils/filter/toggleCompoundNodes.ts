@@ -1,36 +1,50 @@
-import type { ElementsDefinition } from 'cytoscape';
+import type { ElementsDefinition, NodeDefinition } from 'cytoscape';
 
-/***
- * Toggles display of compound nodes ('parent' attribute) in the node
- */
+/*** Toggles compound-parent metadata without mutating the source graph elements. */
 export function toggleCompoundNodes(
   { nodes, edges }: ElementsDefinition,
   show: boolean,
   currentPackage: string
 ): ElementsDefinition {
-  const updatedNodes = nodes.map(node => {
-    if (!node.data.idInactive) node.data.idInactive = node.data.id;
-    // Preserve parent metadata so compound visibility can be toggled reversibly.
-    if (show && node.data.parentInactive) {
-      node.data.parent = node.data.parentInactive;
-      node.data.parentInactive = undefined;
-    } else if (!show && node.data.parent) {
-      node.data.parentInactive = node.data.parent;
-      node.data.parent = undefined;
-    }
-    return node;
-  });
+  return {
+    nodes: nodes.map(node => toggleCompoundNode(node, show, currentPackage)),
+    edges,
+  };
+}
 
-  const labelledNodes = updatedNodes.map(node => {
-    if (show) {
-      node.data.name = node.data.idInactive.split('.').pop();
-    } else {
-      node.data.name = node.data.idInactive.slice(
-        currentPackage.length ? currentPackage.length + 1 : 0
-      );
-    }
-    return node;
-  });
+/*** Produces one compound-visibility node projection from immutable source data. */
+function toggleCompoundNode(
+  node: NodeDefinition,
+  show: boolean,
+  currentPackage: string
+): NodeDefinition {
+  const idInactive = node.data.idInactive ?? node.data.id;
+  const parentInactive = node.data.parentInactive ?? node.data.parent;
+  const data = {
+    ...node.data,
+    idInactive,
+    name: show
+      ? String(idInactive).split('.').pop()
+      : String(idInactive).slice(currentPackage.length ? currentPackage.length + 1 : 0),
+  };
 
-  return { nodes: labelledNodes, edges };
+  if (show) {
+    return {
+      ...node,
+      data: {
+        ...data,
+        parent: parentInactive,
+        parentInactive: undefined,
+      },
+    };
+  }
+
+  return {
+    ...node,
+    data: {
+      ...data,
+      parent: undefined,
+      parentInactive,
+    },
+  };
 }
