@@ -138,7 +138,12 @@ function DependencyGraphCanvas(props: DependencyGraphCanvasProps) {
         />
         {props.overlay}
       </div>
-      <GraphZoomControls controller={controller} maxZoom={MAX_ZOOM} minZoom={MIN_ZOOM} zoom={zoom} />
+      <GraphZoomControls
+        controller={controller}
+        maxZoom={MAX_ZOOM}
+        minZoom={MIN_ZOOM}
+        zoom={zoom}
+      />
     </div>
   );
 }
