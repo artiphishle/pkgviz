@@ -102,6 +102,11 @@ function useGraphViewPresentation(input: GraphViewPresentationInput) {
 function DependencyGraphCanvas(props: DependencyGraphCanvasProps) {
   const [controller, setController] = useState<GraphViewController | null>(null);
   const [zoom, setZoom] = useState(1);
+  const handledRevealRequestRef = React.useRef<string | null>(null);
+
+  React.useEffect(() => {
+    if (props.graphRevealRequest === null) handledRevealRequestRef.current = null;
+  }, [props.graphRevealRequest]);
 
   /*** Handles structural graph navigation without touching the rendering engine. */
   const handleNodeEvent = (event: GraphViewElementEvent) => {
@@ -109,10 +114,14 @@ function DependencyGraphCanvas(props: DependencyGraphCanvasProps) {
     props.setCurrentPackage(event.id);
   };
 
-  /*** Applies explicit tree reveal after ZORA has completed its canonical layout fit. */
+  /*** Applies each explicit tree reveal once instead of refitting it after unrelated graph updates. */
   const handleLayoutComplete = (nextController: GraphViewController) => {
-    if (props.cycleHighlights.length > 0 || props.graphRevealRequest === null) return;
-    nextController.fit({ nodeIds: [props.graphRevealRequest.packageId], padding: 140 });
+    const revealRequest = props.graphRevealRequest;
+    if (props.cycleHighlights.length > 0 || revealRequest === null) return;
+    if (handledRevealRequestRef.current === revealRequest.treeNodeId) return;
+
+    handledRevealRequestRef.current = revealRequest.treeNodeId;
+    nextController.fit({ nodeIds: [revealRequest.packageId], padding: 140 });
   };
 
   return (
