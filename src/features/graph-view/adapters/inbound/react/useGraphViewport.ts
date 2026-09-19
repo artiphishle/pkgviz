@@ -31,12 +31,7 @@ function useSettledViewportFit(
   } = input;
 
   useEffect(() => {
-    if (
-      cy === null ||
-      visibleElements === null ||
-      layoutRunningRef.current ||
-      cy.destroyed()
-    ) {
+    if (cy === null || visibleElements === null || layoutRunningRef.current || cy.destroyed()) {
       return;
     }
 
