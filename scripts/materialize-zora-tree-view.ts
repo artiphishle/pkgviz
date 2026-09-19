@@ -57,6 +57,10 @@ function packZora(cacheDirectory: string): string {
       '--json',
       '--pack-destination',
       cacheDirectory,
+      '--registry=https://registry.npmjs.org',
+      '--prefer-online',
+      '--cache',
+      join(cacheDirectory, 'npm-cache'),
     ],
     { cwd: repositoryRoot, encoding: 'utf8' }
   );
