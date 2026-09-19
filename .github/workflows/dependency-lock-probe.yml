@@ -1,0 +1,13 @@
+name: Dependency lock probe
+
+on:
+  push:
+    branches:
+      - refactor/java-dependency-graph
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Read published integrity
+        run: npm view @ankhorage/dependency-graph@0.6.0 dist.integrity
