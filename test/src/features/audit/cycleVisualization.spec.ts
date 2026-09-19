@@ -2,10 +2,7 @@ import { describe, expect, it } from '@artiphishle/testosterone';
 
 import cytoscape from 'cytoscape';
 
-import {
-  createCycleFocus,
-  getCycleColor,
-} from '@/features/audit/utils/cycleVisualization';
+import { createCycleFocus, getCycleColor } from '@/features/audit/utils/cycleVisualization';
 import type { PackageCycleDetail } from '@/types/audit';
 
 describe('[getCycleColor]', () => {

@@ -49,7 +49,9 @@ describe('[AuditRuleList]', () => {
     );
     expect(switches.length).toBe(2);
     expect(switches.every(control => control.getAttribute('aria-checked') === 'false')).toBe(true);
-    expect(switches.every(control => control.parentElement?.lastElementChild === control)).toBe(true);
+    expect(switches.every(control => control.parentElement?.lastElementChild === control)).toBe(
+      true
+    );
     expect(container.textContent?.includes('src/a.ts')).toBe(false);
   });
 
