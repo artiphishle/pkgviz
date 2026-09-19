@@ -1,17 +1,21 @@
 import type { ProjectTreeNode } from '@/types/projectTree';
 
-/*** Finds the deepest project-tree node representing the requested graph package. */
+/*** Finds the deepest directory representing a graph package, falling back to a matching file. */
 export function findProjectTreeNodeByGraphPackage(
   nodes: readonly ProjectTreeNode[],
   graphPackage: string
 ): ProjectTreeNode | null {
-  return nodes.reduce<ProjectTreeNode | null>((match, node) => {
-    const nestedMatch = node.children
-      ? findProjectTreeNodeByGraphPackage(node.children, graphPackage)
-      : null;
-    if (nestedMatch) return nestedMatch;
-    if (node.graphPackage !== graphPackage) return match;
-    if (match === null || node.kind === 'directory') return node;
-    return match;
-  }, null);
+  const matches = collectProjectTreePackageMatches(nodes, graphPackage);
+  return matches.find(node => node.kind === 'directory') ?? matches.at(0) ?? null;
+}
+
+/*** Collects package matches depth-first so nested directories outrank their ancestors. */
+function collectProjectTreePackageMatches(
+  nodes: readonly ProjectTreeNode[],
+  graphPackage: string
+): readonly ProjectTreeNode[] {
+  return nodes.flatMap(node => [
+    ...(node.children ? collectProjectTreePackageMatches(node.children, graphPackage) : []),
+    ...(node.graphPackage === graphPackage ? [node] : []),
+  ]);
 }
