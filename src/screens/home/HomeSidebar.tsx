@@ -6,13 +6,15 @@ import { SettingsPanel } from '@/components/SettingsPanel';
 import { Sidebar } from '@/components/sidebar/Sidebar';
 import { SidebarTabs } from '@/components/sidebar/SidebarTabs';
 import { AuditRulePanel } from '@/features/audit/adapters/inbound/react/AuditRulePanel';
+import { ProjectTreePanel } from '@/features/project-tree/adapters/inbound/react/ProjectTreePanel';
 import { t } from '@/i18n/i18n';
 import type { Audit } from '@/types/audit';
 import type { CycleHighlight, CycleInspection } from '@/types/auditVisualization';
+import type { ProjectTreeNode } from '@/types/projectTree';
 
-/*** Composes secondary Rules/Export tools above persistent graph settings. */
+/*** Composes Tree, Rules, and Export above persistent graph settings. */
 export function HomeSidebar(props: HomeSidebarProps) {
-  const [activeTool, setActiveTool] = React.useState<string | null>(null);
+  const [activeTool, setActiveTool] = React.useState<string | null>('tree');
 
   /*** Exits diagnostics cleanly when switching away from Rules. */
   const selectTool = (value: string) => {
@@ -31,13 +33,16 @@ export function HomeSidebar(props: HomeSidebarProps) {
   );
 }
 
-/*** Renders the secondary Rules and Export tab surface. */
+/*** Renders project-tree navigation together with secondary Rules and Export tools. */
 function SidebarToolTabs({
   activeTool,
   evaluation,
   onCycleHighlightsChange,
   onCycleInspectionChange,
+  onProjectTreeSelect,
   onValueChange,
+  projectTree,
+  selectedTreeId,
 }: SidebarToolTabsProps) {
   const violatedRuleCount = evaluation?.rules.filter(rule => rule.status === 'failed').length ?? 0;
 
@@ -47,6 +52,17 @@ function SidebarToolTabs({
       value={activeTool}
       onValueChange={onValueChange}
       tabs={[
+        {
+          id: 'tree',
+          label: t('settings.tree'),
+          content: (
+            <ProjectTreePanel
+              nodes={projectTree}
+              selectedId={selectedTreeId}
+              onSelect={onProjectTreeSelect}
+            />
+          ),
+        },
         {
           id: 'rules',
           label: t('settings.rules'),
@@ -70,6 +86,9 @@ function SidebarToolTabs({
 
 interface HomeSidebarProps {
   readonly evaluation: Audit['evaluation'] | null;
+  readonly projectTree: readonly ProjectTreeNode[];
+  readonly selectedTreeId: string | null;
+  readonly onProjectTreeSelect: (node: ProjectTreeNode) => void;
   readonly onCycleHighlightsChange: (highlights: readonly CycleHighlight[]) => void;
   readonly onCycleInspectionChange: (inspection: CycleInspection | null) => void;
 }
