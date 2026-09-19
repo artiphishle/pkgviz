@@ -1,6 +1,7 @@
 'use client';
 import type { Core, ElementsDefinition, LayoutOptions, Stylesheet } from 'cytoscape';
 import { useTheme } from 'next-themes';
+import type { RefObject } from 'react';
 import { useEffect } from 'react';
 
 import {
@@ -32,7 +33,7 @@ export function useGraphStyles(input: UseGraphStylesInput) {
 }
 
 interface UseGraphStylesInput {
-  readonly containerRef: React.RefObject<HTMLDivElement | null>;
+  readonly containerRef: RefObject<HTMLDivElement | null>;
   readonly cy: Core | null;
   readonly layout: LayoutOptions['name'];
   readonly visibleElements: ElementsDefinition | null;
