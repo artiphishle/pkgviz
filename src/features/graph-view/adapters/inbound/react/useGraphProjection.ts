@@ -2,7 +2,7 @@
 import type { ElementsDefinition } from 'cytoscape';
 import { useEffect, useMemo } from 'react';
 
-import { projectVisibleGraph } from '@/features/graph-view/application/projectVisibleGraph';
+import { projectVisibleGraph } from '@/features/graph-view/utils/projectVisibleGraph';
 
 /*** Projects graph inputs and applies projection-owned package/depth side effects. */
 export function useGraphProjection(input: UseGraphProjectionInput): ElementsDefinition | null {
