@@ -76,10 +76,25 @@ function SubPackageDepthSettings() {
 function LayoutSettings() {
   const { cytoscapeLayout, setCytoscapeLayout } = useSettings();
 
+  /*** Lets the Select close immediately before starting a potentially expensive graph layout. */
+  const selectLayout = (layout: string) => {
+    if (
+      layout !== 'breadthfirst' &&
+      layout !== 'circle' &&
+      layout !== 'concentric' &&
+      layout !== 'elk' &&
+      layout !== 'grid'
+    ) {
+      return;
+    }
+
+    React.startTransition(() => setCytoscapeLayout(layout));
+  };
+
   return (
     <SidebarSection title={t('settings.layout')}>
       <SidebarRow>
-        <Select.Root value={cytoscapeLayout} onValueChange={setCytoscapeLayout}>
+        <Select.Root value={cytoscapeLayout} onValueChange={selectLayout}>
           <Select.Trigger
             aria-label={t('cytoscapeLayout')}
             className="inline-flex h-9 w-full items-center justify-between rounded-md border px-3"

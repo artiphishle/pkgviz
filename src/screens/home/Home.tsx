@@ -1,7 +1,7 @@
 'use client';
 import { toErrorMessage } from '@ankhorage/utility/error';
 import type { ElementsDefinition } from 'cytoscape';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { getAuditEvaluationAction } from '@/app/actions/audit.actions';
 import { getProjectVisualizationAction } from '@/app/actions/project.actions';
@@ -9,6 +9,7 @@ import Breadcrumb from '@/components/Breadcrumb';
 import Header from '@/components/Header';
 import ProjectLoadError from '@/components/ProjectLoadError';
 import { SettingsProvider } from '@/contexts/SettingsContext';
+import { findProjectTreeNodeByGraphPackage } from '@/features/project-tree/utils/findProjectTreeNodeByGraphPackage';
 import { getGraphRevealScope } from '@/features/project-tree/utils/getGraphRevealScope';
 import { HomeGraph } from '@/screens/home/HomeGraph';
 import { HomeSidebar } from '@/screens/home/HomeSidebar';
@@ -63,42 +64,51 @@ export default function HomeScreen() {
     };
   }, []);
 
-  /*** Navigates manually and clears any stale tree-driven graph reveal request. */
+  /*** Navigates graph scope and mirrors the matching package selection in the project tree. */
   const navigateToPackage = (path: string) => {
+    const packageName = normalizeGraphPackage(path);
+    const matchingTreeNode = findProjectTreeNodeByGraphPackage(projectTree, packageName);
     setGraphRevealRequest(null);
-    setCurrentPackage(path);
+    setCurrentPackage(packageName);
+    setSelectedTreeId(matchingTreeNode?.id ?? null);
   };
 
-  /*** Selects a project-tree node and reveals its owning package in the graph. */
+  /*** Selects a project-tree node while keeping its package visible inside the parent graph scope. */
   const selectProjectTreeNode = (node: ProjectTreeNode) => {
     setSelectedTreeId(node.id);
     if (!node.graphPackage) return;
 
-    setCurrentPackage(getGraphRevealScope(node.graphPackage));
+    const packageName = normalizeGraphPackage(node.graphPackage);
+    setCurrentPackage(getGraphRevealScope(packageName));
     setGraphRevealRequest({
-      packageId: node.graphPackage,
+      packageId: packageName,
       treeNodeId: node.id,
     });
   };
 
+  /*** Activates cycle diagnostics without retaining stale tree-driven viewport focus. */
+  const updateCycleHighlights = useCallback((highlights: readonly CycleHighlight[]) => {
+    if (highlights.length > 0) setGraphRevealRequest(null);
+    setCycleHighlights(highlights);
+  }, []);
+
   return (
     <>
       <Header title="nav.packages">
-        <Breadcrumb
-          path={currentPackage.replace(/\./g, '/')}
-          onNavigate={(path: string) => navigateToPackage(path.replace(/\//g, '.'))}
-        />
+        <Breadcrumb path={currentPackage.replace(/\./g, '/')} onNavigate={navigateToPackage} />
       </Header>
       <SettingsProvider>
-        <main data-testid="main" className="flex min-w-0 flex-1 flex-row dark:bg-[#171717]">
+        <main
+          data-testid="main"
+          className="flex min-h-0 min-w-0 flex-1 flex-row overflow-hidden dark:bg-[#171717]"
+        >
           <HomeSidebar
             evaluation={auditEvaluation}
             projectTree={projectTree}
             selectedTreeId={selectedTreeId}
             onProjectTreeSelect={selectProjectTreeNode}
-            onCycleHighlightsChange={setCycleHighlights}
+            onCycleHighlightsChange={updateCycleHighlights}
             onCycleInspectionChange={setCycleInspection}
-            setCurrentPackage={navigateToPackage}
           />
           {projectError ? (
             <ProjectLoadError message={projectError} />
@@ -117,4 +127,9 @@ export default function HomeScreen() {
       </SettingsProvider>
     </>
   );
+}
+
+/*** Normalizes graph navigation paths to the package-id representation used by Cytoscape. */
+function normalizeGraphPackage(path: string): string {
+  return path.replaceAll('/', '.').replace(/^\.+|\.+$/g, '');
 }

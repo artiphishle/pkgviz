@@ -81,18 +81,6 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
       },
     },
     {
-      selector: 'node.auditCycleMuted',
-      style: {
-        opacity: 0.18,
-      },
-    },
-    {
-      selector: 'node.auditCycleContext',
-      style: {
-        opacity: 0.5,
-      },
-    },
-    {
       selector: 'node.auditCycle',
       style: {
         'border-color': 'data(auditCycleColor)',
@@ -207,13 +195,6 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
       },
     },
     {
-      selector: 'edge.auditCycleMuted',
-      style: {
-        opacity: 0.06,
-        'line-opacity': 0.06,
-      },
-    },
-    {
       selector: 'edge.auditCycle',
       style: {
         width: 6,
@@ -229,7 +210,9 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         'text-background-color': colors.canvasBg,
         'text-background-opacity': 0.9,
         'text-background-padding': '3px',
-        'z-index': 999,
+        'z-compound-depth': 'top',
+        'z-index-compare': 'manual',
+        'z-index': 9999,
       },
     },
   ];

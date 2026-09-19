@@ -2,15 +2,11 @@ import { describe, expect, it } from '@artiphishle/testosterone';
 
 import cytoscape from 'cytoscape';
 
-import {
-  createCycleFocus,
-  getCycleColor,
-  getCycleId,
-} from '@/features/audit/utils/cycleVisualization';
+import { createCycleFocus, getCycleColor } from '@/features/audit/utils/cycleVisualization';
 import type { PackageCycleDetail } from '@/types/audit';
 
 describe('[getCycleColor]', () => {
-  it('returns distinct Cytoscape-compatible error-red cycle colors', () => {
+  it('returns visually separated Cytoscape-compatible error-red cycle colors', () => {
     const color = getCycleColor(1);
     const cy = cytoscape({
       elements: [{ data: { id: 'cycle' } }],
@@ -25,9 +21,10 @@ describe('[getCycleColor]', () => {
     });
 
     try {
-      expect(color).toBe('#b91c1c');
-      expect(getCycleColor(2)).toBe('#ef4444');
-      expect(cy.getElementById('cycle').numericStyle('background-color')).toEqual([185, 28, 28]);
+      expect(getCycleColor(0)).toBe('#dc2626');
+      expect(color).toBe('#7f1d1d');
+      expect(getCycleColor(2)).toBe('#fb7185');
+      expect(cy.getElementById('cycle').numericStyle('background-color')).toEqual([127, 29, 29]);
     } finally {
       cy.destroy();
     }
@@ -35,14 +32,14 @@ describe('[getCycleColor]', () => {
 });
 
 describe('[createCycleFocus]', () => {
-  it('uses the deepest common package and least depth for one cycle', () => {
+  it('uses the narrowest common scope instead of inflating depth from a broad root', () => {
     const cycle: PackageCycleDetail = {
-      packages: ['app.feature.a', 'app.feature.b', 'app.feature.a'],
+      packages: ['app.feature.deep.a', 'app.feature.deep.b', 'app.feature.deep.a'],
       edges: [],
     };
 
-    expect(createCycleFocus([cycle], [getCycleId(cycle, 0)])).toEqual({
-      currentPackage: 'app.feature',
+    expect(createCycleFocus([highlight(cycle)])).toEqual({
+      currentPackage: 'app.feature.deep',
       packageDepth: 1,
     });
   });
@@ -53,13 +50,13 @@ describe('[createCycleFocus]', () => {
       edges: [],
     };
 
-    expect(createCycleFocus([cycle], [getCycleId(cycle, 0)])).toEqual({
+    expect(createCycleFocus([highlight(cycle)])).toEqual({
       currentPackage: 'app',
       packageDepth: 2,
     });
   });
 
-  it('widens focus just enough for multiple selected cycles', () => {
+  it('widens only enough to contain multiple active cycles', () => {
     const firstCycle: PackageCycleDetail = {
       packages: ['app.feature.a', 'app.feature.b', 'app.feature.a'],
       edges: [],
@@ -70,10 +67,7 @@ describe('[createCycleFocus]', () => {
     };
 
     expect(
-      createCycleFocus(
-        [firstCycle, secondCycle],
-        [getCycleId(firstCycle, 0), getCycleId(secondCycle, 1)]
-      )
+      createCycleFocus([highlight(firstCycle, 'first'), highlight(secondCycle, 'second')])
     ).toEqual({
       currentPackage: 'app',
       packageDepth: 3,
@@ -81,6 +75,11 @@ describe('[createCycleFocus]', () => {
   });
 
   it('does not request a focus when no cycle is selected', () => {
-    expect(createCycleFocus([], [])).toBeNull();
+    expect(createCycleFocus([])).toBeNull();
   });
 });
+
+/*** Creates one test highlight around a cycle. */
+function highlight(cycle: PackageCycleDetail, id = 'cycle') {
+  return { id, color: '#dc2626', cycle };
+}

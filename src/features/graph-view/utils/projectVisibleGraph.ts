@@ -6,7 +6,7 @@ import { filterSubPackagesByDepth, getMaxDepth } from '@/utils/filter/filterSubP
 import { filterVendorPackages } from '@/utils/filter/filterVendorPackages';
 import { toggleCompoundNodes } from '@/utils/filter/toggleCompoundNodes';
 
-/*** Projects the complete dependency graph into the visible package/depth/filter view. */
+/*** Projects the complete dependency graph into the explicitly selected package/depth/filter view. */
 export function projectVisibleGraph(input: ProjectVisibleGraphInput): ProjectVisibleGraphResult {
   const compoundFiltered = toggleCompoundNodes(
     input.elements,
@@ -42,16 +42,17 @@ interface ProjectVisibleGraphResult {
   readonly redirectPackage: string | null;
 }
 
-/*** Resolves automatic empty-package drilling without hiding a requested reveal target. */
+/*** Skips package levels that contain no branching point while preserving explicit reveal targets. */
 function resolveRedirectPackage(
   input: ProjectVisibleGraphInput,
   visible: ElementsDefinition
 ): string | null {
+  const currentPackage = input.currentPackage.replaceAll('/', '.');
   const revealParent = input.revealPackageId?.split('.').slice(0, -1).join('.') ?? null;
-  if (revealParent === input.currentPackage) return null;
+  if (revealParent === currentPackage) return null;
 
-  const nextPackage = filterEmptyPackages(input.currentPackage, visible);
-  return nextPackage === input.currentPackage ? null : nextPackage;
+  const nextPackage = filterEmptyPackages(currentPackage, visible);
+  return nextPackage === currentPackage ? null : nextPackage;
 }
 
 /*** Adds package-relative display labels without changing graph ids. */
@@ -59,17 +60,25 @@ function labelVisibleNodes(
   elements: ElementsDefinition,
   currentPackage: string
 ): ElementsDefinition {
+  const normalizedPackage = currentPackage.replaceAll('/', '.');
+
   return {
     nodes: elements.nodes.map(node => ({
       group: 'nodes',
       classes: node.classes ?? '',
       data: {
         ...node.data,
-        label: currentPackage.length
-          ? node.data.id?.slice(currentPackage.length + 1)
-          : node.data.id,
+        label: getRelativeNodeLabel(String(node.data.id ?? ''), normalizedPackage),
       },
     })),
     edges: elements.edges,
   };
+}
+
+/*** Resolves a readable label for the active package itself and for its descendants. */
+function getRelativeNodeLabel(id: string, currentPackage: string): string {
+  if (!currentPackage) return id;
+  if (id === currentPackage) return id.split('.').at(-1) ?? id;
+  const descendantPrefix = currentPackage + '.';
+  return id.startsWith(descendantPrefix) ? id.slice(descendantPrefix.length) : id;
 }

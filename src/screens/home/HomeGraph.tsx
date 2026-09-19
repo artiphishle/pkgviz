@@ -2,9 +2,9 @@
 import type { ElementsDefinition } from 'cytoscape';
 import React from 'react';
 
-import { Cytoscape } from '@/components/Cytoscape';
 import Loader from '@/components/Loader';
 import { CycleInspector } from '@/features/audit/adapters/inbound/react/CycleInspector';
+import { DependencyGraphView } from '@/features/graph-view/adapters/inbound/react/DependencyGraphView';
 import type { CycleHighlight, CycleInspection } from '@/types/auditVisualization';
 import type { GraphRevealRequest } from '@/types/projectTree';
 
@@ -21,7 +21,7 @@ export function HomeGraph({
   if (!packageGraph) return <Loader />;
 
   return (
-    <Cytoscape
+    <DependencyGraphView
       currentPackage={currentPackage}
       setCurrentPackage={setCurrentPackage}
       packageGraph={packageGraph}

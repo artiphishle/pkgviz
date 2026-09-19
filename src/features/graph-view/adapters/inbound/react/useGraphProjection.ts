@@ -4,7 +4,7 @@ import { useEffect, useMemo } from 'react';
 
 import { projectVisibleGraph } from '@/features/graph-view/utils/projectVisibleGraph';
 
-/*** Projects graph inputs and applies projection-owned package/depth side effects. */
+/*** Projects graph inputs without changing the explicitly selected package scope. */
 export function useGraphProjection(input: UseGraphProjectionInput): ElementsDefinition | null {
   const {
     currentPackage,

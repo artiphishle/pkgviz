@@ -2,14 +2,14 @@ import type { PackageCycleDetail } from '@/types/audit';
 import type { CycleFocus, CycleHighlight, CycleInspection } from '@/types/auditVisualization';
 
 const CYCLE_ERROR_COLORS = [
-  '#d80303',
-  '#b91c1c',
-  '#ef4444',
-  '#991b1b',
   '#dc2626',
-  '#f87171',
   '#7f1d1d',
-  '#fca5a5',
+  '#fb7185',
+  '#be123c',
+  '#ef4444',
+  '#450a0a',
+  '#f43f5e',
+  '#991b1b',
 ] as const;
 
 /*** Returns a stable distinct error-red color for one cycle occurrence. */
@@ -42,18 +42,9 @@ export function createCycleHighlights(
   });
 }
 
-/*** Creates the narrowest graph scope and least package depth that contain all selected cycles. */
-export function createCycleFocus(
-  cycles: readonly PackageCycleDetail[],
-  selectedCycleIds: readonly string[]
-): CycleFocus | null {
-  const packageNames = [
-    ...new Set(
-      cycles.flatMap((cycle, index) =>
-        selectedCycleIds.includes(getCycleId(cycle, index)) ? cycle.packages : []
-      )
-    ),
-  ];
+/*** Creates the narrowest scope and least depth that expose every active cycle package. */
+export function createCycleFocus(highlights: readonly CycleHighlight[]): CycleFocus | null {
+  const packageNames = [...new Set(highlights.flatMap(highlight => highlight.cycle.packages))];
   if (packageNames.length === 0) return null;
 
   const packageSegments = packageNames.map(packageName => packageName.split('.'));

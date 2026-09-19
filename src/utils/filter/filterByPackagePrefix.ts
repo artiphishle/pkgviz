@@ -1,15 +1,15 @@
-/*** Filters graph elements to the selected package prefix. */
+/*** Filters graph elements to descendants of the selected package scope. */
 export function filterByPackagePrefix(
   allElements: cytoscape.ElementsDefinition,
   packagePrefix: string
 ): cytoscape.ElementsDefinition {
-  // PackageView entrypoint, no prefix
-  if (!packagePrefix) return allElements;
+  const normalizedPrefix = packagePrefix.replace(/\.+$/, '');
+  if (!normalizedPrefix) return allElements;
 
-  // Active filtering (subpackage view)
-  const pkgPrefix = packagePrefix.endsWith('.') ? packagePrefix : packagePrefix + '.';
+  const descendantPrefix = normalizedPrefix + '.';
   const allowedNodes = allElements.nodes.filter(node => {
-    return node.data.id!.startsWith(pkgPrefix);
+    const id = node.data.id ?? '';
+    return id.startsWith(descendantPrefix);
   });
 
   const allowedNodeIds = new Set(allowedNodes.map(node => node.data.id));

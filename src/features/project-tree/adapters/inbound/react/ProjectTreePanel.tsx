@@ -4,6 +4,7 @@ import { FileCode2Icon, FolderIcon } from 'lucide-react';
 import React from 'react';
 
 import { findProjectTreeNode } from '@/features/project-tree/utils/findProjectTreeNode';
+import { getProjectTreeAncestorIds } from '@/features/project-tree/utils/getProjectTreeAncestorIds';
 import type { ProjectTreeNode } from '@/types/projectTree';
 
 /*** Adapts PKGViz's serializable project tree to the generated ZORA browser TreeView. */
@@ -13,14 +14,24 @@ export function ProjectTreePanel({ nodes, onSelect, selectedId }: ProjectTreePan
     () => nodes.filter(node => node.kind === 'directory').map(node => node.id),
     [nodes]
   );
+  const selectedAncestorIds = React.useMemo(
+    () => (selectedId === null ? [] : getProjectTreeAncestorIds(nodes, selectedId)),
+    [nodes, selectedId]
+  );
+  const [userExpandedIds, setUserExpandedIds] = React.useState<readonly string[] | null>(null);
+  const expandedIds = React.useMemo(
+    () => [...new Set([...(userExpandedIds ?? defaultExpandedIds), ...selectedAncestorIds])],
+    [defaultExpandedIds, selectedAncestorIds, userExpandedIds]
+  );
 
   return (
     <div className="px-2 pt-2 text-xs">
       <TreeView
         ariaLabel="Project tree"
-        defaultExpandedIds={defaultExpandedIds}
+        expandedIds={expandedIds}
         nodes={treeNodes}
         selectedId={selectedId ?? undefined}
+        onExpandedChange={setUserExpandedIds}
         onSelect={id => {
           const node = findProjectTreeNode(nodes, id);
           if (node) onSelect(node);
