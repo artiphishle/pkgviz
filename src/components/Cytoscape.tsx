@@ -2,8 +2,8 @@
 import type { ElementsDefinition } from 'cytoscape';
 import React from 'react';
 
-import { useCytoscape } from '@/features/graph-view/adapters/inbound/react/useCytoscape';
 import ZoomInput from '@/components/ZoomInput';
+import { useCytoscape } from '@/features/graph-view/adapters/inbound/react/useCytoscape';
 import type { CycleHighlight } from '@/types/auditVisualization';
 import type { GraphRevealRequest } from '@/types/projectTree';
 
