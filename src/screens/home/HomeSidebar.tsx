@@ -37,7 +37,9 @@ export function HomeSidebar(props: HomeSidebarProps) {
         projectTree={props.projectTree}
         selectedTreeId={props.selectedTreeId}
       />
-      <SettingsPanel />
+      <div className="shrink-0">
+        <SettingsPanel />
+      </div>
     </Sidebar>
   );
 }

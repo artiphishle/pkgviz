@@ -4,7 +4,7 @@ import React from 'react';
 import { Sidebar } from '@/components/sidebar/Sidebar';
 
 describe('[Sidebar]', () => {
-  it('keeps a fixed width while rendering non-tabbed settings content', () => {
+  it('keeps a fixed width while reserving the remaining height for its flexible content', () => {
     const { container, getByText } = render(
       <Sidebar>
         <span>Settings and rules</span>
@@ -15,6 +15,9 @@ describe('[Sidebar]', () => {
     expect(aside?.className.includes('w-[18rem]')).toBe(true);
     expect(aside?.className.includes('min-w-[18rem]')).toBe(true);
     expect(aside?.className.includes('max-w-[18rem]')).toBe(true);
+    expect(aside?.className.includes('flex-col')).toBe(true);
+    expect(aside?.className.includes('min-h-0')).toBe(true);
+    expect(aside?.className.includes('overflow-hidden')).toBe(true);
     expect(getByText('Settings and rules')).toBeDefined();
   });
 });

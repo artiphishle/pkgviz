@@ -7,10 +7,14 @@ import { SidebarBadge } from '@/components/sidebar/SidebarBadge';
 /*** Renders reusable secondary sidebar views above the persistent graph settings. */
 export function SidebarTabs({ ariaLabel, onValueChange, tabs, value }: SidebarTabsProps) {
   return (
-    <Tabs.Root value={value ?? ''} onValueChange={onValueChange}>
+    <Tabs.Root
+      value={value ?? ''}
+      onValueChange={onValueChange}
+      className="flex min-h-0 flex-1 flex-col overflow-hidden"
+    >
       <Tabs.List
         aria-label={ariaLabel}
-        className="ml-3 flex border-b border-neutral-200 dark:border-neutral-800"
+        className="ml-3 flex shrink-0 border-b border-neutral-200 dark:border-neutral-800"
       >
         {tabs.map(tab => (
           <Tabs.Trigger
@@ -28,7 +32,7 @@ export function SidebarTabs({ ariaLabel, onValueChange, tabs, value }: SidebarTa
         <Tabs.Content
           key={tab.id}
           value={tab.id}
-          className="max-h-56 overflow-y-auto border-b border-neutral-200 pb-3 outline-none dark:border-neutral-800"
+          className="min-h-0 flex-1 overflow-y-auto border-b border-neutral-200 pb-3 outline-none dark:border-neutral-800"
         >
           {tab.content}
         </Tabs.Content>
