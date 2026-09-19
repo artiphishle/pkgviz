@@ -65,7 +65,6 @@ export default [
   {
     files: [
       'src/components/ThemeToggle.tsx',
-      'src/components/useCytoscape.ts',
       'src/components/ZoomInput.tsx',
     ],
     rules: {
