@@ -5,7 +5,7 @@ import type { CycleHighlight, CycleInspection } from '@/types/auditVisualization
 export function getCycleColor(index: number): string {
   if (index === 0) return '#d80303';
   const hue = Math.round((index * 137.508) % 360);
-  return 'hsl(' + hue + ' 68% 45%)';
+  return 'hsl(' + hue + ', 68%, 45%)';
 }
 
 /*** Returns the stable UI identity for one cycle occurrence. */
