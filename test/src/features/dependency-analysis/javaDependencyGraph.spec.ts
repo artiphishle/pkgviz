@@ -9,7 +9,11 @@ describe('[Java dependency graph migration]', () => {
   it('uses canonical Java import evidence at the Java source-root boundary', async () => {
     const projectRoot = resolve(process.cwd(), 'examples/java/my-app');
     const analysisRoot = resolve(projectRoot, 'src/main/java');
-    const importsByFile = await analyzeDependencyImportsAsync(projectRoot, analysisRoot, 'specifier');
+    const importsByFile = await analyzeDependencyImportsAsync(
+      projectRoot,
+      analysisRoot,
+      'specifier'
+    );
 
     expect(importsByFile.get('com/example/myapp/App.java')).toEqual([
       {
