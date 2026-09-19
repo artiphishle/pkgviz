@@ -1,6 +1,7 @@
 'use client';
 import { FileCode2Icon, FolderIcon } from 'lucide-react';
 import React from 'react';
+import { TreeView, type TreeItemNode } from '@zora/tree-view';
 
 import { findProjectTreeNode } from '@/features/project-tree/utils/findProjectTreeNode';
 import type { ProjectTreeNode } from '@/types/projectTree';
