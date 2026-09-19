@@ -1,5 +1,5 @@
 import type { PackageCycleDetail } from '@/types/audit';
-import type { CycleHighlight, CycleInspection } from '@/types/auditVisualization';
+import type { CycleFocus, CycleHighlight, CycleInspection } from '@/types/auditVisualization';
 
 const CYCLE_ERROR_COLORS = [
   '#d80303',
@@ -40,6 +40,41 @@ export function createCycleHighlights(
     const id = getCycleId(cycle, index);
     return selectedCycleIds.includes(id) ? [createCycleHighlight(cycle, index)] : [];
   });
+}
+
+/*** Creates the narrowest graph scope and least package depth that contain all selected cycles. */
+export function createCycleFocus(
+  cycles: readonly PackageCycleDetail[],
+  selectedCycleIds: readonly string[]
+): CycleFocus | null {
+  const packageNames = [
+    ...new Set(
+      cycles.flatMap((cycle, index) =>
+        selectedCycleIds.includes(getCycleId(cycle, index)) ? cycle.packages : []
+      )
+    ),
+  ];
+  if (packageNames.length === 0) return null;
+
+  const packageSegments = packageNames.map(packageName => packageName.split('.'));
+  const [firstSegments, ...remainingSegments] = packageSegments;
+  const mismatchIndex = firstSegments.findIndex((segment, index) =>
+    remainingSegments.some(segments => segments.at(index) !== segment)
+  );
+  const commonDepth = mismatchIndex === -1 ? firstSegments.length : mismatchIndex;
+  const commonSegments = firstSegments.slice(0, commonDepth);
+  const commonPackage = commonSegments.join('.');
+  const focusSegments = packageNames.includes(commonPackage)
+    ? commonSegments.slice(0, -1)
+    : commonSegments;
+
+  return {
+    currentPackage: focusSegments.join('.'),
+    packageDepth: Math.max(
+      1,
+      ...packageSegments.map(segments => segments.length - focusSegments.length)
+    ),
+  };
 }
 
 /*** Creates the inspector descriptor for one cycle row. */
