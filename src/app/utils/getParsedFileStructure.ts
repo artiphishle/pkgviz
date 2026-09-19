@@ -179,7 +179,12 @@ async function readDirRecursively(
           entry.name.endsWith('.hpp') ||
           entry.name.endsWith('.hxx')
         ) {
-          result[entry.name] = await parseCppFile(fullPath, projectRoot);
+          if (importsByFile === undefined) {
+            throw new Error('Missing canonical C++ dependency analysis.');
+          }
+          const relativeFile = toPosix(path.relative(projectRoot, fullPath));
+          const imports = importsByFile.get(relativeFile) ?? [];
+          result[entry.name] = await parseCppFile(fullPath, projectRoot, imports);
         }
         break;
 
@@ -272,7 +277,9 @@ export async function getParsedFileStructure(
                 'specifier',
                 'python-legacy'
               )
-            : undefined;
+            : detectedLanguage === Language.Cpp
+              ? await analyzeDependencyImportsAsync(projectPath, rootDir, 'specifier')
+              : undefined;
 
   // 3. Read directory recursively (pass resolved root as both dir and projectRoot)
   return await readDirRecursively(rootDir, rootDir, detectedLanguage, projectPath, importsByFile);
