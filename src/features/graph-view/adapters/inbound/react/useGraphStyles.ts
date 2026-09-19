@@ -14,19 +14,18 @@ import { getCanvasBg, getStyle as getCommonStyle } from '@/layouts/style';
 
 /*** Applies theme and layout-specific Cytoscape styles without owning data or layout lifecycle. */
 export function useGraphStyles(input: UseGraphStylesInput) {
+  const { cy, layout, visibleElements } = input;
   const { resolvedTheme } = useTheme();
   const theme = resolvedTheme === 'dark' ? 'dark' : 'light';
 
   useEffect(() => {
-    const cy = input.cy;
-    const visibleElements = input.visibleElements;
     if (cy === null || visibleElements === null) return;
     const container = cy.container();
     if (container === null) return;
 
-    cy.style([...getCommonStyle(visibleElements, theme), ...getLayoutStyle(input.layout)]).update();
+    cy.style([...getCommonStyle(visibleElements, theme), ...getLayoutStyle(layout)]).update();
     container.style.background = getCanvasBg(theme);
-  }, [input.cy, input.layout, input.visibleElements, theme]);
+  }, [cy, layout, visibleElements, theme]);
 }
 
 interface UseGraphStylesInput {
