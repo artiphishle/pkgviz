@@ -12,11 +12,20 @@ import { fitGraphViewport, revealGraphPackage } from '@/utils/graph/fitGraphView
 /*** Owns cycle highlighting, adaptive cycle focus, tree reveal focus, and resize fitting. */
 export function useGraphFocus(input: UseGraphFocusInput) {
   const handledCycleSignatureRef = useRef<string | null>(null);
+  useCycleDiagnosticFocus(input, handledCycleSignatureRef);
+  useTreeRevealFocus(input);
+  useResizeFocus(input);
+}
+
+/*** Applies one cycle-focus transition per active-cycle set without fighting later manual navigation. */
+function useCycleDiagnosticFocus(
+  input: UseGraphFocusInput,
+  handledCycleSignatureRef: { current: string | null }
+) {
   const {
     cy,
     cycleHighlights,
     currentPackage,
-    revealPackageId,
     setCurrentPackage,
     setCytoscapeLayoutSpacing,
     setSubPackageDepth,
@@ -27,8 +36,8 @@ export function useGraphFocus(input: UseGraphFocusInput) {
 
   useEffect(() => {
     if (cy === null || visibleElements === null || cy.destroyed()) return;
-
     applyCycleHighlights(cy, cycleHighlights);
+
     if (cycleHighlights.length === 0) {
       handledCycleSignatureRef.current = null;
       return;
@@ -37,25 +46,23 @@ export function useGraphFocus(input: UseGraphFocusInput) {
     const signature = getCycleSignature(cycleHighlights);
     if (handledCycleSignatureRef.current === signature) return;
 
-    const projectionChanged = ensureCycleProjection({
-      cy,
-      cycleHighlights,
-      currentPackage,
-      setCurrentPackage,
-      setSubPackageDepth,
-      subPackageDepth,
-    });
-    if (projectionChanged) return;
+    if (
+      ensureCycleProjection({
+        cy,
+        cycleHighlights,
+        currentPackage,
+        setCurrentPackage,
+        setSubPackageDepth,
+        subPackageDepth,
+      })
+    ) {
+      return;
+    }
 
     const frame = requestAnimationFrame(() => {
       if (cy.destroyed()) return;
       handledCycleSignatureRef.current = signature;
-      focusCycleViewport({
-        cy,
-        cycleHighlights,
-        setCytoscapeLayoutSpacing,
-        spacing,
-      });
+      focusCycleViewport({ cy, setCytoscapeLayoutSpacing, spacing });
     });
     return () => cancelAnimationFrame(frame);
   }, [
@@ -69,20 +76,30 @@ export function useGraphFocus(input: UseGraphFocusInput) {
     subPackageDepth,
     visibleElements,
   ]);
+}
+
+/*** Keeps tree-driven reveal selection separate from cycle diagnostics. */
+function useTreeRevealFocus(input: UseGraphFocusInput) {
+  const { cy, cycleHighlights, revealPackageId, visibleElements } = input;
+  const hasActiveCycles = cycleHighlights.length > 0;
 
   useEffect(() => {
     if (
       cy === null ||
       visibleElements === null ||
       revealPackageId === undefined ||
-      cycleHighlights.length > 0 ||
+      hasActiveCycles ||
       cy.destroyed()
     ) {
       return;
     }
     revealGraphPackage(cy, revealPackageId);
-  }, [cy, cycleHighlights, revealPackageId, visibleElements]);
+  }, [cy, hasActiveCycles, revealPackageId, visibleElements]);
+}
 
+/*** Re-fits the active non-selection viewport policy when the graph container changes size. */
+function useResizeFocus(input: UseGraphFocusInput) {
+  const { cy, revealPackageId } = input;
   useEffect(() => observeGraphResize(cy, revealPackageId), [cy, revealPackageId]);
 }
 
@@ -191,7 +208,6 @@ interface CycleProjectionInput {
 
 interface CycleViewportInput {
   readonly cy: Core;
-  readonly cycleHighlights: readonly CycleHighlight[];
   readonly setCytoscapeLayoutSpacing: (spacing: number) => void;
   readonly spacing: number;
 }
