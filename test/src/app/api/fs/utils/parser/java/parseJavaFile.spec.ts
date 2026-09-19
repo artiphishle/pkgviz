@@ -7,7 +7,13 @@ describe('[parseJavaFile]', () => {
     process.env.NEXT_PUBLIC_PROJECT_PATH = resolve(process.cwd(), 'examples/java/my-app');
     const projectPath = parseProjectPath();
     const javaFile = resolve(projectPath, 'src/main/java/com/example/myapp/App.java');
-    const parsedJavaFile = await parseJavaFile(javaFile, projectPath, projectPath);
+    const parsedJavaFile = await parseJavaFile(javaFile, projectPath, [
+      {
+        name: 'com.example.myapp.a.A',
+        pkg: 'com.example.myapp.a',
+        isIntrinsic: true,
+      },
+    ]);
 
     expect(parsedJavaFile.className).toBe('App');
     expect(parsedJavaFile.imports.length).toBe(1);
@@ -20,7 +26,7 @@ describe('[parseJavaFile]', () => {
     const projectPath = resolve(process.cwd(), 'examples/java/my-app');
 
     await assert.rejects(
-      parseJavaFile(resolve(projectPath, '..', 'outside.java'), projectPath, projectPath),
+      parseJavaFile(resolve(projectPath, '..', 'outside.java'), projectPath, []),
       /Path escaped the allowed root/
     );
   });
