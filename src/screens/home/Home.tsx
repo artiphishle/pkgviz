@@ -10,6 +10,7 @@ import Header from '@/components/Header';
 import ProjectLoadError from '@/components/ProjectLoadError';
 import { SettingsProvider } from '@/contexts/SettingsContext';
 import { findProjectTreeNodeByGraphPackage } from '@/features/project-tree/utils/findProjectTreeNodeByGraphPackage';
+import { getGraphRevealScope } from '@/features/project-tree/utils/getGraphRevealScope';
 import { HomeGraph } from '@/screens/home/HomeGraph';
 import { HomeSidebar } from '@/screens/home/HomeSidebar';
 import type { Audit } from '@/types/audit';
@@ -72,13 +73,13 @@ export default function HomeScreen() {
     setSelectedTreeId(matchingTreeNode?.id ?? null);
   };
 
-  /*** Selects a project-tree node and navigates the graph to the same package scope. */
+  /*** Selects a project-tree node while keeping its package visible inside the parent graph scope. */
   const selectProjectTreeNode = (node: ProjectTreeNode) => {
     setSelectedTreeId(node.id);
     if (!node.graphPackage) return;
 
     const packageName = normalizeGraphPackage(node.graphPackage);
-    setCurrentPackage(packageName);
+    setCurrentPackage(getGraphRevealScope(packageName));
     setGraphRevealRequest({
       packageId: packageName,
       treeNodeId: node.id,

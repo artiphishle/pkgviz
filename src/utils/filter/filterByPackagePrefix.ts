@@ -1,4 +1,4 @@
-/*** Filters graph elements to the selected package and every package below it. */
+/*** Filters graph elements to descendants of the selected package scope. */
 export function filterByPackagePrefix(
   allElements: cytoscape.ElementsDefinition,
   packagePrefix: string
@@ -9,7 +9,7 @@ export function filterByPackagePrefix(
   const descendantPrefix = normalizedPrefix + '.';
   const allowedNodes = allElements.nodes.filter(node => {
     const id = node.data.id ?? '';
-    return id === normalizedPrefix || id.startsWith(descendantPrefix);
+    return id.startsWith(descendantPrefix);
   });
 
   const allowedNodeIds = new Set(allowedNodes.map(node => node.data.id));
