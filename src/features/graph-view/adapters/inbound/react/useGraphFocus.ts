@@ -9,19 +9,39 @@ import { applyCycleHighlights } from '@/utils/graph/applyCycleHighlights';
 /*** Owns cycle highlighting and the one-time projection change needed to expose active cycles. */
 export function useGraphFocus(input: UseGraphFocusInput) {
   const handledCycleSignatureRef = useRef<string | null>(null);
-  useCycleDiagnosticFocus(input, handledCycleSignatureRef);
-}
-
-/*** Applies one cycle-focus transition per active-cycle set without fighting later manual navigation. */
-function useCycleDiagnosticFocus(
-  input: UseGraphFocusInput,
-  handledCycleSignatureRef: { current: string | null }
-) {
-  const { cy, cycleHighlights, currentPackage, visibleElements } = input;
+  const {
+    cy,
+    cycleHighlights,
+    currentPackage,
+    setCurrentPackage,
+    setSubPackageDepth,
+    subPackageDepth,
+    visibleElements,
+  } = input;
 
   useEffect(
-    () => runCycleDiagnosticFocus(input, handledCycleSignatureRef),
-    [input, handledCycleSignatureRef, cy, cycleHighlights, currentPackage, visibleElements]
+    () =>
+      runCycleDiagnosticFocus(
+        {
+          cy,
+          cycleHighlights,
+          currentPackage,
+          setCurrentPackage,
+          setSubPackageDepth,
+          subPackageDepth,
+          visibleElements,
+        },
+        handledCycleSignatureRef
+      ),
+    [
+      cy,
+      cycleHighlights,
+      currentPackage,
+      setCurrentPackage,
+      setSubPackageDepth,
+      subPackageDepth,
+      visibleElements,
+    ]
   );
 }
 
