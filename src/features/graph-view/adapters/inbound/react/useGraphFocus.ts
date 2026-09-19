@@ -8,34 +8,34 @@ import { fitGraphViewport, revealGraphPackage } from '@/utils/graph/fitGraphView
 
 /*** Owns cycle highlighting, tree reveal focus, and resize-driven viewport fitting. */
 export function useGraphFocus(input: UseGraphFocusInput) {
+  const { cy, cycleHighlights, revealPackageId, visibleElements } = input;
+
   useEffect(() => {
-    const cy = input.cy;
-    if (cy === null || input.visibleElements === null || cy.destroyed()) return;
-    const highlighted = applyCycleHighlights(cy, input.cycleHighlights);
+    if (cy === null || visibleElements === null || cy.destroyed()) return;
+    const highlighted = applyCycleHighlights(cy, cycleHighlights);
     if (highlighted.empty()) return;
 
-    const frame = requestAnimationFrame(() => fitGraphViewport(cy, input.revealPackageId));
+    const frame = requestAnimationFrame(() => fitGraphViewport(cy, revealPackageId));
     return () => cancelAnimationFrame(frame);
-  }, [input.cy, input.cycleHighlights, input.revealPackageId, input.visibleElements]);
+  }, [cy, cycleHighlights, revealPackageId, visibleElements]);
 
   useEffect(() => {
-    const cy = input.cy;
     if (
       cy === null ||
-      input.visibleElements === null ||
-      input.revealPackageId === undefined ||
-      input.cycleHighlights.length > 0 ||
+      visibleElements === null ||
+      revealPackageId === undefined ||
+      cycleHighlights.length > 0 ||
       cy.destroyed()
     ) {
       return;
     }
-    revealGraphPackage(cy, input.revealPackageId);
-  }, [input.cy, input.cycleHighlights, input.revealPackageId, input.visibleElements]);
+    revealGraphPackage(cy, revealPackageId);
+  }, [cy, cycleHighlights, revealPackageId, visibleElements]);
 
-  useEffect(() => observeGraphResize(input.cy, input.revealPackageId), [
-    input.cy,
-    input.revealPackageId,
-  ]);
+  useEffect(
+    () => observeGraphResize(cy, revealPackageId),
+    [cy, revealPackageId]
+  );
 }
 
 interface UseGraphFocusInput {
