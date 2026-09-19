@@ -8,17 +8,16 @@ import { hasChildren } from '@/utils/hasChildren';
 export function useGraphElements(input: UseGraphElementsInput) {
   useEffect(() => {
     const cy = input.cy;
-    if (cy === null || input.visibleElements === null || cy.destroyed()) return;
+    const visibleElements = input.visibleElements;
+    if (cy === null || visibleElements === null || cy.destroyed()) return;
 
     cy.batch(() => {
       cy.elements().remove();
-      cy.add(input.visibleElements!);
+      cy.add(visibleElements);
     });
 
     cy.nodes().forEach(node => {
-      const visibleNode = input.visibleElements?.nodes.find(
-        element => element.data.id === node.data().id
-      );
+      const visibleNode = visibleElements.nodes.find(element => element.data.id === node.data().id);
       if (!visibleNode || !hasChildren(visibleNode, input.allElements?.nodes ?? [])) return;
 
       node.addClass('isParent');
