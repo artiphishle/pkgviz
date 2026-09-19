@@ -42,10 +42,7 @@ describe('[graph view projection]', () => {
 /*** Creates a minimal package hierarchy with compound metadata for projection tests. */
 function createElements(): ElementsDefinition {
   return {
-    nodes: [
-      { data: { id: 'src' } },
-      { data: { id: 'src.feature', parent: 'src' } },
-    ],
+    nodes: [{ data: { id: 'src' } }, { data: { id: 'src.feature', parent: 'src' } }],
     edges: [],
   };
 }
