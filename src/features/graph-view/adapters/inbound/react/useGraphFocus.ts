@@ -32,10 +32,7 @@ export function useGraphFocus(input: UseGraphFocusInput) {
     revealGraphPackage(cy, revealPackageId);
   }, [cy, cycleHighlights, revealPackageId, visibleElements]);
 
-  useEffect(
-    () => observeGraphResize(cy, revealPackageId),
-    [cy, revealPackageId]
-  );
+  useEffect(() => observeGraphResize(cy, revealPackageId), [cy, revealPackageId]);
 }
 
 interface UseGraphFocusInput {
