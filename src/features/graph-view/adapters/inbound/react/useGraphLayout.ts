@@ -4,8 +4,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { LAYOUTS } from '@/layouts/constants';
 
-/*** Owns Cytoscape layout execution and exposes when a layout has fully settled. */
+/*** Owns Cytoscape layout execution and exposes when the current layout has fully settled. */
 export function useGraphLayout(input: UseGraphLayoutInput) {
+  const { cy, elements, layout, spacing } = input;
   const layoutRef = useRef<Layouts | null>(null);
   const layoutRunningRef = useRef(false);
   const layoutStopHandlerRef = useRef<(() => void) | null>(null);
@@ -13,32 +14,34 @@ export function useGraphLayout(input: UseGraphLayoutInput) {
   const makeLayoutOptions = useCallback(
     (name: LayoutOptions['name']): LayoutOptions & Record<string, unknown> => ({
       ...resolveLayoutOptions(name),
-      spacingFactor: input.spacing,
+      spacingFactor: spacing,
       nodeDimensionsIncludeLabels: true,
       fit: false,
       animate: false,
       animationDuration: 400,
     }),
-    [input.spacing]
+    [spacing]
   );
 
   useEffect(
     () =>
       runGraphLayout({
-        ...input,
+        cy,
+        elements,
+        layout,
         layoutRef,
         layoutRunningRef,
         layoutStopHandlerRef,
         makeLayoutOptions,
         onSettled: () => setSettledRevision(revision => revision + 1),
       }),
-    [input, makeLayoutOptions]
+    [cy, elements, layout, makeLayoutOptions]
   );
 
   return { layoutRunningRef, settledRevision };
 }
 
-/*** Runs one layout generation while preventing stale layout-stop handlers from fitting old state. */
+/*** Runs one layout generation while preventing stale layout-stop callbacks from surviving it. */
 function runGraphLayout(input: RunGraphLayoutInput) {
   const { cy, elements } = input;
   if (cy === null || elements === null || cy.destroyed()) return undefined;
