@@ -1,12 +1,24 @@
 import { describe, expect, it, resolve } from '@artiphishle/testosterone';
 
 import { parseKotlinFile } from '@/app/utils/parser/kotlin/parseFile';
+import { analyzeDependencyImportsAsync } from '@/features/dependency-analysis/adapters/outbound/dependency-graph/analyzeDependencyImportsAsync';
 
-describe('[Kotlin dependency graph baseline]', () => {
-  it('locks current Kotlin package/import semantics before analyzer migration', async () => {
-    const projectRoot = resolve(process.cwd(), 'examples/kotlin/my-app/src/main/kotlin');
+describe('[Kotlin dependency graph migration]', () => {
+  it('preserves locked Kotlin package/import semantics through the canonical analyzer', async () => {
+    const appRoot = resolve(process.cwd(), 'examples/kotlin/my-app');
+    const projectRoot = resolve(appRoot, 'src/main/kotlin');
     const file = resolve(projectRoot, 'com/example/services/UserService.kt');
-    const parsed = await parseKotlinFile(file, projectRoot);
+    const importsByFile = await analyzeDependencyImportsAsync(
+      appRoot,
+      projectRoot,
+      'specifier',
+      'kotlin-standard-library'
+    );
+    const parsed = await parseKotlinFile(
+      file,
+      projectRoot,
+      importsByFile.get('com/example/services/UserService.kt') ?? []
+    );
 
     expect(parsed.package).toBe('com.example.services');
     expect(parsed.imports).toEqual([

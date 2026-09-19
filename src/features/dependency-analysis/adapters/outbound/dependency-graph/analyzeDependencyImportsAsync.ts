@@ -3,6 +3,7 @@ import path from 'node:path';
 import {
   createDependencyGraphAsync,
   type DependencyGraphNodeData,
+  type DependencyImportEvidence,
 } from '@ankhorage/dependency-graph';
 
 import type { ImportDefinition } from '@/shared/types';
@@ -12,7 +13,8 @@ import { toPosix } from '@/shared/utils/toPosix';
 export async function analyzeDependencyImportsAsync(
   projectRoot: string,
   analysisRoot: string = projectRoot,
-  importNameMode: ImportNameMode = 'package'
+  importNameMode: ImportNameMode = 'package',
+  intrinsicMode: ImportIntrinsicMode = 'canonical'
 ): Promise<ReadonlyMap<string, readonly ImportDefinition[]>> {
   const graph = await createDependencyGraphAsync({
     projects: [{ id: 'current', rootPath: projectRoot }],
@@ -36,7 +38,7 @@ export async function analyzeDependencyImportsAsync(
       current.push({
         name: importNameMode === 'specifier' ? evidence.specifier : pkg,
         pkg,
-        isIntrinsic: evidence.classification === 'intrinsic',
+        isIntrinsic: isIntrinsicImport(evidence, intrinsicMode),
       });
       imports.set(sourceFile, current);
     }
@@ -46,6 +48,18 @@ export async function analyzeDependencyImportsAsync(
 }
 
 type ImportNameMode = 'package' | 'specifier';
+type ImportIntrinsicMode = 'canonical' | 'kotlin-standard-library';
+
+/*** Preserves PKGViz presentation semantics independently from canonical graph classification. */
+function isIntrinsicImport(evidence: DependencyImportEvidence, mode: ImportIntrinsicMode): boolean {
+  if (mode === 'canonical') return evidence.classification === 'intrinsic';
+
+  return (
+    evidence.specifier.startsWith('kotlin.') ||
+    evidence.specifier.startsWith('java.') ||
+    evidence.specifier.startsWith('javax.')
+  );
+}
 
 /*** Maps canonical dependency-graph node metadata to PKGViz package notation. */
 function targetPackage(target: DependencyGraphNodeData): string {

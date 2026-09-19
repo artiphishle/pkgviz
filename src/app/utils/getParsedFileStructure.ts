@@ -204,7 +204,12 @@ async function readDirRecursively(
       // Kotlin
       case Language.Kotlin:
         if (entry.name.endsWith('.kt') || entry.name.endsWith('.kts')) {
-          result[entry.name] = await parseKotlinFile(fullPath, projectRoot);
+          if (importsByFile === undefined) {
+            throw new Error('Missing canonical Kotlin dependency analysis.');
+          }
+          const relativeFile = toPosix(path.relative(projectRoot, fullPath));
+          const imports = importsByFile.get(relativeFile) ?? [];
+          result[entry.name] = await parseKotlinFile(fullPath, projectRoot, imports);
         }
         break;
     }
@@ -248,7 +253,14 @@ export async function getParsedFileStructure(
       ? await analyzeDependencyImportsAsync(projectPath)
       : detectedLanguage === Language.Java
         ? await analyzeDependencyImportsAsync(projectPath, rootDir, 'specifier')
-        : undefined;
+        : detectedLanguage === Language.Kotlin
+          ? await analyzeDependencyImportsAsync(
+              projectPath,
+              rootDir,
+              'specifier',
+              'kotlin-standard-library'
+            )
+          : undefined;
 
   // 3. Read directory recursively (pass resolved root as both dir and projectRoot)
   return await readDirRecursively(rootDir, rootDir, detectedLanguage, projectPath, importsByFile);
