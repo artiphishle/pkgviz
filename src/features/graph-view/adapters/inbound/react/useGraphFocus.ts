@@ -1,7 +1,6 @@
 'use client';
 import type { Core, ElementsDefinition } from 'cytoscape';
-import type { RefObject } from 'react';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
 import type { CycleHighlight } from '@/types/auditVisualization';
 import { applyCycleHighlights } from '@/utils/graph/applyCycleHighlights';
@@ -9,16 +8,15 @@ import { fitGraphViewport, revealGraphPackage } from '@/utils/graph/fitGraphView
 
 /*** Owns cycle highlighting, tree reveal focus, and resize-driven viewport fitting. */
 export function useGraphFocus(input: UseGraphFocusInput) {
-  const revealPackageIdRef = useRef<string | undefined>(input.revealPackageId);
-  revealPackageIdRef.current = input.revealPackageId;
-
   useEffect(() => {
     const cy = input.cy;
     if (cy === null || input.visibleElements === null || cy.destroyed()) return;
     const highlighted = applyCycleHighlights(cy, input.cycleHighlights);
     if (highlighted.empty()) return;
-    requestAnimationFrame(() => fitGraphViewport(cy, revealPackageIdRef.current));
-  }, [input.cy, input.cycleHighlights, input.visibleElements]);
+
+    const frame = requestAnimationFrame(() => fitGraphViewport(cy, input.revealPackageId));
+    return () => cancelAnimationFrame(frame);
+  }, [input.cy, input.cycleHighlights, input.revealPackageId, input.visibleElements]);
 
   useEffect(() => {
     const cy = input.cy;
@@ -34,14 +32,13 @@ export function useGraphFocus(input: UseGraphFocusInput) {
     revealGraphPackage(cy, input.revealPackageId);
   }, [input.cy, input.cycleHighlights, input.revealPackageId, input.visibleElements]);
 
-  useEffect(() => observeGraphResize(input.cy, input.containerRef, revealPackageIdRef), [
-    input.containerRef,
+  useEffect(() => observeGraphResize(input.cy, input.revealPackageId), [
     input.cy,
+    input.revealPackageId,
   ]);
 }
 
 interface UseGraphFocusInput {
-  readonly containerRef: RefObject<HTMLDivElement | null>;
   readonly cy: Core | null;
   readonly cycleHighlights: readonly CycleHighlight[];
   readonly revealPackageId?: string;
@@ -49,16 +46,12 @@ interface UseGraphFocusInput {
 }
 
 /*** Observes graph container resizing and re-applies the current viewport focus policy. */
-function observeGraphResize(
-  cy: Core | null,
-  containerRef: RefObject<HTMLDivElement | null>,
-  revealPackageIdRef: RefObject<string | undefined>
-) {
-  const container = containerRef.current;
+function observeGraphResize(cy: Core | null, revealPackageId?: string) {
+  const container = cy?.container();
   if (cy === null || container === null || cy.destroyed()) return undefined;
 
   const observer = new ResizeObserver(() => {
-    requestAnimationFrame(() => fitGraphViewport(cy, revealPackageIdRef.current));
+    requestAnimationFrame(() => fitGraphViewport(cy, revealPackageId));
   });
   observer.observe(container);
   return () => observer.disconnect();
