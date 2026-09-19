@@ -20,7 +20,6 @@ describe('[Java dependency graph migration]', () => {
     ]);
   });
 
-
   it('preserves the locked Java package dependency semantics after analyzer migration', async () => {
     process.env.NEXT_PUBLIC_PROJECT_PATH = resolve(process.cwd(), 'examples/java/my-app');
     const files = await getParsedFileStructure(Language.Java);
