@@ -1,7 +1,9 @@
 import { describe, expect, it } from '@artiphishle/testosterone';
 
 import { buildProjectTree } from '@/features/project-tree/application/use-cases/buildProjectTree';
-import { findProjectTreeNodeByGraphPackage } from '@/features/project-tree/utils/findProjectTreeNodeByGraphPackage';
+import {
+  findProjectTreeNodeByGraphPackage,
+} from '@/features/project-tree/utils/findProjectTreeNodeByGraphPackage';
 import type { ParsedDirectory } from '@/shared/types';
 
 describe('[project tree]', () => {
