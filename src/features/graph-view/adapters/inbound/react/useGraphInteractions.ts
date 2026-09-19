@@ -1,5 +1,6 @@
 'use client';
 import type { Core, ElementsDefinition, EventObject } from 'cytoscape';
+import type { RefObject } from 'react';
 import { useEffect, useRef } from 'react';
 
 import { hasChildren } from '@/utils/hasChildren';
@@ -34,8 +35,8 @@ interface UseGraphInteractionsInput {
 /*** Binds node selection/hover behavior and returns a targeted cleanup function. */
 function bindNodeInteractions(
   cy: Core,
-  allElementsRef: React.RefObject<ElementsDefinition | null>,
-  visibleElementsRef: React.RefObject<ElementsDefinition | null>
+  allElementsRef: RefObject<ElementsDefinition | null>,
+  visibleElementsRef: RefObject<ElementsDefinition | null>
 ) {
   /*** Recomputes selection-based neighborhood highlighting. */
   const updateHighlights = () => {
