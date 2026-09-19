@@ -1,65 +1,82 @@
 'use client';
 import type { Core, ElementsDefinition, LayoutOptions, Layouts } from 'cytoscape';
-import { useCallback, useEffect, useEffectEvent, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { LAYOUTS } from '@/layouts/constants';
-import { fitGraphViewport } from '@/utils/graph/fitGraphViewport';
 
-/*** Owns Cytoscape layout creation, cancellation, reruns, and post-layout fitting. */
+/*** Owns Cytoscape layout execution and exposes when a layout has fully settled. */
 export function useGraphLayout(input: UseGraphLayoutInput) {
-  const { cy, elements, layout, revealPackageId, spacing } = input;
   const layoutRef = useRef<Layouts | null>(null);
   const layoutRunningRef = useRef(false);
-  const fitAfterLayout = useEffectEvent((instance: Core) => {
-    layoutRunningRef.current = false;
-    fitGraphViewport(instance, revealPackageId);
-  });
+  const layoutStopHandlerRef = useRef<(() => void) | null>(null);
+  const [settledRevision, setSettledRevision] = useState(0);
   const makeLayoutOptions = useCallback(
     (name: LayoutOptions['name']): LayoutOptions & Record<string, unknown> => ({
       ...resolveLayoutOptions(name),
-      spacingFactor: spacing,
+      spacingFactor: input.spacing,
       nodeDimensionsIncludeLabels: true,
-      fit: true,
+      fit: false,
       animate: false,
       animationDuration: 400,
     }),
-    [spacing]
+    [input.spacing]
   );
-
-  useEffect(() => {
-    if (cy === null || elements === null || cy.destroyed()) return;
-    stopLayout(layoutRef.current);
-    cy.resize();
-
-    const frame = requestAnimationFrame(() => {
-      if (cy.destroyed()) return;
-      const activeLayout = cy.layout(makeLayoutOptions(layout));
-      layoutRef.current = activeLayout;
-      layoutRunningRef.current = true;
-      cy.one('layoutstop', () => fitAfterLayout(cy));
-      activeLayout.run();
-    });
-
-    return () => {
-      cancelAnimationFrame(frame);
-      stopLayout(layoutRef.current);
-      layoutRef.current = null;
-      layoutRunningRef.current = false;
-    };
-  }, [cy, elements, layout, makeLayoutOptions]);
 
   useEffect(
-    () => observeGraphResize(cy, revealPackageId, layoutRunningRef),
-    [cy, revealPackageId]
+    () =>
+      runGraphLayout({
+        ...input,
+        layoutRef,
+        layoutRunningRef,
+        layoutStopHandlerRef,
+        makeLayoutOptions,
+        onSettled: () => setSettledRevision(revision => revision + 1),
+      }),
+    [input, makeLayoutOptions]
   );
+
+  return { layoutRunningRef, settledRevision };
 }
 
-interface UseGraphLayoutInput {
-  readonly cy: Core | null;
-  readonly elements: ElementsDefinition | null;
-  readonly layout: LayoutOptions['name'];
-  readonly revealPackageId?: string;
-  readonly spacing: number;
+/*** Runs one layout generation while preventing stale layout-stop handlers from fitting old state. */
+function runGraphLayout(input: RunGraphLayoutInput) {
+  const { cy, elements } = input;
+  if (cy === null || elements === null || cy.destroyed()) return undefined;
+
+  removeLayoutStopHandler(cy, input.layoutStopHandlerRef);
+  stopLayout(input.layoutRef.current);
+  input.layoutRef.current = null;
+  input.layoutRunningRef.current = true;
+  cy.resize();
+
+  const frame = requestAnimationFrame(() => startLayout(input, cy));
+  return () => {
+    cancelAnimationFrame(frame);
+    removeLayoutStopHandler(cy, input.layoutStopHandlerRef);
+    stopLayout(input.layoutRef.current);
+    input.layoutRef.current = null;
+    input.layoutRunningRef.current = false;
+  };
+}
+
+/*** Starts the current layout and reports only its own terminal layout-stop event. */
+function startLayout(input: RunGraphLayoutInput, cy: Core) {
+  if (cy.destroyed()) {
+    input.layoutRunningRef.current = false;
+    return;
+  }
+
+  const activeLayout = cy.layout(input.makeLayoutOptions(input.layout));
+  input.layoutRef.current = activeLayout;
+  const onStop = () => {
+    input.layoutStopHandlerRef.current = null;
+    input.layoutRef.current = null;
+    input.layoutRunningRef.current = false;
+    input.onSettled();
+  };
+  input.layoutStopHandlerRef.current = onStop;
+  cy.one('layoutstop', onStop);
+  activeLayout.run();
 }
 
 /*** Resolves one supported layout without dynamic object-key injection. */
@@ -72,6 +89,14 @@ function resolveLayoutOptions(name: LayoutOptions['name']): LayoutOptions {
   throw new Error(`Unsupported Cytoscape layout: ${String(name)}`);
 }
 
+/*** Removes a pending layout-stop callback before stopping or replacing its layout. */
+function removeLayoutStopHandler(cy: Core, handlerRef: { current: (() => void) | null }) {
+  const handler = handlerRef.current;
+  if (handler === null) return;
+  cy.off('layoutstop', handler);
+  handlerRef.current = null;
+}
+
 /*** Stops a previous Cytoscape layout without leaking adapter-specific disposal failures. */
 function stopLayout(layout: Layouts | null) {
   try {
@@ -81,23 +106,19 @@ function stopLayout(layout: Layouts | null) {
   }
 }
 
-/*** Refits only settled graph layouts after genuine container size changes. */
-function observeGraphResize(
-  cy: Core | null,
-  revealPackageId: string | undefined,
-  layoutRunningRef: { current: boolean }
-) {
-  if (cy === null || cy.destroyed()) return undefined;
-  const container = cy.container();
-  if (container === null) return undefined;
+interface UseGraphLayoutInput {
+  readonly cy: Core | null;
+  readonly elements: ElementsDefinition | null;
+  readonly layout: LayoutOptions['name'];
+  readonly spacing: number;
+}
 
-  const observer = new ResizeObserver(() => {
-    requestAnimationFrame(() => {
-      if (cy.destroyed() || layoutRunningRef.current) return;
-      cy.resize();
-      fitGraphViewport(cy, revealPackageId);
-    });
-  });
-  observer.observe(container);
-  return () => observer.disconnect();
+interface RunGraphLayoutInput extends UseGraphLayoutInput {
+  readonly layoutRef: { current: Layouts | null };
+  readonly layoutRunningRef: { current: boolean };
+  readonly layoutStopHandlerRef: { current: (() => void) | null };
+  readonly makeLayoutOptions: (
+    name: LayoutOptions['name']
+  ) => LayoutOptions & Record<string, unknown>;
+  readonly onSettled: () => void;
 }
