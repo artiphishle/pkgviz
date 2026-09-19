@@ -30,7 +30,7 @@ const cycles: readonly PackageCycleDetail[] = [
 ];
 
 describe('[AuditRuleList]', () => {
-  it('shows violated cycles compactly and selects every cycle by default', () => {
+  it('shows violated cycles compactly and leaves every cycle disabled by default', () => {
     const { container, getByText } = render(
       <AuditRuleList
         evaluation={failedEvaluation}
@@ -44,11 +44,11 @@ describe('[AuditRuleList]', () => {
     expect(getByText('app.a → app.b → app.a')).toBeDefined();
     expect(getByText('app.self → app.self')).toBeDefined();
 
-    const checkboxes = Array.from(
-      container.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')
+    const switches = Array.from(
+      container.querySelectorAll<HTMLButtonElement>('button[role="switch"]')
     );
-    expect(checkboxes.length).toBe(2);
-    expect(checkboxes.every(checkbox => checkbox.checked)).toBe(true);
+    expect(switches.length).toBe(2);
+    expect(switches.every(control => control.getAttribute('aria-checked') === 'false')).toBe(true);
     expect(container.textContent?.includes('src/a.ts')).toBe(false);
   });
 

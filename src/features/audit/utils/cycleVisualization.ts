@@ -1,11 +1,20 @@
 import type { PackageCycleDetail } from '@/types/audit';
 import type { CycleHighlight, CycleInspection } from '@/types/auditVisualization';
 
-/*** Returns a stable distinct color for one cycle while keeping the first cycle PKGViz red. */
+const CYCLE_ERROR_COLORS = [
+  '#d80303',
+  '#b91c1c',
+  '#ef4444',
+  '#991b1b',
+  '#dc2626',
+  '#f87171',
+  '#7f1d1d',
+  '#fca5a5',
+] as const;
+
+/*** Returns a stable distinct error-red color for one cycle occurrence. */
 export function getCycleColor(index: number): string {
-  if (index === 0) return '#d80303';
-  const hue = Math.round((index * 137.508) % 360);
-  return 'hsl(' + hue + ', 68%, 45%)';
+  return CYCLE_ERROR_COLORS[index % CYCLE_ERROR_COLORS.length];
 }
 
 /*** Returns the stable UI identity for one cycle occurrence. */
