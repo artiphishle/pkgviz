@@ -39,7 +39,7 @@
     "test": "testosterone && bun run test:maven",
     "test:cov": "c8 --reporter=text --reporter=text-summary tsx --test",
     "test:cov:html": "c8 --report-dir=./test/coverage --reporter=html tsx --test",
-    "lint:fix": "ankhorage-eslint . --fix --max-warnings=0",
+    "lint:fix": "bun run zora:materialize && ankhorage-eslint . --fix --max-warnings=0",
     "format": "ankhorage-prettier --write .",
     "knip:check": "bun run zora:materialize && ankhorage-knip",
     "changeset": "ankhorage-changeset",
