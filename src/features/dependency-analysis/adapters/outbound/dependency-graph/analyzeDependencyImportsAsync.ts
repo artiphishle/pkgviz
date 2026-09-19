@@ -48,11 +48,12 @@ export async function analyzeDependencyImportsAsync(
 }
 
 type ImportNameMode = 'package' | 'specifier';
-type ImportIntrinsicMode = 'canonical' | 'kotlin-standard-library';
+type ImportIntrinsicMode = 'canonical' | 'kotlin-standard-library' | 'python-legacy';
 
 /*** Preserves PKGViz presentation semantics independently from canonical graph classification. */
 function isIntrinsicImport(evidence: DependencyImportEvidence, mode: ImportIntrinsicMode): boolean {
   if (mode === 'canonical') return evidence.classification === 'intrinsic';
+  if (mode === 'python-legacy') return evidence.specifier.startsWith('.');
 
   return (
     evidence.specifier.startsWith('kotlin.') ||
