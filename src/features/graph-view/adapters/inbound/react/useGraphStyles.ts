@@ -1,5 +1,5 @@
 'use client';
-import type { Core, ElementsDefinition, LayoutOptions, Stylesheet } from 'cytoscape';
+import type { Core, ElementsDefinition, LayoutOptions } from 'cytoscape';
 import { useTheme } from 'next-themes';
 import { useEffect } from 'react';
 
@@ -36,7 +36,7 @@ interface UseGraphStylesInput {
 }
 
 /*** Resolves the visual style extension owned by the active layout. */
-function getLayoutStyle(layout: LayoutOptions['name']): Stylesheet[] {
+function getLayoutStyle(layout: LayoutOptions['name']) {
   if (layout === 'breadthfirst') return getBreadthfirstStyle();
   if (layout === 'circle') return getCircleStyle();
   if (layout === 'elk') return getElkStyle();
