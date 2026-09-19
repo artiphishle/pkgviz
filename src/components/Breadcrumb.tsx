@@ -3,9 +3,9 @@ import { ChevronRight, Home } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
 
-/*** Renders package navigation breadcrumbs. */
+/*** Renders package navigation breadcrumbs without empty path segments. */
 export default function Breadcrumb({ path, onNavigate }: BreadcrumbProps) {
-  const parts = path.split('/') || [''];
+  const parts = path.split('/').filter(Boolean);
 
   return (
     <nav className="flex items-center space-x-1 text-sm">
@@ -14,10 +14,10 @@ export default function Breadcrumb({ path, onNavigate }: BreadcrumbProps) {
       </Link>
 
       {parts.map((part, index) => {
-        const currentPath = parts.length ? parts.slice(0, index + 1).join('.') : '';
+        const currentPath = parts.slice(0, index + 1).join('/');
 
         return (
-          <div key={index} className="flex items-center">
+          <div key={currentPath} className="flex items-center">
             <ChevronRight className="h-4 w-4 text-foreground opacity-20" />
             <Link href="#" onClick={() => onNavigate(currentPath)} className="ml-1 text-foreground">
               {part}
