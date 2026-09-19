@@ -7,6 +7,7 @@ const en: ILanguage = {
 
   // Settings
   'settings.title': 'Settings',
+  'settings.tree': 'Tree',
   'settings.rules': 'Rules',
   'settings.export': 'Export',
   'sidebar.tools': 'Sidebar tools',

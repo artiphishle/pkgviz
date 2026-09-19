@@ -20,7 +20,8 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      "app/*": ["./app/*"]
+      "app/*": ["./app/*"],
+      "@zora/tree-view": ["./.generated/zora/tree-view/TreeView"]
     },
     "incremental": true
   },

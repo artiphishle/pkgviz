@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { assert, describe, it } from '@artiphishle/testosterone';
 
 import { getAuditEvaluationAction } from '@/app/actions/audit.actions';
-import { getGraphAction } from '@/app/actions/graph.actions';
+import { getProjectVisualizationAction } from '@/app/actions/project.actions';
 
 describe('[project analysis actions]', () => {
   it('returns a serializable failure for a missing project root', async () => {
@@ -16,8 +16,8 @@ describe('[project analysis actions]', () => {
     process.env.NEXT_PUBLIC_PROJECT_PATH = root;
 
     try {
-      const [graphResult, auditResult] = await Promise.all([
-        getGraphAction(),
+      const [projectResult, auditResult] = await Promise.all([
+        getProjectVisualizationAction(),
         getAuditEvaluationAction(),
       ]);
       const expected = {
@@ -25,7 +25,7 @@ describe('[project analysis actions]', () => {
         error: `Invalid or unavailable project path: ${root}`,
       };
 
-      assert.deepEqual(graphResult, expected);
+      assert.deepEqual(projectResult, expected);
       assert.deepEqual(auditResult, expected);
     } finally {
       if (previousProjectPath === undefined) {
