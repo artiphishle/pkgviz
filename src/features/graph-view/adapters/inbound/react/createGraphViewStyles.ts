@@ -1,5 +1,5 @@
-import type { ElementsDefinition, LayoutOptions, StylesheetJson } from 'cytoscape';
 import type { GraphViewStyleRule } from '@zora/graph-view';
+import type { ElementsDefinition, LayoutOptions, StylesheetJson } from 'cytoscape';
 
 import {
   getBreadthfirstStyle,
@@ -14,7 +14,7 @@ import { getStyle as getCommonStyle, type ThemeKey } from '@/layouts/style';
 export function createGraphViewStyles(
   elements: ElementsDefinition,
   theme: ThemeKey,
-  layout: LayoutOptions['name'],
+  layout: LayoutOptions['name']
 ): readonly GraphViewStyleRule[] {
   return [...getCommonStyle(elements, theme), ...getLayoutStyle(layout)].map(toGraphViewStyleRule);
 }
