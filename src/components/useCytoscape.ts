@@ -80,7 +80,13 @@ export function useCytoscape(
       ? afterSubPkgFilter
       : filterVendorPackages(afterSubPkgFilter);
 
-    const nonEmptyCurrentPackage = filterEmptyPackages(currentPackage, afterVendorPkgFilter);
+    const revealPackage = graphRevealRequestRef.current?.packageId;
+    const revealParentPackage =
+      revealPackage?.split('.').slice(0, -1).join('.') ?? null;
+    const nonEmptyCurrentPackage =
+      revealParentPackage === currentPackage
+        ? currentPackage
+        : filterEmptyPackages(currentPackage, afterVendorPkgFilter);
     if (nonEmptyCurrentPackage !== currentPackage) {
       setCurrentPackage(nonEmptyCurrentPackage);
       return;
