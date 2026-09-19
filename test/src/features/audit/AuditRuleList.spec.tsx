@@ -52,7 +52,9 @@ describe('[AuditRuleList]', () => {
     expect(switches.every(control => control.className.includes('shrink-0'))).toBe(true);
     expect(
       switches.every(control =>
-        control.parentElement?.querySelector('button:not([role="switch"])')?.className.includes('flex-1')
+        control.parentElement
+          ?.querySelector('button:not([role="switch"])')
+          ?.className.includes('flex-1')
       )
     ).toBe(true);
     expect(container.textContent?.includes('src/a.ts')).toBe(false);
