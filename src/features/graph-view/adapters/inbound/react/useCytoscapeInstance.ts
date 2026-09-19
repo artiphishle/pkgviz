@@ -1,24 +1,25 @@
 'use client';
 import cytoscape, { type Core } from 'cytoscape';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import { getCanvasBg, getStyle as getCommonStyle } from '@/layouts/style';
 
-/*** Owns only Cytoscape creation and destruction for the graph container. */
+/*** Owns only Cytoscape creation and destruction for the graph container callback ref. */
 export function useCytoscapeInstance() {
-  const cyRef = useRef<HTMLDivElement>(null);
+  const instanceRef = useRef<Core | null>(null);
   const [cyInstance, setCyInstance] = useState<Core | null>(null);
+  const cyRef = useCallback((container: HTMLDivElement | null) => {
+    instanceRef.current?.destroy();
+    instanceRef.current = null;
 
-  useEffect(() => {
-    if (!cyRef.current) return;
-    const container = cyRef.current;
-    const cy = createCytoscape(container);
-    setCyInstance(cy);
-
-    return () => {
-      cy.destroy();
+    if (container === null) {
       setCyInstance(null);
-    };
+      return;
+    }
+
+    const cy = createCytoscape(container);
+    instanceRef.current = cy;
+    setCyInstance(cy);
   }, []);
 
   return { cyRef, cyInstance };
