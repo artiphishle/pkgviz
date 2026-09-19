@@ -1,5 +1,5 @@
 'use client';
-import { TreeView, type TreeItemNode } from '@zora/tree-view';
+import { type TreeItemNode, TreeView } from '@zora/tree-view';
 import { FileCode2Icon, FolderIcon } from 'lucide-react';
 import React from 'react';
 
