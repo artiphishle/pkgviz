@@ -2,13 +2,14 @@
 import type { Core, ElementsDefinition } from 'cytoscape';
 import { useEffect } from 'react';
 
+import { readNodeDefinitionId } from '@/features/graph-view/utils/readNodeDefinitionId';
 import { hasChildren } from '@/utils/hasChildren';
 
 /*** Synchronizes projected graph elements and structural parent interactions into Cytoscape. */
 export function useGraphElements(input: UseGraphElementsInput) {
+  const { allElements, cy, setCurrentPackage, visibleElements } = input;
+
   useEffect(() => {
-    const cy = input.cy;
-    const visibleElements = input.visibleElements;
     if (cy === null || visibleElements === null || cy.destroyed()) return;
 
     cy.batch(() => {
@@ -17,13 +18,15 @@ export function useGraphElements(input: UseGraphElementsInput) {
     });
 
     cy.nodes().forEach(node => {
-      const visibleNode = visibleElements.nodes.find(element => element.data.id === node.data().id);
-      if (!visibleNode || !hasChildren(visibleNode, input.allElements?.nodes ?? [])) return;
+      const visibleNode = visibleElements.nodes.find(
+        element => readNodeDefinitionId(element) === node.id()
+      );
+      if (!visibleNode || !hasChildren(visibleNode, allElements?.nodes ?? [])) return;
 
       node.addClass('isParent');
-      node.on('dblclick', () => input.setCurrentPackage(node.id().replace(/\./g, '/')));
+      node.on('dblclick', () => setCurrentPackage(node.id().replace(/\./g, '/')));
     });
-  }, [input.allElements, input.cy, input.setCurrentPackage, input.visibleElements]);
+  }, [allElements, cy, setCurrentPackage, visibleElements]);
 }
 
 interface UseGraphElementsInput {
