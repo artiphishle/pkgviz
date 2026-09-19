@@ -30,7 +30,7 @@ const cycles: readonly PackageCycleDetail[] = [
 ];
 
 describe('[AuditRuleList]', () => {
-  it('shows violated cycles compactly and leaves every cycle disabled by default', () => {
+  it('shows violated cycles compactly with right-aligned disabled switches by default', () => {
     const { container, getByText } = render(
       <AuditRuleList
         evaluation={failedEvaluation}
@@ -50,6 +50,7 @@ describe('[AuditRuleList]', () => {
     );
     expect(switches.length).toBe(2);
     expect(switches.every(control => control.getAttribute('aria-checked') === 'false')).toBe(true);
+    expect(switches.every(control => control.parentElement?.lastElementChild === control)).toBe(true);
     expect(container.textContent?.includes('src/a.ts')).toBe(false);
   });
 

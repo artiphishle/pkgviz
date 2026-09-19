@@ -10,7 +10,7 @@ import {
 import type { PackageCycleDetail } from '@/types/audit';
 
 describe('[getCycleColor]', () => {
-  it('returns distinct Cytoscape-compatible error-red cycle colors', () => {
+  it('returns visually separated Cytoscape-compatible error-red cycle colors', () => {
     const color = getCycleColor(1);
     const cy = cytoscape({
       elements: [{ data: { id: 'cycle' } }],
@@ -25,9 +25,10 @@ describe('[getCycleColor]', () => {
     });
 
     try {
-      expect(color).toBe('#b91c1c');
-      expect(getCycleColor(2)).toBe('#ef4444');
-      expect(cy.getElementById('cycle').numericStyle('background-color')).toEqual([185, 28, 28]);
+      expect(getCycleColor(0)).toBe('#dc2626');
+      expect(color).toBe('#7f1d1d');
+      expect(getCycleColor(2)).toBe('#fb7185');
+      expect(cy.getElementById('cycle').numericStyle('background-color')).toEqual([127, 29, 29]);
     } finally {
       cy.destroy();
     }

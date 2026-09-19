@@ -2,14 +2,14 @@ import type { PackageCycleDetail } from '@/types/audit';
 import type { CycleFocus, CycleHighlight, CycleInspection } from '@/types/auditVisualization';
 
 const CYCLE_ERROR_COLORS = [
-  '#d80303',
-  '#b91c1c',
-  '#ef4444',
-  '#991b1b',
   '#dc2626',
-  '#f87171',
   '#7f1d1d',
-  '#fca5a5',
+  '#fb7185',
+  '#be123c',
+  '#ef4444',
+  '#450a0a',
+  '#f43f5e',
+  '#991b1b',
 ] as const;
 
 /*** Returns a stable distinct error-red color for one cycle occurrence. */

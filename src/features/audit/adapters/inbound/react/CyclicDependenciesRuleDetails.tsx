@@ -75,13 +75,6 @@ function CycleRow({ color, cycle, index, onInspect, onSelectedChange, selected }
 
   return (
     <div className="flex cursor-pointer items-start gap-2">
-      <ToggleSwitch
-        ariaLabel={label}
-        checkedColor={color}
-        id={'switch-audit-cycle-' + index}
-        onToggle={() => onSelectedChange(!selected)}
-        value={selected}
-      />
       <button
         type="button"
         onClick={onInspect}
@@ -98,6 +91,13 @@ function CycleRow({ color, cycle, index, onInspect, onSelectedChange, selected }
           {route}
         </code>
       </button>
+      <ToggleSwitch
+        ariaLabel={label}
+        checkedColor={color}
+        id={'switch-audit-cycle-' + index}
+        onToggle={() => onSelectedChange(!selected)}
+        value={selected}
+      />
     </div>
   );
 }
