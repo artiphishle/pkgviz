@@ -141,10 +141,14 @@ export function useCytoscape(
         const layout = cy.layout(makeLayoutOpts(name));
         layoutRef.current = layout;
 
-        /*** Fits the graph after the active layout completes. */
+        /*** Fits the graph or active cycle after the active layout completes. */
         const onStop = () => {
           if (cy.destroyed()) return;
-          cy.fit(undefined, 50);
+          const cycleElements = cy.elements('.auditCycle');
+          cy.fit(
+            cycleElements.empty() ? undefined : cycleElements,
+            cycleElements.empty() ? 50 : 80
+          );
         };
         cy.one('layoutstop', onStop);
 
@@ -241,10 +245,16 @@ export function useCytoscape(
     runLayoutSafe(cyInstance, cytoscapeLayout);
   }, [cyInstance, filteredElements, cytoscapeLayout, cytoscapeLayoutSpacing, runLayoutSafe]);
 
-  /** 7) Applies cycle highlighting without changing graph scope, depth, layout, or zoom. */
+  /** 7) Applies cycle highlighting and fits the viewport to active cycles without selecting nodes. */
   useEffect(() => {
     if (!cyInstance || !filteredElements || cyInstance.destroyed()) return;
-    applyCycleHighlights(cyInstance, cycleHighlights);
+    const highlightedElements = applyCycleHighlights(cyInstance, cycleHighlights);
+    if (highlightedElements.empty()) return;
+
+    requestAnimationFrame(() => {
+      if (cyInstance.destroyed()) return;
+      cyInstance.fit(cyInstance.elements('.auditCycle'), 80);
+    });
   }, [cyInstance, filteredElements, cycleHighlights]);
 
   /** 8) Attach interactive event handlers once (using refs for latest data) */

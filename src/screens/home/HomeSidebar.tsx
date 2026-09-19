@@ -5,14 +5,24 @@ import { ExportPanel } from '@/components/ExportPanel';
 import { SettingsPanel } from '@/components/SettingsPanel';
 import { Sidebar } from '@/components/sidebar/Sidebar';
 import { SidebarTabs } from '@/components/sidebar/SidebarTabs';
+import { useSettings } from '@/contexts/SettingsContext';
 import { AuditRulePanel } from '@/features/audit/adapters/inbound/react/AuditRulePanel';
 import { t } from '@/i18n/i18n';
 import type { Audit } from '@/types/audit';
-import type { CycleHighlight, CycleInspection } from '@/types/auditVisualization';
+import type { CycleFocus, CycleHighlight, CycleInspection } from '@/types/auditVisualization';
 
 /*** Composes secondary Rules/Export tools above persistent graph settings. */
 export function HomeSidebar(props: HomeSidebarProps) {
   const [activeTool, setActiveTool] = React.useState<string | null>(null);
+  const { setCytoscapeLayout, setCytoscapeLayoutSpacing, setSubPackageDepth } = useSettings();
+
+  /*** Applies active-cycle focus settings without restoring previous graph state on exit. */
+  const focusCycle = (focus: CycleFocus) => {
+    setCytoscapeLayout('circle');
+    setCytoscapeLayoutSpacing(0.1);
+    setSubPackageDepth(focus.packageDepth);
+    props.setCurrentPackage(focus.currentPackage);
+  };
 
   /*** Exits diagnostics cleanly when switching away from Rules. */
   const selectTool = (value: string) => {
@@ -25,7 +35,14 @@ export function HomeSidebar(props: HomeSidebarProps) {
 
   return (
     <Sidebar>
-      <SidebarToolTabs {...props} activeTool={activeTool} onValueChange={selectTool} />
+      <SidebarToolTabs
+        activeTool={activeTool}
+        evaluation={props.evaluation}
+        onCycleFocusChange={focusCycle}
+        onCycleHighlightsChange={props.onCycleHighlightsChange}
+        onCycleInspectionChange={props.onCycleInspectionChange}
+        onValueChange={selectTool}
+      />
       <SettingsPanel />
     </Sidebar>
   );
@@ -35,6 +52,7 @@ export function HomeSidebar(props: HomeSidebarProps) {
 function SidebarToolTabs({
   activeTool,
   evaluation,
+  onCycleFocusChange,
   onCycleHighlightsChange,
   onCycleInspectionChange,
   onValueChange,
@@ -57,6 +75,7 @@ function SidebarToolTabs({
             evaluation === null ? null : (
               <AuditRulePanel
                 evaluation={evaluation}
+                onCycleFocusChange={onCycleFocusChange}
                 onCycleHighlightsChange={onCycleHighlightsChange}
                 onCycleInspectionChange={onCycleInspectionChange}
               />
@@ -72,9 +91,14 @@ interface HomeSidebarProps {
   readonly evaluation: Audit['evaluation'] | null;
   readonly onCycleHighlightsChange: (highlights: readonly CycleHighlight[]) => void;
   readonly onCycleInspectionChange: (inspection: CycleInspection | null) => void;
+  readonly setCurrentPackage: (path: string) => void;
 }
 
-interface SidebarToolTabsProps extends HomeSidebarProps {
+interface SidebarToolTabsProps {
   readonly activeTool: string | null;
+  readonly evaluation: Audit['evaluation'] | null;
+  readonly onCycleFocusChange: (focus: CycleFocus) => void;
+  readonly onCycleHighlightsChange: (highlights: readonly CycleHighlight[]) => void;
+  readonly onCycleInspectionChange: (inspection: CycleInspection | null) => void;
   readonly onValueChange: (value: string) => void;
 }

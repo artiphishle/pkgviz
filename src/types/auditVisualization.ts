@@ -9,3 +9,8 @@ export interface CycleHighlight {
 export interface CycleInspection extends CycleHighlight {
   readonly label: string;
 }
+
+export interface CycleFocus {
+  readonly currentPackage: string;
+  readonly packageDepth: number;
+}
