@@ -1,16 +1,16 @@
 'use client';
-import type { Core, ElementsDefinition } from 'cytoscape';
+
+import type { ElementsDefinition } from 'cytoscape';
 import { useEffect, useRef } from 'react';
 
 import { createCycleFocus } from '@/features/audit/utils/cycleVisualization';
+import { readNodeDefinitionId } from '@/features/graph-view/utils/readNodeDefinitionId';
 import type { CycleHighlight } from '@/types/auditVisualization';
-import { applyCycleHighlights } from '@/utils/graph/applyCycleHighlights';
 
-/*** Owns cycle highlighting and the one-time projection change needed to expose active cycles. */
+/*** Expands package projection once when active cycles are not yet visible. */
 export function useGraphFocus(input: UseGraphFocusInput) {
   const handledCycleSignatureRef = useRef<string | null>(null);
   const {
-    cy,
     cycleHighlights,
     currentPackage,
     setCurrentPackage,
@@ -21,9 +21,8 @@ export function useGraphFocus(input: UseGraphFocusInput) {
 
   useEffect(
     () =>
-      runCycleDiagnosticFocus(
+      runCycleProjectionFocus(
         {
-          cy,
           cycleHighlights,
           currentPackage,
           setCurrentPackage,
@@ -31,55 +30,57 @@ export function useGraphFocus(input: UseGraphFocusInput) {
           subPackageDepth,
           visibleElements,
         },
-        handledCycleSignatureRef
+        handledCycleSignatureRef,
       ),
     [
-      cy,
       cycleHighlights,
       currentPackage,
       setCurrentPackage,
       setSubPackageDepth,
       subPackageDepth,
       visibleElements,
-    ]
+    ],
   );
 }
 
-/*** Runs one cycle-focus effect iteration without changing the viewport directly. */
-function runCycleDiagnosticFocus(
+/*** Runs one cycle-projection iteration without touching layout or viewport state. */
+function runCycleProjectionFocus(
   input: UseGraphFocusInput,
-  handledCycleSignatureRef: { current: string | null }
+  handledCycleSignatureRef: { current: string | null },
 ) {
-  const { cy, cycleHighlights, visibleElements } = input;
-  if (cy === null || visibleElements === null || cy.destroyed()) return;
-  applyCycleHighlights(cy, cycleHighlights);
+  if (input.visibleElements === null) return;
 
-  if (cycleHighlights.length === 0) {
+  if (input.cycleHighlights.length === 0) {
     handledCycleSignatureRef.current = null;
     return;
   }
 
-  const signature = getCycleSignature(cycleHighlights);
+  const signature = getCycleSignature(input.cycleHighlights);
   if (handledCycleSignatureRef.current === signature) return;
-  if (ensureCycleProjection({ ...input, cy })) return;
+  if (ensureCycleProjection(input)) return;
   handledCycleSignatureRef.current = signature;
 }
 
 /*** Returns a stable identity for the current active-cycle set. */
 function getCycleSignature(highlights: readonly CycleHighlight[]): string {
   return highlights
-    .map(highlight => highlight.id)
+    .map((highlight) => highlight.id)
     .sort()
     .join('|');
 }
 
 /*** Expands only the projection dimensions required to expose every active cycle package. */
-function ensureCycleProjection(input: CycleProjectionInput): boolean {
+function ensureCycleProjection(input: UseGraphFocusInput): boolean {
+  if (input.visibleElements === null) return false;
   const activePackageNames = [
-    ...new Set(input.cycleHighlights.flatMap(highlight => highlight.cycle.packages)),
+    ...new Set(input.cycleHighlights.flatMap((highlight) => highlight.cycle.packages)),
   ];
-  const visibleNodeIds = new Set(input.cy.nodes().map(node => node.id()));
-  if (activePackageNames.every(packageName => visibleNodeIds.has(packageName))) return false;
+  const visibleNodeIds = new Set(
+    input.visibleElements.nodes
+      .map((node) => readNodeDefinitionId(node))
+      .filter((id): id is string => id !== null),
+  );
+  if (activePackageNames.every((packageName) => visibleNodeIds.has(packageName))) return false;
 
   const focus = createCycleFocus(input.cycleHighlights);
   if (!focus) return false;
@@ -94,15 +95,10 @@ function ensureCycleProjection(input: CycleProjectionInput): boolean {
 }
 
 interface UseGraphFocusInput {
-  readonly cy: Core | null;
   readonly cycleHighlights: readonly CycleHighlight[];
   readonly currentPackage: string;
   readonly setCurrentPackage: (path: string) => void;
   readonly setSubPackageDepth: (depth: number) => void;
   readonly subPackageDepth: number;
   readonly visibleElements: ElementsDefinition | null;
-}
-
-interface CycleProjectionInput extends Omit<UseGraphFocusInput, 'cy' | 'visibleElements'> {
-  readonly cy: Core;
 }
