@@ -5,6 +5,7 @@ import { useTheme } from 'next-themes';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useSettings } from '@/contexts/SettingsContext';
+import { useCycleGraphFocus } from '@/features/audit/adapters/inbound/react/useCycleGraphFocus';
 import {
   getBreadthfirstStyle,
   getCircleStyle,
@@ -20,7 +21,7 @@ import { filterEmptyPackages } from '@/utils/filter/filterEmptyPackages';
 import { filterSubPackagesByDepth, getMaxDepth } from '@/utils/filter/filterSubPackagesFromDepth';
 import { filterVendorPackages } from '@/utils/filter/filterVendorPackages';
 import { toggleCompoundNodes } from '@/utils/filter/toggleCompoundNodes';
-import { applyCycleHighlights } from '@/utils/graph/applyCycleHighlights';
+import { fitGraph } from '@/utils/graph/fitGraph';
 import { hasChildren } from '@/utils/hasChildren';
 
 /*** Owns the Cytoscape instance, filtering, layout, styling, and interactions. */
@@ -141,14 +142,9 @@ export function useCytoscape(
         const layout = cy.layout(makeLayoutOpts(name));
         layoutRef.current = layout;
 
-        /*** Fits the graph or active cycle after the active layout completes. */
+        /*** Fits the complete graph after the active layout completes. */
         const onStop = () => {
-          if (cy.destroyed()) return;
-          const cycleElements = cy.elements('.auditCycle');
-          cy.fit(
-            cycleElements.empty() ? undefined : cycleElements,
-            cycleElements.empty() ? 50 : 80
-          );
+          fitGraph(cy);
         };
         cy.one('layoutstop', onStop);
 
@@ -179,7 +175,7 @@ export function useCytoscape(
     /*** Refits the graph after its container is resized. */
     const handleResize = () => {
       if (cy.destroyed()) return;
-      cy.fit(undefined, 50);
+      fitGraph(cy);
     };
     const observer = new ResizeObserver(() => requestAnimationFrame(handleResize));
     observer.observe(cyRef.current);
@@ -245,19 +241,15 @@ export function useCytoscape(
     runLayoutSafe(cyInstance, cytoscapeLayout);
   }, [cyInstance, filteredElements, cytoscapeLayout, cytoscapeLayoutSpacing, runLayoutSafe]);
 
-  /** 7) Applies cycle highlighting and fits the viewport to active cycles without selecting nodes. */
-  useEffect(() => {
-    if (!cyInstance || !filteredElements || cyInstance.destroyed()) return;
-    const highlightedElements = applyCycleHighlights(cyInstance, cycleHighlights);
-    if (highlightedElements.empty()) return;
+  useCycleGraphFocus({
+    cyInstance,
+    filteredElements,
+    cycleHighlights,
+    currentPackage,
+    setCurrentPackage,
+  });
 
-    requestAnimationFrame(() => {
-      if (cyInstance.destroyed()) return;
-      cyInstance.fit(cyInstance.elements('.auditCycle'), 80);
-    });
-  }, [cyInstance, filteredElements, cycleHighlights]);
-
-  /** 8) Attach interactive event handlers once (using refs for latest data) */
+  /** 7) Attach interactive event handlers once (using refs for latest data) */
   useEffect(() => {
     if (!cyInstance) return;
     const cy = cyInstance;
@@ -334,7 +326,7 @@ export function useCytoscape(
     };
   }, [cyInstance]);
 
-  /** 9) Theme + layout-style live update */
+  /** 8) Theme + layout-style live update */
   useEffect(() => {
     if (!cyInstance || !filteredElements || !cyRef.current) return;
 

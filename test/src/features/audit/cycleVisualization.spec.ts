@@ -5,7 +5,6 @@ import cytoscape from 'cytoscape';
 import {
   createCycleFocus,
   getCycleColor,
-  getCycleId,
 } from '@/features/audit/utils/cycleVisualization';
 import type { PackageCycleDetail } from '@/types/audit';
 
@@ -36,52 +35,60 @@ describe('[getCycleColor]', () => {
 });
 
 describe('[createCycleFocus]', () => {
-  it('uses the deepest common package and least depth for one cycle', () => {
+  it('preserves the current scope when it already contains the active cycle', () => {
     const cycle: PackageCycleDetail = {
       packages: ['app.feature.a', 'app.feature.b', 'app.feature.a'],
       edges: [],
     };
 
-    expect(createCycleFocus([cycle], [getCycleId(cycle, 0)])).toEqual({
+    expect(createCycleFocus([highlight(cycle)], 'app.feature')).toEqual({
       currentPackage: 'app.feature',
       packageDepth: 1,
     });
   });
 
-  it('backs up when the common package is itself part of the cycle', () => {
+  it('only increases the required depth inside an already valid broader scope', () => {
     const cycle: PackageCycleDetail = {
-      packages: ['app.feature', 'app.feature.child', 'app.feature'],
+      packages: ['app.feature.a', 'app.feature.b', 'app.feature.a'],
       edges: [],
     };
 
-    expect(createCycleFocus([cycle], [getCycleId(cycle, 0)])).toEqual({
+    expect(createCycleFocus([highlight(cycle)], 'app')).toEqual({
       currentPackage: 'app',
       packageDepth: 2,
     });
   });
 
-  it('widens focus just enough for multiple selected cycles', () => {
-    const firstCycle: PackageCycleDetail = {
+  it('widens an incompatible scope only to the common active-cycle ancestor', () => {
+    const cycle: PackageCycleDetail = {
       packages: ['app.feature.a', 'app.feature.b', 'app.feature.a'],
       edges: [],
     };
-    const secondCycle: PackageCycleDetail = {
-      packages: ['app.other.deep.c', 'app.other.deep.d', 'app.other.deep.c'],
+
+    expect(createCycleFocus([highlight(cycle)], 'other')).toEqual({
+      currentPackage: 'app.feature',
+      packageDepth: 1,
+    });
+  });
+
+  it('backs up when the scope package is itself part of the cycle', () => {
+    const cycle: PackageCycleDetail = {
+      packages: ['app.feature', 'app.feature.child', 'app.feature'],
       edges: [],
     };
 
-    expect(
-      createCycleFocus(
-        [firstCycle, secondCycle],
-        [getCycleId(firstCycle, 0), getCycleId(secondCycle, 1)]
-      )
-    ).toEqual({
+    expect(createCycleFocus([highlight(cycle)], 'app.feature')).toEqual({
       currentPackage: 'app',
-      packageDepth: 3,
+      packageDepth: 2,
     });
   });
 
   it('does not request a focus when no cycle is selected', () => {
-    expect(createCycleFocus([], [])).toBeNull();
+    expect(createCycleFocus([], '')).toBeNull();
   });
 });
+
+/*** Creates one test highlight around a cycle. */
+function highlight(cycle: PackageCycleDetail) {
+  return { id: 'cycle', color: '#dc2626', cycle };
+}

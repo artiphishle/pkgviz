@@ -5,12 +5,11 @@ import { SidebarRow } from '@/components/sidebar/SidebarRow';
 import { SidebarSection } from '@/components/sidebar/SidebarSection';
 import { CyclicDependenciesRuleDetails } from '@/features/audit/adapters/inbound/react/CyclicDependenciesRuleDetails';
 import type { Audit, AuditRuleResult } from '@/types/audit';
-import type { CycleFocus, CycleHighlight, CycleInspection } from '@/types/auditVisualization';
+import type { CycleHighlight, CycleInspection } from '@/types/auditVisualization';
 
 /*** Renders only violated audit rules in the active Rules sidebar tab. */
 export function AuditRuleList({
   evaluation,
-  onCycleFocusChange,
   onCycleHighlightsChange,
   onCycleInspectionChange,
 }: AuditRuleListProps) {
@@ -23,7 +22,6 @@ export function AuditRuleList({
             key={rule.id}
             evaluation={evaluation}
             rule={rule}
-            onCycleFocusChange={onCycleFocusChange}
             onCycleHighlightsChange={onCycleHighlightsChange}
             onCycleInspectionChange={onCycleInspectionChange}
           />
@@ -35,7 +33,6 @@ export function AuditRuleList({
 /*** Dispatches one violated rule to its dedicated sidebar renderer. */
 function RuleDetails({
   evaluation,
-  onCycleFocusChange,
   onCycleHighlightsChange,
   onCycleInspectionChange,
   rule,
@@ -44,7 +41,6 @@ function RuleDetails({
     return (
       <CyclicDependenciesRuleDetails
         cycles={evaluation.cyclicPackages}
-        onCycleFocusChange={onCycleFocusChange}
         onCycleHighlightsChange={onCycleHighlightsChange}
         onCycleInspectionChange={onCycleInspectionChange}
       />
@@ -66,7 +62,6 @@ function RuleDetails({
 
 interface AuditRuleListProps {
   readonly evaluation: Audit['evaluation'];
-  readonly onCycleFocusChange: (focus: CycleFocus) => void;
   readonly onCycleHighlightsChange: (highlights: readonly CycleHighlight[]) => void;
   readonly onCycleInspectionChange: (inspection: CycleInspection | null) => void;
 }

@@ -6,7 +6,6 @@ import { SidebarRow } from '@/components/sidebar/SidebarRow';
 import { SidebarSection } from '@/components/sidebar/SidebarSection';
 import { ToggleSwitch } from '@/components/ToggleSwitch';
 import {
-  createCycleFocus,
   createCycleHighlights,
   createCycleInspection,
   getCycleColor,
@@ -14,12 +13,11 @@ import {
 } from '@/features/audit/utils/cycleVisualization';
 import { t } from '@/i18n/i18n';
 import type { PackageCycleDetail } from '@/types/audit';
-import type { CycleFocus, CycleHighlight, CycleInspection } from '@/types/auditVisualization';
+import type { CycleHighlight, CycleInspection } from '@/types/auditVisualization';
 
 /*** Renders one violated cyclic-dependencies rule with every cycle disabled by default. */
 export function CyclicDependenciesRuleDetails({
   cycles,
-  onCycleFocusChange,
   onCycleHighlightsChange,
   onCycleInspectionChange,
 }: CyclicDependenciesRuleDetailsProps) {
@@ -56,9 +54,6 @@ export function CyclicDependenciesRuleDetails({
                 ? [...selectedCycleIds, id]
                 : selectedCycleIds.filter(currentId => currentId !== id);
               setSelectedCycleIds(nextSelectedCycleIds);
-
-              const focus = createCycleFocus(cycles, nextSelectedCycleIds);
-              if (focus) onCycleFocusChange(focus);
             }}
           />
         </SidebarRow>
@@ -104,7 +99,6 @@ function CycleRow({ color, cycle, index, onInspect, onSelectedChange, selected }
 
 interface CyclicDependenciesRuleDetailsProps {
   readonly cycles: readonly PackageCycleDetail[];
-  readonly onCycleFocusChange: (focus: CycleFocus) => void;
   readonly onCycleHighlightsChange: (highlights: readonly CycleHighlight[]) => void;
   readonly onCycleInspectionChange: (inspection: CycleInspection | null) => void;
 }

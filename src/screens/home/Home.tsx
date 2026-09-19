@@ -71,7 +71,6 @@ export default function HomeScreen() {
             evaluation={auditEvaluation}
             onCycleHighlightsChange={setCycleHighlights}
             onCycleInspectionChange={setCycleInspection}
-            setCurrentPackage={setCurrentPackage}
           />
           {projectError ? (
             <ProjectLoadError message={projectError} />

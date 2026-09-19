@@ -3,6 +3,8 @@ import type { Core } from 'cytoscape';
 import { CircleDotDashedIcon } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
+import { fitGraph } from '@/utils/graph/fitGraph';
+
 interface IZoomInput {
   readonly cyInstance: Core | null;
 }
@@ -58,8 +60,7 @@ export default function ZoomInput({ cyInstance }: IZoomInput) {
   const handleZoomToFit = () => {
     if (!cyInstance) return;
 
-    // Fit all elements with a bit of padding
-    cyInstance.fit(undefined, 50);
+    fitGraph(cyInstance);
 
     const nextZoom = cyInstance.zoom();
     setZoom(nextZoom);
