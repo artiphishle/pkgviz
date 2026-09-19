@@ -1,15 +1,23 @@
 'use client';
-import type { Core, ElementsDefinition, EventObject } from 'cytoscape';
+import { isRecord } from '@ankhorage/utility/object';
+import type {
+  Core,
+  ElementsDefinition,
+  EventObject,
+  SingularElementReturnValue,
+} from 'cytoscape';
 import { useEffect } from 'react';
 
+import { readNodeDefinitionId } from '@/features/graph-view/utils/readNodeDefinitionId';
 import { hasChildren } from '@/utils/hasChildren';
 
 /*** Owns hover and selection event handlers without removing listeners from other graph adapters. */
 export function useGraphInteractions(input: UseGraphInteractionsInput) {
+  const { allElements, cy, visibleElements } = input;
+
   useEffect(() => {
-    const cy = input.cy;
     if (cy === null || cy.destroyed()) return;
-    const cleanNodes = bindNodeInteractions(cy, input.allElements, input.visibleElements);
+    const cleanNodes = bindNodeInteractions(cy, allElements, visibleElements);
     const cleanEdges = bindEdgeInteractions(cy);
 
     return () => {
@@ -17,7 +25,7 @@ export function useGraphInteractions(input: UseGraphInteractionsInput) {
       cleanEdges();
       document.body.style.cursor = 'default';
     };
-  }, [input.allElements, input.cy, input.visibleElements]);
+  }, [allElements, cy, visibleElements]);
 }
 
 interface UseGraphInteractionsInput {
@@ -70,15 +78,22 @@ function highlightHoveredNode(
   visibleElements: ElementsDefinition | null
 ) {
   if (cy.destroyed()) return;
-  const node = event.target;
-  const rawNode = visibleElements?.nodes.find(element => element.data.id === node.data().id);
+  const node = readNodeEventTarget(event);
+  if (node === null) return;
+  const rawNode = visibleElements?.nodes.find(
+    element => readNodeDefinitionId(element) === node.id()
+  );
 
   if (rawNode && allElements && hasChildren(rawNode, allElements.nodes)) {
     document.body.style.cursor = 'pointer';
     if (hasChildren(rawNode, visibleElements?.nodes ?? [])) return;
   }
 
-  cy.elements().subtract(node.outgoers()).subtract(node.incomers()).subtract(node).addClass('hushed');
+  cy.elements()
+    .subtract(node.outgoers())
+    .subtract(node.incomers())
+    .subtract(node)
+    .addClass('hushed');
   node.addClass('highlight');
   node.outgoers().addClass('highlight-outgoer');
   node.incomers().addClass('highlight-incomer');
@@ -93,7 +108,7 @@ function restoreNodeHighlights(cy: Core) {
 
 /*** Binds edge hover behavior and returns a targeted cleanup function. */
 function bindEdgeInteractions(cy: Core) {
-  const state: { highlightDelay?: ReturnType<typeof setTimeout> } = {};
+  const state: EdgeHighlightState = {};
   const handleMouseOver = (event: EventObject) => highlightHoveredEdge(cy, event, state);
   const handleMouseOut = (event: EventObject) => clearHoveredEdge(cy, event, state);
 
@@ -114,7 +129,8 @@ interface EdgeHighlightState {
 /*** Highlights one edge immediately and its endpoint nodes after a short delay. */
 function highlightHoveredEdge(cy: Core, event: EventObject, state: EdgeHighlightState) {
   if (cy.destroyed()) return;
-  const edge = event.target;
+  const edge = readEdgeEventTarget(event);
+  if (edge === null) return;
   edge.addClass('highlight-dependency');
   state.highlightDelay = setTimeout(() => {
     if (cy.destroyed()) return;
@@ -126,10 +142,45 @@ function highlightHoveredEdge(cy: Core, event: EventObject, state: EdgeHighlight
 /*** Removes delayed edge/end-point highlighting. */
 function clearHoveredEdge(cy: Core, event: EventObject, state: EdgeHighlightState) {
   if (cy.destroyed()) return;
-  const edge = event.target;
+  const edge = readEdgeEventTarget(event);
+  if (edge === null) return;
   edge.removeClass('highlight-dependency');
   if (state.highlightDelay !== undefined) clearTimeout(state.highlightDelay);
   state.highlightDelay = undefined;
   edge.source().removeClass('highlight-dependency');
   edge.target().removeClass('highlight-dependency');
+}
+
+/*** Validates a selector-scoped Cytoscape node event target at the adapter boundary. */
+function readNodeEventTarget(event: EventObject): SingularElementReturnValue | null {
+  const target: unknown = event.target;
+  return isNodeEventTarget(target) ? target : null;
+}
+
+/*** Validates the node methods used by graph interactions. */
+function isNodeEventTarget(value: unknown): value is SingularElementReturnValue {
+  return (
+    isRecord(value) &&
+    typeof value.id === 'function' &&
+    typeof value.addClass === 'function' &&
+    typeof value.outgoers === 'function' &&
+    typeof value.incomers === 'function'
+  );
+}
+
+/*** Validates a selector-scoped Cytoscape edge event target at the adapter boundary. */
+function readEdgeEventTarget(event: EventObject): SingularElementReturnValue | null {
+  const target: unknown = event.target;
+  return isEdgeEventTarget(target) ? target : null;
+}
+
+/*** Validates the edge methods used by graph interactions. */
+function isEdgeEventTarget(value: unknown): value is SingularElementReturnValue {
+  return (
+    isRecord(value) &&
+    typeof value.addClass === 'function' &&
+    typeof value.removeClass === 'function' &&
+    typeof value.source === 'function' &&
+    typeof value.target === 'function'
+  );
 }
