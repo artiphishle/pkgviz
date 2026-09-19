@@ -1,11 +1,6 @@
 'use client';
 import { isRecord } from '@ankhorage/utility/object';
-import type {
-  Core,
-  ElementsDefinition,
-  EventObject,
-  SingularElementReturnValue,
-} from 'cytoscape';
+import type { Core, ElementsDefinition, EventObject, SingularElementReturnValue } from 'cytoscape';
 import { useEffect } from 'react';
 
 import { readNodeDefinitionId } from '@/features/graph-view/utils/readNodeDefinitionId';
