@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": false,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
@@ -23,15 +19,9 @@
       }
     ],
     "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "app/*": [
-        "./app/*"
-      ],
-      "@zora/tree-view": [
-        "./.generated/zora/tree-view/TreeView.js"
-      ]
+      "@/*": ["./src/*"],
+      "app/*": ["./app/*"],
+      "@zora/tree-view": ["./.generated/zora/tree-view/TreeView"]
     },
     "incremental": true
   },
@@ -42,8 +32,5 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "examples"
-  ]
+  "exclude": ["node_modules", "examples"]
 }
