@@ -9,7 +9,7 @@ import Breadcrumb from '@/components/Breadcrumb';
 import Header from '@/components/Header';
 import ProjectLoadError from '@/components/ProjectLoadError';
 import { SettingsProvider } from '@/contexts/SettingsContext';
-import { getGraphRevealScope } from '@/features/project-tree/utils/getGraphRevealScope';
+import { findProjectTreeNodeByGraphPackage } from '@/features/project-tree/utils/findProjectTreeNodeByGraphPackage';
 import { HomeGraph } from '@/screens/home/HomeGraph';
 import { HomeSidebar } from '@/screens/home/HomeSidebar';
 import type { Audit } from '@/types/audit';
@@ -63,20 +63,24 @@ export default function HomeScreen() {
     };
   }, []);
 
-  /*** Navigates manually and clears any stale tree-driven graph reveal request. */
+  /*** Navigates graph scope and mirrors the matching package selection in the project tree. */
   const navigateToPackage = (path: string) => {
+    const packageName = normalizeGraphPackage(path);
+    const matchingTreeNode = findProjectTreeNodeByGraphPackage(projectTree, packageName);
     setGraphRevealRequest(null);
-    setCurrentPackage(path);
+    setCurrentPackage(packageName);
+    setSelectedTreeId(matchingTreeNode?.id ?? null);
   };
 
-  /*** Selects a project-tree node and reveals its owning package in the graph. */
+  /*** Selects a project-tree node and navigates the graph to the same package scope. */
   const selectProjectTreeNode = (node: ProjectTreeNode) => {
     setSelectedTreeId(node.id);
     if (!node.graphPackage) return;
 
-    setCurrentPackage(getGraphRevealScope(node.graphPackage));
+    const packageName = normalizeGraphPackage(node.graphPackage);
+    setCurrentPackage(packageName);
     setGraphRevealRequest({
-      packageId: node.graphPackage,
+      packageId: packageName,
       treeNodeId: node.id,
     });
   };
@@ -90,10 +94,7 @@ export default function HomeScreen() {
   return (
     <>
       <Header title="nav.packages">
-        <Breadcrumb
-          path={currentPackage.replace(/\./g, '/')}
-          onNavigate={(path: string) => navigateToPackage(path.replace(/\//g, '.'))}
-        />
+        <Breadcrumb path={currentPackage.replace(/\./g, '/')} onNavigate={navigateToPackage} />
       </Header>
       <SettingsProvider>
         <main data-testid="main" className="flex min-w-0 flex-1 flex-row dark:bg-[#171717]">
@@ -122,4 +123,9 @@ export default function HomeScreen() {
       </SettingsProvider>
     </>
   );
+}
+
+/*** Normalizes graph navigation paths to the package-id representation used by Cytoscape. */
+function normalizeGraphPackage(path: string): string {
+  return path.replaceAll('/', '.').replace(/^\.+|\.+$/g, '');
 }

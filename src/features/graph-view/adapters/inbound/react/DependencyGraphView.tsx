@@ -106,7 +106,7 @@ function DependencyGraphCanvas(props: DependencyGraphCanvasProps) {
   /*** Handles structural graph navigation without touching the rendering engine. */
   const handleNodeEvent = (event: GraphViewElementEvent) => {
     if (event.type !== 'double-press' || !props.model.parentNodeIds.has(event.id)) return;
-    props.setCurrentPackage(event.id.replace(/\./g, '/'));
+    props.setCurrentPackage(event.id);
   };
 
   /*** Applies explicit tree reveal after ZORA has completed its canonical layout fit. */
