@@ -7,25 +7,28 @@ import {
 import type { ParsedDirectory } from '@/shared/types';
 
 describe('[project tree]', () => {
-  it('builds directories before files and derives directory graph packages from descendants', () => {
-    const parsed = {
-      src: {
-        'index.ts': parsedFile('src/index.ts', 'src'),
-        components: {
-          'Button.tsx': parsedFile('src/components/Button.tsx', 'src.components'),
+  it(
+    'builds directories before files and derives directory graph packages from descendants',
+    () => {
+      const parsed = {
+        src: {
+          'index.ts': parsedFile('src/index.ts', 'src'),
+          components: {
+            'Button.tsx': parsedFile('src/components/Button.tsx', 'src.components'),
+          },
         },
-      },
-      'root.ts': parsedFile('root.ts', ''),
-    } satisfies ParsedDirectory;
+        'root.ts': parsedFile('root.ts', ''),
+      } satisfies ParsedDirectory;
 
-    const tree = buildProjectTree(parsed);
+      const tree = buildProjectTree(parsed);
 
-    expect(tree.map(node => node.label)).toEqual(['src', 'root.ts']);
-    expect(tree[0]?.graphPackage).toBe('src');
-    expect(tree[0]?.children?.map(node => node.label)).toEqual(['components', 'index.ts']);
-    expect(tree[0]?.children?.[0]?.graphPackage).toBe('src.components');
-    expect(tree[0]?.children?.[0]?.children?.[0]?.graphPackage).toBe('src.components');
-  });
+      expect(tree.map(node => node.label)).toEqual(['src', 'root.ts']);
+      expect(tree[0]?.graphPackage).toBe('src');
+      expect(tree[0]?.children?.map(node => node.label)).toEqual(['components', 'index.ts']);
+      expect(tree[0]?.children?.[0]?.graphPackage).toBe('src.components');
+      expect(tree[0]?.children?.[0]?.children?.[0]?.graphPackage).toBe('src.components');
+    }
+  );
 
   it('uses descendant package names instead of source-directory prefixes', () => {
     const parsed = {
