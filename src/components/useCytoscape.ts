@@ -81,8 +81,7 @@ export function useCytoscape(
       : filterVendorPackages(afterSubPkgFilter);
 
     const revealPackage = graphRevealRequestRef.current?.packageId;
-    const revealParentPackage =
-      revealPackage?.split('.').slice(0, -1).join('.') ?? null;
+    const revealParentPackage = revealPackage?.split('.').slice(0, -1).join('.') ?? null;
     const nonEmptyCurrentPackage =
       revealParentPackage === currentPackage
         ? currentPackage
