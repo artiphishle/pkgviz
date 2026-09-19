@@ -266,7 +266,12 @@ export async function getParsedFileStructure(
               'kotlin-standard-library'
             )
           : detectedLanguage === Language.Python
-            ? await analyzeDependencyImportsAsync(projectPath, rootDir, 'specifier', 'python-legacy')
+            ? await analyzeDependencyImportsAsync(
+                projectPath,
+                rootDir,
+                'specifier',
+                'python-legacy'
+              )
             : undefined;
 
   // 3. Read directory recursively (pass resolved root as both dir and projectRoot)
