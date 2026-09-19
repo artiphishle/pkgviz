@@ -1,8 +1,8 @@
 'use client';
 
+import type { GraphViewController } from '@zora/graph-view';
 import { CircleDotDashedIcon } from 'lucide-react';
 import type { ChangeEvent } from 'react';
-import type { GraphViewController } from '@zora/graph-view';
 
 interface GraphZoomControlsProps {
   readonly controller: GraphViewController | null;
@@ -12,12 +12,7 @@ interface GraphZoomControlsProps {
 }
 
 /*** Renders graph zoom controls against the engine-neutral ZORA viewport controller. */
-export function GraphZoomControls({
-  controller,
-  maxZoom,
-  minZoom,
-  zoom,
-}: GraphZoomControlsProps) {
+export function GraphZoomControls({ controller, maxZoom, minZoom, zoom }: GraphZoomControlsProps) {
   /*** Applies one slider zoom value through the GraphView controller. */
   const handleSliderChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (controller === null) return;
