@@ -42,23 +42,10 @@ export function createCycleHighlights(
   });
 }
 
-/*** Creates the least disruptive scope/depth that can expose all active cycle packages. */
-export function createCycleFocus(
-  highlights: readonly CycleHighlight[],
-  currentPackage: string
-): CycleFocus | null {
+/*** Creates the narrowest scope and least depth that expose every active cycle package. */
+export function createCycleFocus(highlights: readonly CycleHighlight[]): CycleFocus | null {
   const packageNames = [...new Set(highlights.flatMap(highlight => highlight.cycle.packages))];
   if (packageNames.length === 0) return null;
-
-  const normalizedCurrentPackage = currentPackage.replace(/\//g, '.');
-  const currentSegments = normalizedCurrentPackage ? normalizedCurrentPackage.split('.') : [];
-  const currentScopeContainsAll =
-    !packageNames.includes(normalizedCurrentPackage) &&
-    packageNames.every(
-      packageName =>
-        normalizedCurrentPackage.length === 0 ||
-        packageName.startsWith(normalizedCurrentPackage + '.')
-    );
 
   const packageSegments = packageNames.map(packageName => packageName.split('.'));
   const [firstSegments, ...remainingSegments] = packageSegments;
@@ -68,10 +55,9 @@ export function createCycleFocus(
   const commonDepth = mismatchIndex === -1 ? firstSegments.length : mismatchIndex;
   const commonSegments = firstSegments.slice(0, commonDepth);
   const commonPackage = commonSegments.join('.');
-  const fallbackSegments = packageNames.includes(commonPackage)
+  const focusSegments = packageNames.includes(commonPackage)
     ? commonSegments.slice(0, -1)
     : commonSegments;
-  const focusSegments = currentScopeContainsAll ? currentSegments : fallbackSegments;
 
   return {
     currentPackage: focusSegments.join('.'),
