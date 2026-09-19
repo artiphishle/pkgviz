@@ -5,7 +5,6 @@ import { TreeView, type TreeItemNode } from '@zora/tree-view';
 
 import { findProjectTreeNode } from '@/features/project-tree/utils/findProjectTreeNode';
 import type { ProjectTreeNode } from '@/types/projectTree';
-import { TreeView, type TreeItemNode } from '@zora/tree-view';
 
 /*** Adapts PKGViz's serializable project tree to the generated ZORA browser TreeView. */
 export function ProjectTreePanel({ nodes, onSelect, selectedId }: ProjectTreePanelProps) {
