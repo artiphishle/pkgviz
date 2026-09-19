@@ -1,14 +1,14 @@
 'use client';
 
-import type { ElementsDefinition, LayoutOptions } from 'cytoscape';
-import { useTheme } from 'next-themes';
-import React, { useMemo, useState } from 'react';
 import {
   GraphView,
   type GraphViewController,
   type GraphViewElementEvent,
   type GraphViewLayoutName,
 } from '@zora/graph-view';
+import type { ElementsDefinition, LayoutOptions } from 'cytoscape';
+import { useTheme } from 'next-themes';
+import React, { useMemo, useState } from 'react';
 
 import { useSettings } from '@/contexts/SettingsContext';
 import { createGraphViewModel } from '@/features/graph-view/adapters/inbound/react/createGraphViewModel';
@@ -24,32 +24,14 @@ import type { GraphRevealRequest } from '@/types/projectTree';
 const MIN_ZOOM = 0.05;
 const MAX_ZOOM = 2;
 
-interface DependencyGraphViewProps {
-  readonly currentPackage: string;
-  readonly packageGraph: ElementsDefinition;
-  readonly setCurrentPackage: (path: string) => void;
-  readonly cycleHighlights: readonly CycleHighlight[];
-  readonly graphRevealRequest: GraphRevealRequest | null;
-  readonly overlay?: React.ReactNode;
-}
-
 /*** Renders PKGViz graph policy through the materialized ZORA GraphView runtime. */
-export function DependencyGraphView({
-  currentPackage,
-  packageGraph,
-  setCurrentPackage,
-  cycleHighlights,
-  graphRevealRequest,
-  overlay,
-}: DependencyGraphViewProps) {
+export function DependencyGraphView(props: DependencyGraphViewProps) {
   const settings = useSettings();
   const { resolvedTheme } = useTheme();
   const theme = resolvedTheme === 'dark' ? 'dark' : 'light';
-  const [controller, setController] = useState<GraphViewController | null>(null);
-  const [zoom, setZoom] = useState(1);
   const visibleElements = useGraphProjection({
-    currentPackage,
-    elements: packageGraph,
+    currentPackage: props.currentPackage,
+    elements: props.packageGraph,
     setMaxSubPackageDepth: settings.setMaxSubPackageDepth,
     showCompoundNodes: settings.showCompoundNodes,
     showVendorPackages: settings.showVendorPackages,
@@ -57,77 +39,100 @@ export function DependencyGraphView({
   });
 
   useGraphFocus({
-    cycleHighlights,
-    currentPackage,
-    setCurrentPackage,
+    cycleHighlights: props.cycleHighlights,
+    currentPackage: props.currentPackage,
+    setCurrentPackage: props.setCurrentPackage,
     setSubPackageDepth: settings.setSubPackageDepth,
     subPackageDepth: settings.subPackageDepth,
     visibleElements,
   });
 
-  const layout = readGraphViewLayout(settings.cytoscapeLayout);
+  const presentation = useGraphViewPresentation({
+    cycleHighlights: props.cycleHighlights,
+    layout: settings.cytoscapeLayout,
+    packageGraph: props.packageGraph,
+    theme,
+    visibleElements,
+  });
+  if (presentation.model === null) return null;
+
+  return (
+    <DependencyGraphCanvas
+      {...props}
+      {...presentation}
+      spacingFactor={settings.cytoscapeLayoutSpacing}
+      theme={theme}
+    />
+  );
+}
+
+/*** Memoizes GraphView model, style, and layout inputs from the active PKGViz projection. */
+function useGraphViewPresentation(input: GraphViewPresentationInput) {
   const model = useMemo(
     () =>
-      visibleElements === null
+      input.visibleElements === null
         ? null
-        : createGraphViewModel(packageGraph, visibleElements, cycleHighlights),
-    [cycleHighlights, packageGraph, visibleElements],
+        : createGraphViewModel(input.packageGraph, input.visibleElements, input.cycleHighlights),
+    [input.cycleHighlights, input.packageGraph, input.visibleElements]
   );
   const styles = useMemo(
     () =>
-      visibleElements === null
+      input.visibleElements === null
         ? []
-        : createGraphViewStyles(visibleElements, theme, settings.cytoscapeLayout),
-    [settings.cytoscapeLayout, theme, visibleElements],
+        : createGraphViewStyles(input.visibleElements, input.theme, input.layout),
+    [input.layout, input.theme, input.visibleElements]
   );
-  const layoutOptions = useMemo(
-    () => ({ ...LAYOUTS[settings.cytoscapeLayout] }),
-    [settings.cytoscapeLayout],
-  );
+  const layoutOptions = useMemo(() => ({ ...LAYOUTS[input.layout] }), [input.layout]);
 
-  if (model === null) return null;
+  return {
+    layout: readGraphViewLayout(input.layout),
+    layoutOptions,
+    model,
+    styles,
+  };
+}
+
+/*** Owns GraphView controller callbacks and renders the viewport plus zoom controls. */
+function DependencyGraphCanvas(props: DependencyGraphCanvasProps) {
+  const [controller, setController] = useState<GraphViewController | null>(null);
+  const [zoom, setZoom] = useState(1);
 
   /*** Handles structural graph navigation without touching the rendering engine. */
   const handleNodeEvent = (event: GraphViewElementEvent) => {
-    if (event.type !== 'double-press' || !model.parentNodeIds.has(event.id)) return;
-    setCurrentPackage(event.id.replace(/\./g, '/'));
+    if (event.type !== 'double-press' || !props.model.parentNodeIds.has(event.id)) return;
+    props.setCurrentPackage(event.id.replace(/\./g, '/'));
   };
 
   /*** Applies explicit tree reveal after ZORA has completed its canonical layout fit. */
   const handleLayoutComplete = (nextController: GraphViewController) => {
-    if (cycleHighlights.length > 0 || graphRevealRequest === null) return;
-    nextController.fit({ nodeIds: [graphRevealRequest.packageId], padding: 140 });
+    if (props.cycleHighlights.length > 0 || props.graphRevealRequest === null) return;
+    nextController.fit({ nodeIds: [props.graphRevealRequest.packageId], padding: 140 });
   };
 
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-2 px-8">
       <div className="relative h-[calc(100%-65px)]">
         <GraphView
-          nodes={model.nodes}
-          edges={model.edges}
-          layout={layout}
-          layoutOptions={layoutOptions}
-          spacingFactor={settings.cytoscapeLayoutSpacing}
-          styleRules={styles}
-          minZoom={MIN_ZOOM}
+          edges={props.model.edges}
+          layout={props.layout}
+          layoutOptions={props.layoutOptions}
           maxZoom={MAX_ZOOM}
-          style={{ background: getCanvasBg(theme) }}
-          onReady={(nextController) => {
+          minZoom={MIN_ZOOM}
+          nodes={props.model.nodes}
+          onLayoutComplete={handleLayoutComplete}
+          onNodeEvent={handleNodeEvent}
+          onReady={nextController => {
             setController(nextController);
             setZoom(nextController.getViewport().zoom);
           }}
-          onLayoutComplete={handleLayoutComplete}
-          onNodeEvent={handleNodeEvent}
-          onViewportChange={(viewport) => setZoom(viewport.zoom)}
+          onViewportChange={viewport => setZoom(viewport.zoom)}
+          spacingFactor={props.spacingFactor}
+          style={{ background: getCanvasBg(props.theme) }}
+          styleRules={props.styles}
         />
-        {overlay}
+        {props.overlay}
       </div>
-      <GraphZoomControls
-        controller={controller}
-        minZoom={MIN_ZOOM}
-        maxZoom={MAX_ZOOM}
-        zoom={zoom}
-      />
+      <GraphZoomControls controller={controller} maxZoom={MAX_ZOOM} minZoom={MIN_ZOOM} zoom={zoom} />
     </div>
   );
 }
@@ -139,4 +144,30 @@ function readGraphViewLayout(layout: LayoutOptions['name']): GraphViewLayoutName
   if (layout === 'elk') return 'elk';
   if (layout === 'grid') return 'grid';
   return 'concentric';
+}
+
+interface DependencyGraphViewProps {
+  readonly currentPackage: string;
+  readonly packageGraph: ElementsDefinition;
+  readonly setCurrentPackage: (path: string) => void;
+  readonly cycleHighlights: readonly CycleHighlight[];
+  readonly graphRevealRequest: GraphRevealRequest | null;
+  readonly overlay?: React.ReactNode;
+}
+
+interface GraphViewPresentationInput {
+  readonly cycleHighlights: readonly CycleHighlight[];
+  readonly layout: LayoutOptions['name'];
+  readonly packageGraph: ElementsDefinition;
+  readonly theme: 'dark' | 'light';
+  readonly visibleElements: ElementsDefinition | null;
+}
+
+interface DependencyGraphCanvasProps extends DependencyGraphViewProps {
+  readonly layout: GraphViewLayoutName;
+  readonly layoutOptions: LayoutOptions;
+  readonly model: NonNullable<ReturnType<typeof createGraphViewModel>>;
+  readonly spacingFactor: number;
+  readonly styles: ReturnType<typeof createGraphViewStyles>;
+  readonly theme: 'dark' | 'light';
 }
