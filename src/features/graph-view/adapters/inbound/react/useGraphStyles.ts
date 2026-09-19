@@ -1,7 +1,6 @@
 'use client';
 import type { Core, ElementsDefinition, LayoutOptions, Stylesheet } from 'cytoscape';
 import { useTheme } from 'next-themes';
-import type { RefObject } from 'react';
 import { useEffect } from 'react';
 
 import {
@@ -19,21 +18,17 @@ export function useGraphStyles(input: UseGraphStylesInput) {
   const theme = resolvedTheme === 'dark' ? 'dark' : 'light';
 
   useEffect(() => {
-    if (input.cy === null || input.visibleElements === null || input.containerRef.current === null) {
-      return;
-    }
+    const container = input.cy?.container();
+    if (input.cy === null || input.visibleElements === null || container === null) return;
+
     input.cy
-      .style([
-        ...getCommonStyle(input.visibleElements, theme),
-        ...getLayoutStyle(input.layout),
-      ])
+      .style([...getCommonStyle(input.visibleElements, theme), ...getLayoutStyle(input.layout)])
       .update();
-    input.containerRef.current.style.background = getCanvasBg(theme);
-  }, [input.containerRef, input.cy, input.layout, input.visibleElements, theme]);
+    container.style.background = getCanvasBg(theme);
+  }, [input.cy, input.layout, input.visibleElements, theme]);
 }
 
 interface UseGraphStylesInput {
-  readonly containerRef: RefObject<HTMLDivElement | null>;
   readonly cy: Core | null;
   readonly layout: LayoutOptions['name'];
   readonly visibleElements: ElementsDefinition | null;
