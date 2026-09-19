@@ -30,10 +30,10 @@
     "codebase"
   ],
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "bun run zora:materialize && next dev",
+    "build": "bun run zora:materialize && next build",
     "start": "next start",
-    "lint": "ankhorage-eslint . --max-warnings=0",
+    "lint": "bun run zora:materialize && ankhorage-eslint . --max-warnings=0",
     "format:check": "ankhorage-prettier --check .",
     "format:write": "ankhorage-prettier --write \"**/*.{js,jsx,ts,tsx,json,md,yml,yaml,mjs,cjs,html,css,scss,mdx}\"",
     "test": "testosterone && bun run test:maven",
@@ -41,11 +41,12 @@
     "test:cov:html": "c8 --report-dir=./test/coverage --reporter=html tsx --test",
     "lint:fix": "ankhorage-eslint . --fix --max-warnings=0",
     "format": "ankhorage-prettier --write .",
-    "knip:check": "ankhorage-knip",
+    "knip:check": "bun run zora:materialize && ankhorage-knip",
     "changeset": "ankhorage-changeset",
     "changeset:status": "ankhorage-changeset status --since=origin/main",
     "version-packages": "ankhorage-changeset version",
-    "test:maven": "mvn -B -f maven-plugin/pom.xml test"
+    "test:maven": "mvn -B -f maven-plugin/pom.xml test",
+    "zora:materialize": "bun scripts/materialize-zora-tree-view.ts"
   },
   "dependencies": {
     "@ankhorage/dependency-graph": "^0.1.0",
