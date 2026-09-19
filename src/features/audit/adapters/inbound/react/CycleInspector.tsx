@@ -124,7 +124,8 @@ interface CycleEvidenceProps {
   readonly mode: ZoraMode;
 }
 
-interface EvidenceEdgeProps extends CycleEvidenceProps {
+interface EvidenceEdgeProps {
   readonly edge: CycleEdgeEvidence;
   readonly index: number;
+  readonly mode: ZoraMode;
 }
