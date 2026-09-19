@@ -3,85 +3,79 @@ import path from 'node:path';
 
 import { readTextFileWithinRoot } from '@ankhorage/utility/node/fs';
 
-import { extractCppPackageFromImport } from '@/app/utils/parser/cpp/extractCppPackageFromImport';
 import type { ImportDefinition, MethodCall, MethodDefinition, ParsedFile } from '@/shared/types';
 import { toPosix } from '@/shared/utils/toPosix';
 
-/***
- * Extracts namespace from C++ code.
- */
+/*** Extracts namespace from C++ code. */
 function extractNamespace(content: string): string {
   const match = /namespace\s+([a-zA-Z0-9_:]+)\s*\{/.exec(content);
   return match?.[1]?.replace(/::/g, '.') || '';
 }
 
-/***
- * Extracts include statements from C++ code.
- */
-function extractIncludes(content: string, projectRoot: string): ImportDefinition[] {
-  console.log('[CPP] projectRoot:', projectRoot);
-  const includeRegex = /#include\s+["<]([^">]+)[">]/g;
-  const includes: ImportDefinition[] = [];
-
+/*** Retains include metadata canonical graph topology intentionally omits. */
+function extractPresentationOnlyIncludes(
+  content: string,
+  namespace: string,
+  canonicalImports: readonly ImportDefinition[]
+): ImportDefinition[] {
+  const canonicalNames = new Set(canonicalImports.map(({ name }) => name));
+  const includeRegex = /#include\s+(["<])([^">]+)[">]/g;
+  const imports: ImportDefinition[] = [];
   let match;
+
   while ((match = includeRegex.exec(content)) !== null) {
-    const includePath = match[1];
+    const delimiter = match[1];
+    const specifier = match[2];
+    if (canonicalNames.has(specifier)) continue;
 
-    // System includes use angle brackets, local includes use quotes
-    const isSystemInclude = content.includes(`<${includePath}>`);
-    const pkg = extractCppPackageFromImport(includePath);
+    const segments = specifier.replace(/\.(h|hpp|hxx)$/u, '').split('/');
+    const pkg = segments.length > 1 ? segments.slice(0, -1).join('.') : '';
+    if (pkg !== '' && pkg !== namespace) continue;
 
-    includes.push({
-      name: includePath,
+    imports.push({
+      name: specifier,
       pkg,
-      isIntrinsic: !isSystemInclude, // Local includes are intrinsic
+      isIntrinsic: delimiter === '"',
     });
   }
 
-  return includes;
+  return imports;
 }
 
-/***
- * Extracts the class name from the content and filename fallback.
- */
+/*** Restores complete include metadata in source declaration order. */
+function mergeImports(
+  content: string,
+  namespace: string,
+  canonicalImports: readonly ImportDefinition[]
+): readonly ImportDefinition[] {
+  return [
+    ...canonicalImports,
+    ...extractPresentationOnlyIncludes(content, namespace, canonicalImports),
+  ].sort((left, right) => content.indexOf(left.name) - content.indexOf(right.name));
+}
+
+/*** Extracts the class name from the content and filename fallback. */
 function extractClassName(content: string, fileName: string): string {
-  // Try to find class declaration
   const classMatch = /class\s+([A-Za-z0-9_]+)/.exec(content);
-  if (classMatch) {
-    return classMatch[1];
-  }
+  if (classMatch) return classMatch[1];
 
-  // Try to find struct declaration
   const structMatch = /struct\s+([A-Za-z0-9_]+)/.exec(content);
-  if (structMatch) {
-    return structMatch[1];
-  }
+  if (structMatch) return structMatch[1];
 
-  // Fallback to filename without extension
   return path.basename(fileName, path.extname(fileName));
 }
 
-/***
- * Extracts method definitions from C++ content.
- */
+/*** Extracts method definitions from C++ content. */
 function extractMethodDefinitions(content: string): MethodDefinition[] {
   const methods: MethodDefinition[] = [];
-
-  // Match method definitions (simplified regex, may need refinement)
   const methodRegex = /(?:(public|protected|private):\s*)?([\w<>:&*\s]+)\s+(\w+)\s*$$([^)]*)$$/g;
-
   let match;
   let currentVisibility: 'public' | 'protected' | 'private' | 'default' = 'default';
 
-  // Also track visibility changes
   const visibilityRegex = /(public|protected|private):/g;
-  const lines = content.split('\n');
-
-  for (const line of lines) {
+  for (const line of content.split('\n')) {
     const visMatch = visibilityRegex.exec(line);
-    if (visMatch) {
-      currentVisibility = visMatch[1] as 'public' | 'protected' | 'private';
-    }
+    if (visMatch) currentVisibility = visMatch[1] as 'public' | 'protected' | 'private';
   }
 
   methodRegex.lastIndex = 0;
@@ -94,62 +88,45 @@ function extractMethodDefinitions(content: string): MethodDefinition[] {
       .map(p => p.trim())
       .filter(Boolean);
 
-    // Skip obvious non-methods (keywords, control structures)
-    if (['if', 'while', 'for', 'switch', 'catch'].includes(name)) {
-      continue;
-    }
-
-    methods.push({
-      name,
-      returnType,
-      parameters: params,
-      visibility,
-    });
+    if (['if', 'while', 'for', 'switch', 'catch'].includes(name)) continue;
+    methods.push({ name, returnType, parameters: params, visibility });
   }
 
   return methods;
 }
 
-/***
- * Extract method calls from C++ content.
- */
+/*** Extracts method calls from C++ content. */
 function extractMethodCalls(content: string): MethodCall[] {
   const callRegex = /(\b\w+)(?:\.|->)(\w+)\s*\(/g;
   const calls: MethodCall[] = [];
-
   let match;
-  while ((match = callRegex.exec(content)) !== null) {
-    const callee = match[1];
-    const method = match[2];
-    calls.push({ callee, method });
-  }
 
+  while ((match = callRegex.exec(content)) !== null) {
+    calls.push({ callee: match[1], method: match[2] });
+  }
   return calls;
 }
 
-/***
- * Parses a C++ file and returns metadata useful for diagram generation.
- */
-export async function parseCppFile(fullPath: string, projectRoot: string): Promise<ParsedFile> {
+/*** Parses C++ metadata while consuming canonical dependency includes. */
+export async function parseCppFile(
+  fullPath: string,
+  projectRoot: string,
+  imports: readonly ImportDefinition[]
+): Promise<ParsedFile> {
   const { content, path: resolvedPath } = readTextFileWithinRoot({
     rootPath: projectRoot,
     filePath: fullPath,
   });
   const fileName = path.basename(resolvedPath);
 
-  const className = extractClassName(content, fileName);
   const namespace = extractNamespace(content);
-  const includes = extractIncludes(content, projectRoot);
-  const methods = extractMethodDefinitions(content);
-  const calls = extractMethodCalls(content);
-  const relativePath = toPosix(path.relative(projectRoot, resolvedPath));
 
   return {
-    className,
+    className: extractClassName(content, fileName),
     package: namespace,
-    imports: includes,
-    methods,
-    calls,
-    path: relativePath,
+    imports: [...mergeImports(content, namespace, imports)],
+    methods: extractMethodDefinitions(content),
+    calls: extractMethodCalls(content),
+    path: toPosix(path.relative(projectRoot, resolvedPath)),
   };
 }
