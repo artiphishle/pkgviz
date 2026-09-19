@@ -51,7 +51,7 @@ function packZora(cacheDirectory: string): string {
       '--cache',
       join(cacheDirectory, 'npm-cache'),
     ],
-    { cwd: repositoryRoot, encoding: 'utf8' }
+    { cwd: repositoryRoot, encoding: 'utf8' },
   );
   if (result.status !== 0) throw new Error(result.stderr || 'Failed to download ZORA artifact.');
 
@@ -68,7 +68,7 @@ function extractPackage(cacheDirectory: string, packageFile: string) {
   const result = spawnSync(
     'tar',
     ['-xzf', join(cacheDirectory, packageFile), '-C', cacheDirectory],
-    { encoding: 'utf8' }
+    { encoding: 'utf8' },
   );
   if (result.status !== 0) throw new Error(result.stderr || 'Failed to extract ZORA artifact.');
 }
@@ -113,9 +113,7 @@ interface ZoraCreateRequest {
   };
 }
 
-type ZoraCreateHandler = (
-  request: ZoraCreateRequest
-) => Promise<{ readonly exitCode: number }>;
+type ZoraCreateHandler = (request: ZoraCreateRequest) => Promise<{ readonly exitCode: number }>;
 
 /*** Resolves the canonical create handler from ZORA's runtime-provider manifest. */
 function getCreateHandler(provider: unknown): ZoraCreateHandler {
