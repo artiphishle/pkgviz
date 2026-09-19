@@ -63,10 +63,7 @@ export default [
     },
   },
   {
-    files: [
-      'src/components/ThemeToggle.tsx',
-      'src/components/ZoomInput.tsx',
-    ],
+    files: ['src/components/ThemeToggle.tsx', 'src/components/ZoomInput.tsx'],
     rules: {
       'react-hooks/refs': 'off',
       'react-hooks/set-state-in-effect': 'off',
