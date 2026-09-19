@@ -1,7 +1,7 @@
 'use client';
+import { TreeView, type TreeItemNode } from '@zora/tree-view';
 import { FileCode2Icon, FolderIcon } from 'lucide-react';
 import React from 'react';
-import { TreeView, type TreeItemNode } from '@zora/tree-view';
 
 import { findProjectTreeNode } from '@/features/project-tree/utils/findProjectTreeNode';
 import type { ProjectTreeNode } from '@/types/projectTree';
@@ -31,7 +31,7 @@ export function ProjectTreePanel({ nodes, onSelect, selectedId }: ProjectTreePan
 }
 
 /*** Maps a portable project-tree node into the ZORA TreeView presentation contract. */
-function toTreeItemNode(node: ProjectTreeNode): TreeItemNode<string> {
+function toTreeItemNode(node: ProjectTreeNode): TreeItemNode {
   return {
     id: node.id,
     label: node.label,
