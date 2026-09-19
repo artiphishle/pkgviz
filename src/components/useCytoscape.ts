@@ -15,6 +15,7 @@ import {
 import { LAYOUTS } from '@/layouts/constants';
 import { getCanvasBg, getStyle as getCommonStyle } from '@/layouts/style';
 import type { CycleHighlight } from '@/types/auditVisualization';
+import type { GraphRevealRequest } from '@/types/projectTree';
 import { filterByPackagePrefix } from '@/utils/filter/filterByPackagePrefix';
 import { filterEmptyPackages } from '@/utils/filter/filterEmptyPackages';
 import { filterSubPackagesByDepth, getMaxDepth } from '@/utils/filter/filterSubPackagesFromDepth';
@@ -28,7 +29,8 @@ export function useCytoscape(
   elements: ElementsDefinition | null,
   currentPackage: string,
   setCurrentPackage: (path: string) => void,
-  cycleHighlights: readonly CycleHighlight[]
+  cycleHighlights: readonly CycleHighlight[],
+  graphRevealRequest: GraphRevealRequest | null
 ) {
   const cyRef = useRef<HTMLDivElement>(null);
   const [filteredElements, setFilteredElements] = useState<ElementsDefinition | null>(null);
@@ -36,12 +38,14 @@ export function useCytoscape(
 
   // Keep the running layout so we can stop it on swap
   const layoutRef = useRef<Layouts | null>(null);
+  const graphRevealRequestRef = useRef<GraphRevealRequest | null>(null);
 
   // Refs for latest data so event handlers don't need to be re-created
   const elementsRef = useRef<ElementsDefinition | null>(null);
   const filteredElementsRef = useRef<ElementsDefinition | null>(null);
   elementsRef.current = elements;
   filteredElementsRef.current = filteredElements;
+  graphRevealRequestRef.current = graphRevealRequest;
 
   const {
     cytoscapeLayout,
@@ -145,6 +149,8 @@ export function useCytoscape(
         const onStop = () => {
           if (cy.destroyed()) return;
           cy.fit(undefined, 50);
+          const revealRequest = graphRevealRequestRef.current;
+          if (revealRequest) revealGraphPackage(cy, revealRequest.packageId);
         };
         cy.one('layoutstop', onStop);
 
@@ -247,7 +253,13 @@ export function useCytoscape(
     applyCycleHighlights(cyInstance, cycleHighlights);
   }, [cyInstance, filteredElements, cycleHighlights]);
 
-  /** 8) Attach interactive event handlers once (using refs for latest data) */
+  /** 8) Reveals tree-driven package selection after graph filtering and layout changes. */
+  useEffect(() => {
+    if (!cyInstance || !filteredElements || !graphRevealRequest || cyInstance.destroyed()) return;
+    revealGraphPackage(cyInstance, graphRevealRequest.packageId);
+  }, [cyInstance, filteredElements, graphRevealRequest]);
+
+  /** 9) Attach interactive event handlers once (using refs for latest data) */
   useEffect(() => {
     if (!cyInstance) return;
     const cy = cyInstance;
@@ -324,7 +336,7 @@ export function useCytoscape(
     };
   }, [cyInstance]);
 
-  /** 9) Theme + layout-style live update */
+  /** 10) Theme + layout-style live update */
   useEffect(() => {
     if (!cyInstance || !filteredElements || !cyRef.current) return;
 
@@ -344,4 +356,16 @@ export function useCytoscape(
   }, [cyInstance, filteredElements, theme, cytoscapeLayout]);
 
   return { cyRef, cyInstance };
+}
+
+/*** Selects and fits one visible package node without changing the current graph projection. */
+function revealGraphPackage(cy: Core, packageId: string) {
+  if (!packageId || cy.destroyed()) return;
+
+  const node = cy.getElementById(packageId);
+  if (node.empty()) return;
+
+  cy.nodes().unselect();
+  node.select();
+  cy.fit(node, 140);
 }
