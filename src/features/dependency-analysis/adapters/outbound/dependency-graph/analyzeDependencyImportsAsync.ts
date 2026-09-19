@@ -71,10 +71,7 @@ export async function analyzeDependencyImportsAsync(
 
 type ImportNameMode = 'package' | 'specifier';
 type ImportIntrinsicMode =
-  | 'canonical'
-  | 'delphi-standard-library'
-  | 'kotlin-standard-library'
-  | 'python-legacy';
+  'canonical' | 'delphi-standard-library' | 'kotlin-standard-library' | 'python-legacy';
 
 /*** Adds one canonical evidence item while retaining the original source declaration position. */
 async function appendEvidenceAsync(input: AppendEvidenceInput): Promise<number> {
