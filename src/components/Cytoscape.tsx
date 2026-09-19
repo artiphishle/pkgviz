@@ -5,6 +5,7 @@ import React from 'react';
 import { useCytoscape } from '@/components/useCytoscape';
 import ZoomInput from '@/components/ZoomInput';
 import type { CycleHighlight } from '@/types/auditVisualization';
+import type { GraphRevealRequest } from '@/types/projectTree';
 
 /*** Renders the interactive dependency graph and optional inspection overlay. */
 export function Cytoscape({
@@ -12,13 +13,15 @@ export function Cytoscape({
   packageGraph,
   setCurrentPackage,
   cycleHighlights,
+  graphRevealRequest,
   overlay,
 }: CytoscapeProps) {
   const { cyRef, cyInstance } = useCytoscape(
     packageGraph,
     currentPackage,
     setCurrentPackage,
-    cycleHighlights
+    cycleHighlights,
+    graphRevealRequest
   );
 
   return (
@@ -37,5 +40,6 @@ interface CytoscapeProps {
   readonly packageGraph: ElementsDefinition | null;
   readonly setCurrentPackage: (path: string) => void;
   readonly cycleHighlights: readonly CycleHighlight[];
+  readonly graphRevealRequest: GraphRevealRequest | null;
   readonly overlay?: React.ReactNode;
 }
