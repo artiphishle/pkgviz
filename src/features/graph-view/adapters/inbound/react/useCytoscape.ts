@@ -9,6 +9,7 @@ import { useGraphInteractions } from '@/features/graph-view/adapters/inbound/rea
 import { useGraphLayout } from '@/features/graph-view/adapters/inbound/react/useGraphLayout';
 import { useGraphProjection } from '@/features/graph-view/adapters/inbound/react/useGraphProjection';
 import { useGraphStyles } from '@/features/graph-view/adapters/inbound/react/useGraphStyles';
+import { useGraphViewport } from '@/features/graph-view/adapters/inbound/react/useGraphViewport';
 import type { CycleHighlight } from '@/types/auditVisualization';
 import type { GraphRevealRequest } from '@/types/projectTree';
 
@@ -33,24 +34,30 @@ export function useCytoscape(
   const { cyRef, cyInstance } = useCytoscapeInstance();
 
   useGraphElements({ allElements: elements, cy: cyInstance, setCurrentPackage, visibleElements });
+  const { layoutRunningRef, settledRevision } = useGraphLayout({
+    cy: cyInstance,
+    elements: visibleElements,
+    layout: settings.cytoscapeLayout,
+    spacing: settings.cytoscapeLayoutSpacing,
+  });
   useGraphFocus({
     cy: cyInstance,
     cycleHighlights,
     currentPackage,
-    revealPackageId,
     setCurrentPackage,
-    setCytoscapeLayoutSpacing: settings.setCytoscapeLayoutSpacing,
     setSubPackageDepth: settings.setSubPackageDepth,
-    spacing: settings.cytoscapeLayoutSpacing,
     subPackageDepth: settings.subPackageDepth,
     visibleElements,
   });
-  useGraphLayout({
+  useGraphViewport({
     cy: cyInstance,
-    elements: visibleElements,
-    layout: settings.cytoscapeLayout,
+    cycleHighlights,
+    layoutRunningRef,
     revealPackageId,
+    setCytoscapeLayoutSpacing: settings.setCytoscapeLayoutSpacing,
+    settledRevision,
     spacing: settings.cytoscapeLayoutSpacing,
+    visibleElements,
   });
   useGraphStyles({
     cy: cyInstance,
