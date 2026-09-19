@@ -70,8 +70,9 @@ function runCycleDiagnosticFocus(
   input: UseGraphFocusInput,
   handledCycleSignatureRef: { current: string | null }
 ) {
-  if (input.cy === null || input.visibleElements === null || input.cy.destroyed()) return undefined;
-  applyCycleHighlights(input.cy, input.cycleHighlights);
+  const cy = input.cy;
+  if (cy === null || input.visibleElements === null || cy.destroyed()) return undefined;
+  applyCycleHighlights(cy, input.cycleHighlights);
 
   if (input.cycleHighlights.length === 0) {
     handledCycleSignatureRef.current = null;
@@ -80,13 +81,24 @@ function runCycleDiagnosticFocus(
 
   const signature = getCycleSignature(input.cycleHighlights);
   if (handledCycleSignatureRef.current === signature) return undefined;
-  if (ensureCycleProjection(input)) return undefined;
+  if (
+    ensureCycleProjection({
+      cy,
+      cycleHighlights: input.cycleHighlights,
+      currentPackage: input.currentPackage,
+      setCurrentPackage: input.setCurrentPackage,
+      setSubPackageDepth: input.setSubPackageDepth,
+      subPackageDepth: input.subPackageDepth,
+    })
+  ) {
+    return undefined;
+  }
 
   const frame = requestAnimationFrame(() => {
-    if (input.cy === null || input.cy.destroyed()) return;
+    if (cy.destroyed()) return;
     handledCycleSignatureRef.current = signature;
     focusCycleViewport({
-      cy: input.cy,
+      cy,
       setCytoscapeLayoutSpacing: input.setCytoscapeLayoutSpacing,
       spacing: input.spacing,
     });
