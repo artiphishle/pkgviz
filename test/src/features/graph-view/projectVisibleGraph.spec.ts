@@ -1,7 +1,7 @@
 import { describe, expect, it } from '@artiphishle/testosterone';
 import type { ElementsDefinition } from 'cytoscape';
 
-import { projectVisibleGraph } from '@/features/graph-view/application/projectVisibleGraph';
+import { projectVisibleGraph } from '@/features/graph-view/utils/projectVisibleGraph';
 
 describe('[graph view projection]', () => {
   it('preserves the parent scope while revealing its selected package', () => {
