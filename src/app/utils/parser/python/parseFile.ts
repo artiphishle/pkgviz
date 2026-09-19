@@ -3,89 +3,27 @@ import path from 'node:path';
 
 import { readTextFileWithinRoot } from '@ankhorage/utility/node/fs';
 
-import { extractPythonPackageFromImport } from '@/app/utils/parser/python/extractPythonPackageFromImport';
 import type { ImportDefinition, MethodCall, MethodDefinition, ParsedFile } from '@/shared/types';
 import { toPosix } from '@/shared/utils/toPosix';
 
-/***
- * Extracts module path from Python __init__.py structure.
- */
+/*** Extracts module path from Python source structure. */
 function extractModulePath(filePath: string, projectRoot: string): string {
   const relativePath = toPosix(path.relative(projectRoot, filePath));
   const parts = relativePath.split('/');
-
-  // Remove the filename
   parts.pop();
-
-  // Join with dots for Python module notation
   return parts.join('.');
 }
 
-/***
- * Extracts import statements from Python code.
- */
-function extractImports(content: string): ImportDefinition[] {
-  const imports: ImportDefinition[] = [];
-
-  // Match: import module
-  // Match: import module as alias
-  // Match: from module import something
-  const importRegex =
-    /(?:^|\n)\s*(?:from\s+([\w.]+)\s+)?import\s+([\w\s,*]+?)(?:\s+as\s+\w+)?(?:\s|$|#)/gm;
-
-  let match;
-  while ((match = importRegex.exec(content)) !== null) {
-    const fromModule = match[1];
-    const importedItems = match[2];
-
-    if (fromModule) {
-      // from X import Y
-      const pkg = extractPythonPackageFromImport(fromModule);
-      const isIntrinsic = fromModule.startsWith('.');
-
-      imports.push({
-        name: fromModule,
-        pkg,
-        isIntrinsic,
-      });
-    } else {
-      // import X, Y, Z
-      const mods = importedItems.split(',').map(m => m.trim());
-      for (const mod of mods) {
-        const pkg = extractPythonPackageFromImport(mod);
-        imports.push({
-          name: mod,
-          pkg,
-          isIntrinsic: false,
-        });
-      }
-    }
-  }
-
-  return imports;
-}
-
-/***
- * Extracts the class name from Python content.
- */
+/*** Extracts the class name from Python content. */
 function extractClassName(content: string, fileName: string): string {
-  // Try to find class declaration
   const classMatch = /^class\s+([A-Za-z0-9_]+)/m.exec(content);
-  if (classMatch) {
-    return classMatch[1];
-  }
-
-  // Fallback to filename without extension
+  if (classMatch) return classMatch[1];
   return path.basename(fileName, path.extname(fileName));
 }
 
-/***
- * Extracts method/function definitions from Python content.
- */
+/*** Extracts method/function definitions from Python content. */
 function extractMethodDefinitions(content: string): MethodDefinition[] {
   const methods: MethodDefinition[] = [];
-
-  // Match function definitions: def method_name(params): or async def method_name(params):
   const methodRegex =
     /(?:^|\n)\s*(async\s+)?def\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*$$([^)]*)$$\s*(?:->([^:]+))?:/gm;
 
@@ -94,14 +32,11 @@ function extractMethodDefinitions(content: string): MethodDefinition[] {
     const name = match[2];
     const paramsStr = match[3];
     const returnType = match[4]?.trim() || 'None';
-
-    // Parse parameters
     const params = paramsStr
       .split(',')
       .map(p => p.trim())
       .filter(p => p && p !== 'self' && p !== 'cls');
 
-    // Determine visibility (Python convention: _ prefix = protected, __ prefix = private)
     let visibility: 'public' | 'protected' | 'private' | 'default' = 'public';
     if (name.startsWith('__') && !name.endsWith('__')) {
       visibility = 'private';
@@ -120,13 +55,9 @@ function extractMethodDefinitions(content: string): MethodDefinition[] {
   return methods;
 }
 
-/***
- * Extract method calls from Python content.
- */
+/*** Extracts method calls from Python content. */
 function extractMethodCalls(content: string): MethodCall[] {
   const calls: MethodCall[] = [];
-
-  // Match: object.method( or self.method(
   const callRegex = /([a-zA-Z_][a-zA-Z0-9_]*)\.([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/g;
 
   let match;
@@ -134,7 +65,6 @@ function extractMethodCalls(content: string): MethodCall[] {
     const callee = match[1];
     const method = match[2];
 
-    // Skip common built-in methods to reduce noise
     if (
       ['append', 'extend', 'pop', 'remove', 'join', 'split', 'strip'].includes(method) &&
       ['str', 'list', 'dict', 'set'].includes(callee)
@@ -148,29 +78,24 @@ function extractMethodCalls(content: string): MethodCall[] {
   return calls;
 }
 
-/***
- * Parses a Python file and returns metadata useful for diagram generation.
- */
-export async function parsePythonFile(fullPath: string, projectRoot: string): Promise<ParsedFile> {
+/*** Parses Python metadata while consuming canonical dependency imports. */
+export async function parsePythonFile(
+  fullPath: string,
+  projectRoot: string,
+  imports: readonly ImportDefinition[]
+): Promise<ParsedFile> {
   const { content, path: resolvedPath } = readTextFileWithinRoot({
     rootPath: projectRoot,
     filePath: fullPath,
   });
   const fileName = path.basename(resolvedPath);
 
-  const className = extractClassName(content, fileName);
-  const modulePath = extractModulePath(resolvedPath, projectRoot);
-  const imports = extractImports(content);
-  const methods = extractMethodDefinitions(content);
-  const calls = extractMethodCalls(content);
-  const relativePath = toPosix(path.relative(projectRoot, resolvedPath));
-
   return {
-    className,
-    package: modulePath,
-    imports,
-    methods,
-    calls,
-    path: relativePath,
+    className: extractClassName(content, fileName),
+    package: extractModulePath(resolvedPath, projectRoot),
+    imports: [...imports],
+    methods: extractMethodDefinitions(content),
+    calls: extractMethodCalls(content),
+    path: toPosix(path.relative(projectRoot, resolvedPath)),
   };
 }
