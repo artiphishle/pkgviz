@@ -30,7 +30,7 @@ export function useGraphFocus(input: UseGraphFocusInput) {
           subPackageDepth,
           visibleElements,
         },
-        handledCycleSignatureRef,
+        handledCycleSignatureRef
       ),
     [
       cycleHighlights,
@@ -39,14 +39,14 @@ export function useGraphFocus(input: UseGraphFocusInput) {
       setSubPackageDepth,
       subPackageDepth,
       visibleElements,
-    ],
+    ]
   );
 }
 
 /*** Runs one cycle-projection iteration without touching layout or viewport state. */
 function runCycleProjectionFocus(
   input: UseGraphFocusInput,
-  handledCycleSignatureRef: { current: string | null },
+  handledCycleSignatureRef: { current: string | null }
 ) {
   if (input.visibleElements === null) return;
 
@@ -64,7 +64,7 @@ function runCycleProjectionFocus(
 /*** Returns a stable identity for the current active-cycle set. */
 function getCycleSignature(highlights: readonly CycleHighlight[]): string {
   return highlights
-    .map((highlight) => highlight.id)
+    .map(highlight => highlight.id)
     .sort()
     .join('|');
 }
@@ -73,14 +73,14 @@ function getCycleSignature(highlights: readonly CycleHighlight[]): string {
 function ensureCycleProjection(input: UseGraphFocusInput): boolean {
   if (input.visibleElements === null) return false;
   const activePackageNames = [
-    ...new Set(input.cycleHighlights.flatMap((highlight) => highlight.cycle.packages)),
+    ...new Set(input.cycleHighlights.flatMap(highlight => highlight.cycle.packages)),
   ];
   const visibleNodeIds = new Set(
     input.visibleElements.nodes
-      .map((node) => readNodeDefinitionId(node))
-      .filter((id): id is string => id !== null),
+      .map(node => readNodeDefinitionId(node))
+      .filter((id): id is string => id !== null)
   );
-  if (activePackageNames.every((packageName) => visibleNodeIds.has(packageName))) return false;
+  if (activePackageNames.every(packageName => visibleNodeIds.has(packageName))) return false;
 
   const focus = createCycleFocus(input.cycleHighlights);
   if (!focus) return false;
