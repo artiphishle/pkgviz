@@ -13,7 +13,7 @@ import { parseJavaFile } from '@/app/utils/parser/java/parseJavaFile';
 import { parseKotlinFile } from '@/app/utils/parser/kotlin/parseFile';
 import { parsePythonFile } from '@/app/utils/parser/python/parseFile';
 import { parseFile as parseTypeScriptFile } from '@/app/utils/parser/typescript/parseFile';
-import { analyzeTypeScriptImportsAsync } from '@/features/dependency-analysis/adapters/outbound/dependency-graph/analyzeTypeScriptImportsAsync';
+import { analyzeDependencyImportsAsync } from '@/features/dependency-analysis/adapters/outbound/dependency-graph/analyzeDependencyImportsAsync';
 import { JAVA_ROOT } from '@/shared/constants';
 import { type ImportDefinition, Language, type ParsedDirectory } from '@/shared/types';
 import { parseProjectPath } from '@/shared/utils/parseProjectPath';
@@ -103,7 +103,7 @@ async function readDirRecursively(
   projectRoot: string,
   language: Language,
   analysisRoot: string,
-  typeScriptImportsByFile?: ReadonlyMap<string, readonly ImportDefinition[]>
+  importsByFile?: ReadonlyMap<string, readonly ImportDefinition[]>
 ): Promise<ParsedDirectory> {
   const result: ParsedDirectory = Object.create(null);
 
@@ -139,7 +139,7 @@ async function readDirRecursively(
         projectRoot,
         language,
         analysisRoot,
-        typeScriptImportsByFile
+        importsByFile
       );
       continue;
     }
@@ -149,18 +149,23 @@ async function readDirRecursively(
       // Java
       case Language.Java:
         if (entry.name.endsWith('.java')) {
-          result[entry.name] = await parseJavaFile(fullPath, projectRoot, analysisRoot);
+          if (importsByFile === undefined) {
+            throw new Error('Missing canonical Java dependency analysis.');
+          }
+          const relativeFile = toPosix(path.relative(projectRoot, fullPath));
+          const imports = importsByFile.get(relativeFile) ?? [];
+          result[entry.name] = await parseJavaFile(fullPath, projectRoot, imports);
         }
         break;
 
       // TypeScript
       case Language.TypeScript:
         if (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx')) {
-          if (typeScriptImportsByFile === undefined) {
+          if (importsByFile === undefined) {
             throw new Error('Missing canonical TypeScript dependency analysis.');
           }
           const relativeFile = toPosix(path.relative(projectRoot, fullPath));
-          const imports = typeScriptImportsByFile.get(relativeFile) ?? [];
+          const imports = importsByFile.get(relativeFile) ?? [];
           result[entry.name] = await parseTypeScriptFile(fullPath, projectRoot, imports);
         }
         break;
@@ -200,7 +205,12 @@ async function readDirRecursively(
       // Kotlin
       case Language.Kotlin:
         if (entry.name.endsWith('.kt') || entry.name.endsWith('.kts')) {
-          result[entry.name] = await parseKotlinFile(fullPath, projectRoot);
+          if (importsByFile === undefined) {
+            throw new Error('Missing canonical Kotlin dependency analysis.');
+          }
+          const relativeFile = toPosix(path.relative(projectRoot, fullPath));
+          const imports = importsByFile.get(relativeFile) ?? [];
+          result[entry.name] = await parseKotlinFile(fullPath, projectRoot, imports);
         }
         break;
     }
@@ -239,17 +249,20 @@ export async function getParsedFileStructure(
   const rootDir = await resolveRoot(projectPath, detectedLanguage);
   console.log('2. rootDir:', rootDir);
 
-  const typeScriptImportsByFile =
+  const importsByFile =
     detectedLanguage === Language.TypeScript
-      ? await analyzeTypeScriptImportsAsync(projectPath)
-      : undefined;
+      ? await analyzeDependencyImportsAsync(projectPath)
+      : detectedLanguage === Language.Java
+        ? await analyzeDependencyImportsAsync(projectPath, rootDir, 'specifier')
+        : detectedLanguage === Language.Kotlin
+          ? await analyzeDependencyImportsAsync(
+              projectPath,
+              rootDir,
+              'specifier',
+              'kotlin-standard-library'
+            )
+          : undefined;
 
   // 3. Read directory recursively (pass resolved root as both dir and projectRoot)
-  return await readDirRecursively(
-    rootDir,
-    rootDir,
-    detectedLanguage,
-    projectPath,
-    typeScriptImportsByFile
-  );
+  return await readDirRecursively(rootDir, rootDir, detectedLanguage, projectPath, importsByFile);
 }

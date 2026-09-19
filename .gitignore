@@ -41,6 +41,7 @@ yarn-error.log*
 .env
 
 # Java
+.gradle/
 target/
 
 # vercel

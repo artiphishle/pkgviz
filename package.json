@@ -49,7 +49,7 @@
     "zora:materialize": "bun scripts/materialize-zora-tree-view.ts"
   },
   "dependencies": {
-    "@ankhorage/dependency-graph": "^0.1.0",
+    "@ankhorage/dependency-graph": "^0.6.0",
     "@ankhorage/graph": "^0.2.0",
     "@ankhorage/graph-cytoscape": "^0.1.1",
     "@ankhorage/project-detector": "^0.1.0",
