@@ -21,7 +21,12 @@ describe('[getCycleColor]', () => {
 
     try {
       expect(color).toBe('hsl(138, 68%, 45%)');
-      expect(cy.getElementById('cycle').numericStyle('background-color')).toEqual([37, 193, 84]);
+      expect(cy.getElementById('cycle').numericStyle('background-color')).toEqual([
+        37,
+        193,
+        84,
+        undefined,
+      ]);
     } finally {
       cy.destroy();
     }
