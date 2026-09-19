@@ -2,4 +2,4 @@
 'pkgviz': patch
 ---
 
-Keep cyclic dependency highlighting in the normal graph view, preserve explicit package navigation, and adapt spacing only when fitted cycle nodes are too small and spread out.
+Render the dependency graph through the ZORA GraphView runtime, preserve explicit package navigation, and keep cyclic-dependency highlighting as normal graph presentation without a separate viewport lifecycle.
