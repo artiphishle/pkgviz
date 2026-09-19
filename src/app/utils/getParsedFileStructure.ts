@@ -118,6 +118,7 @@ async function readDirRecursively(
     '.cache',
     '.git',
     '.github',
+    '.generated',
     '.next',
     'dist',
     'coverage',
