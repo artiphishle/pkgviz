@@ -4,20 +4,28 @@ import type { ElementsDefinition } from 'cytoscape';
 import { projectVisibleGraph } from '@/features/graph-view/utils/projectVisibleGraph';
 
 describe('[graph view projection]', () => {
-  it('preserves the parent scope while revealing its selected package', () => {
-    const elements = createElements();
-
+  it('keeps the explicit root scope instead of auto-drilling into its only package', () => {
     const result = projectVisibleGraph({
       currentPackage: '',
-      elements,
-      revealPackageId: 'src',
+      elements: createElements(),
       showCompoundNodes: false,
       showVendorPackages: true,
-      subPackageDepth: 2,
+      subPackageDepth: 1,
     });
 
-    expect(result.redirectPackage).toBeNull();
-    expect(result.elements.nodes.map(node => node.data.id)).toEqual(['src', 'src.feature']);
+    expect(result.elements.nodes.map(node => node.data.id)).toEqual(['src']);
+  });
+
+  it('keeps an explicitly selected package scope stable', () => {
+    const result = projectVisibleGraph({
+      currentPackage: 'src',
+      elements: createElements(),
+      showCompoundNodes: false,
+      showVendorPackages: true,
+      subPackageDepth: 1,
+    });
+
+    expect(result.elements.nodes.map(node => node.data.id)).toEqual(['src.feature']);
   });
 
   it('keeps the source graph immutable while projecting compound visibility', () => {
@@ -35,7 +43,6 @@ describe('[graph view projection]', () => {
     expect(elements.nodes[1]?.data.parentInactive).toBeUndefined();
     expect(result.elements.nodes[1]?.data.parent).toBeUndefined();
     expect(result.elements.nodes[1]?.data.parentInactive).toBe('src');
-    expect(result.redirectPackage).toBe('src');
   });
 });
 
