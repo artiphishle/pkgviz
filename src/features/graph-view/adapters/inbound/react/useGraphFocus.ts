@@ -47,8 +47,9 @@ interface UseGraphFocusInput {
 
 /*** Observes graph container resizing and re-applies the current viewport focus policy. */
 function observeGraphResize(cy: Core | null, revealPackageId?: string) {
-  const container = cy?.container();
-  if (cy === null || container === null || cy.destroyed()) return undefined;
+  if (cy === null || cy.destroyed()) return undefined;
+  const container = cy.container();
+  if (container === null) return undefined;
 
   const observer = new ResizeObserver(() => {
     requestAnimationFrame(() => fitGraphViewport(cy, revealPackageId));
