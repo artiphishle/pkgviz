@@ -1,6 +1,6 @@
 'use client';
 import type { Core, ElementsDefinition, LayoutOptions, Layouts } from 'cytoscape';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useEffectEvent, useRef } from 'react';
 
 import { LAYOUTS } from '@/layouts/constants';
 import { fitGraphViewport } from '@/utils/graph/fitGraphViewport';
@@ -8,9 +8,9 @@ import { fitGraphViewport } from '@/utils/graph/fitGraphViewport';
 /*** Owns Cytoscape layout creation, cancellation, reruns, and post-layout fitting. */
 export function useGraphLayout(input: UseGraphLayoutInput) {
   const layoutRef = useRef<Layouts | null>(null);
-  const revealPackageIdRef = useRef<string | undefined>(input.revealPackageId);
-  revealPackageIdRef.current = input.revealPackageId;
-
+  const fitAfterLayout = useEffectEvent((cy: Core) => {
+    fitGraphViewport(cy, input.revealPackageId);
+  });
   const makeLayoutOptions = useCallback(
     (name: LayoutOptions['name']): LayoutOptions & Record<string, unknown> => ({
       ...LAYOUTS[name],
@@ -33,7 +33,7 @@ export function useGraphLayout(input: UseGraphLayoutInput) {
       if (cy.destroyed()) return;
       const layout = cy.layout(makeLayoutOptions(input.layout));
       layoutRef.current = layout;
-      cy.one('layoutstop', () => fitGraphViewport(cy, revealPackageIdRef.current));
+      cy.one('layoutstop', () => fitAfterLayout(cy));
       layout.run();
     });
 
