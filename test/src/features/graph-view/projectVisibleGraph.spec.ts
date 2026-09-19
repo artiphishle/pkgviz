@@ -17,10 +17,7 @@ describe('[graph view projection]', () => {
     });
 
     expect(result.redirectPackage).toBeNull();
-    expect(result.elements.nodes.map(node => node.data.id)).toEqual([
-      'src',
-      'src.feature',
-    ]);
+    expect(result.elements.nodes.map(node => node.data.id)).toEqual(['src', 'src.feature']);
   });
 
   it('keeps the source graph immutable while projecting compound visibility', () => {
