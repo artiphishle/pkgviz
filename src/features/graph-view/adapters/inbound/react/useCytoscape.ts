@@ -37,6 +37,7 @@ export function useCytoscape(
     cy: cyInstance,
     cycleHighlights,
     currentPackage,
+    revealPackageId,
     setCurrentPackage,
     setCytoscapeLayoutSpacing: settings.setCytoscapeLayoutSpacing,
     setSubPackageDepth: settings.setSubPackageDepth,
