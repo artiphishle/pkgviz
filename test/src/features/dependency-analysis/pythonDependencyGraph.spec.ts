@@ -1,12 +1,24 @@
 import { describe, expect, it, resolve } from '@artiphishle/testosterone';
 
 import { parsePythonFile } from '@/app/utils/parser/python/parseFile';
+import { analyzeDependencyImportsAsync } from '@/features/dependency-analysis/adapters/outbound/dependency-graph/analyzeDependencyImportsAsync';
 
-describe('[Python dependency graph baseline]', () => {
-  it('locks current Python package/import semantics before analyzer migration', async () => {
-    const projectRoot = resolve(process.cwd(), 'examples/python/my-app/src');
+describe('[Python dependency graph migration]', () => {
+  it('preserves locked Python package/import semantics through the canonical analyzer', async () => {
+    const appRoot = resolve(process.cwd(), 'examples/python/my-app');
+    const projectRoot = resolve(appRoot, 'src');
     const file = resolve(projectRoot, 'services/user_service.py');
-    const parsed = await parsePythonFile(file, projectRoot);
+    const importsByFile = await analyzeDependencyImportsAsync(
+      appRoot,
+      projectRoot,
+      'specifier',
+      'python-legacy'
+    );
+    const parsed = await parsePythonFile(
+      file,
+      projectRoot,
+      importsByFile.get('services/user_service.py') ?? []
+    );
 
     expect(parsed.package).toBe('services');
     expect(parsed.imports).toEqual([

@@ -186,7 +186,12 @@ async function readDirRecursively(
       // Python
       case Language.Python:
         if (entry.name.endsWith('.py')) {
-          result[entry.name] = await parsePythonFile(fullPath, projectRoot);
+          if (importsByFile === undefined) {
+            throw new Error('Missing canonical Python dependency analysis.');
+          }
+          const relativeFile = toPosix(path.relative(projectRoot, fullPath));
+          const imports = importsByFile.get(relativeFile) ?? [];
+          result[entry.name] = await parsePythonFile(fullPath, projectRoot, imports);
         }
         break;
 
@@ -260,7 +265,14 @@ export async function getParsedFileStructure(
               'specifier',
               'kotlin-standard-library'
             )
-          : undefined;
+          : detectedLanguage === Language.Python
+            ? await analyzeDependencyImportsAsync(
+                projectPath,
+                rootDir,
+                'specifier',
+                'python-legacy'
+              )
+            : undefined;
 
   // 3. Read directory recursively (pass resolved root as both dir and projectRoot)
   return await readDirRecursively(rootDir, rootDir, detectedLanguage, projectPath, importsByFile);
