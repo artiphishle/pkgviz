@@ -32,60 +32,52 @@ describe('[getCycleColor]', () => {
 });
 
 describe('[createCycleFocus]', () => {
-  it('preserves the current scope when it already contains the active cycle', () => {
+  it('uses the narrowest common scope instead of inflating depth from a broad root', () => {
     const cycle: PackageCycleDetail = {
-      packages: ['app.feature.a', 'app.feature.b', 'app.feature.a'],
+      packages: ['app.feature.deep.a', 'app.feature.deep.b', 'app.feature.deep.a'],
       edges: [],
     };
 
-    expect(createCycleFocus([highlight(cycle)], 'app.feature')).toEqual({
-      currentPackage: 'app.feature',
+    expect(createCycleFocus([highlight(cycle)])).toEqual({
+      currentPackage: 'app.feature.deep',
       packageDepth: 1,
     });
   });
 
-  it('only increases the required depth inside an already valid broader scope', () => {
-    const cycle: PackageCycleDetail = {
-      packages: ['app.feature.a', 'app.feature.b', 'app.feature.a'],
-      edges: [],
-    };
-
-    expect(createCycleFocus([highlight(cycle)], 'app')).toEqual({
-      currentPackage: 'app',
-      packageDepth: 2,
-    });
-  });
-
-  it('widens an incompatible scope only to the common active-cycle ancestor', () => {
-    const cycle: PackageCycleDetail = {
-      packages: ['app.feature.a', 'app.feature.b', 'app.feature.a'],
-      edges: [],
-    };
-
-    expect(createCycleFocus([highlight(cycle)], 'other')).toEqual({
-      currentPackage: 'app.feature',
-      packageDepth: 1,
-    });
-  });
-
-  it('backs up when the scope package is itself part of the cycle', () => {
+  it('backs up when the common package is itself part of the cycle', () => {
     const cycle: PackageCycleDetail = {
       packages: ['app.feature', 'app.feature.child', 'app.feature'],
       edges: [],
     };
 
-    expect(createCycleFocus([highlight(cycle)], 'app.feature')).toEqual({
+    expect(createCycleFocus([highlight(cycle)])).toEqual({
       currentPackage: 'app',
       packageDepth: 2,
     });
   });
 
+  it('widens only enough to contain multiple active cycles', () => {
+    const firstCycle: PackageCycleDetail = {
+      packages: ['app.feature.a', 'app.feature.b', 'app.feature.a'],
+      edges: [],
+    };
+    const secondCycle: PackageCycleDetail = {
+      packages: ['app.other.deep.c', 'app.other.deep.d', 'app.other.deep.c'],
+      edges: [],
+    };
+
+    expect(createCycleFocus([highlight(firstCycle, 'first'), highlight(secondCycle, 'second')])).toEqual({
+      currentPackage: 'app',
+      packageDepth: 3,
+    });
+  });
+
   it('does not request a focus when no cycle is selected', () => {
-    expect(createCycleFocus([], '')).toBeNull();
+    expect(createCycleFocus([])).toBeNull();
   });
 });
 
 /*** Creates one test highlight around a cycle. */
-function highlight(cycle: PackageCycleDetail) {
-  return { id: 'cycle', color: '#dc2626', cycle };
+function highlight(cycle: PackageCycleDetail, id = 'cycle') {
+  return { id, color: '#dc2626', cycle };
 }
