@@ -34,6 +34,7 @@ describe('[AuditRuleList]', () => {
     const { container, getByText } = render(
       <AuditRuleList
         evaluation={failedEvaluation}
+        mode="light"
         onCycleHighlightsChange={() => undefined}
         onCycleInspectionChange={() => undefined}
       />
@@ -59,6 +60,7 @@ describe('[AuditRuleList]', () => {
     const { container } = render(
       <AuditRuleList
         evaluation={passedEvaluation}
+        mode="light"
         onCycleHighlightsChange={() => undefined}
         onCycleInspectionChange={() => undefined}
       />
