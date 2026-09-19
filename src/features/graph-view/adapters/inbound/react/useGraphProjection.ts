@@ -9,6 +9,8 @@ export function useGraphProjection(input: UseGraphProjectionInput): ElementsDefi
   const {
     currentPackage,
     elements,
+    revealPackageId,
+    setCurrentPackage,
     setMaxSubPackageDepth,
     showCompoundNodes,
     showVendorPackages,
@@ -21,24 +23,35 @@ export function useGraphProjection(input: UseGraphProjectionInput): ElementsDefi
         : projectVisibleGraph({
             currentPackage,
             elements,
+            revealPackageId,
             showCompoundNodes,
             showVendorPackages,
             subPackageDepth,
           }),
-    [currentPackage, elements, showCompoundNodes, showVendorPackages, subPackageDepth]
+    [
+      currentPackage,
+      elements,
+      revealPackageId,
+      showCompoundNodes,
+      showVendorPackages,
+      subPackageDepth,
+    ]
   );
 
   useEffect(() => {
     if (projection === null) return;
     setMaxSubPackageDepth(projection.maxSubPackageDepth);
-  }, [projection, setMaxSubPackageDepth]);
+    if (projection.redirectPackage !== null) setCurrentPackage(projection.redirectPackage);
+  }, [projection, setCurrentPackage, setMaxSubPackageDepth]);
 
-  return projection?.elements ?? null;
+  return projection?.redirectPackage === null ? projection.elements : null;
 }
 
 interface UseGraphProjectionInput {
   readonly currentPackage: string;
   readonly elements: ElementsDefinition | null;
+  readonly revealPackageId?: string;
+  readonly setCurrentPackage: (path: string) => void;
   readonly setMaxSubPackageDepth: (depth: number) => void;
   readonly showCompoundNodes: boolean;
   readonly showVendorPackages: boolean;

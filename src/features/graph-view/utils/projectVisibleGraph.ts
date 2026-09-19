@@ -1,6 +1,7 @@
 import type { ElementsDefinition } from 'cytoscape';
 
 import { filterByPackagePrefix } from '@/utils/filter/filterByPackagePrefix';
+import { filterEmptyPackages } from '@/utils/filter/filterEmptyPackages';
 import { filterSubPackagesByDepth, getMaxDepth } from '@/utils/filter/filterSubPackagesFromDepth';
 import { filterVendorPackages } from '@/utils/filter/filterVendorPackages';
 import { toggleCompoundNodes } from '@/utils/filter/toggleCompoundNodes';
@@ -22,12 +23,14 @@ export function projectVisibleGraph(input: ProjectVisibleGraphInput): ProjectVis
   return {
     elements: labelVisibleNodes(visible, input.currentPackage),
     maxSubPackageDepth: getMaxDepth(input.elements),
+    redirectPackage: resolveRedirectPackage(input, visible),
   };
 }
 
 interface ProjectVisibleGraphInput {
   readonly currentPackage: string;
   readonly elements: ElementsDefinition;
+  readonly revealPackageId?: string;
   readonly showCompoundNodes: boolean;
   readonly showVendorPackages: boolean;
   readonly subPackageDepth: number;
@@ -36,6 +39,20 @@ interface ProjectVisibleGraphInput {
 interface ProjectVisibleGraphResult {
   readonly elements: ElementsDefinition;
   readonly maxSubPackageDepth: number;
+  readonly redirectPackage: string | null;
+}
+
+/*** Skips package levels that contain no branching point while preserving explicit reveal targets. */
+function resolveRedirectPackage(
+  input: ProjectVisibleGraphInput,
+  visible: ElementsDefinition
+): string | null {
+  const currentPackage = input.currentPackage.replaceAll('/', '.');
+  const revealParent = input.revealPackageId?.split('.').slice(0, -1).join('.') ?? null;
+  if (revealParent === currentPackage) return null;
+
+  const nextPackage = filterEmptyPackages(currentPackage, visible);
+  return nextPackage === currentPackage ? null : nextPackage;
 }
 
 /*** Adds package-relative display labels without changing graph ids. */

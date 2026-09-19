@@ -32,6 +32,8 @@ export function DependencyGraphView(props: DependencyGraphViewProps) {
   const visibleElements = useGraphProjection({
     currentPackage: props.currentPackage,
     elements: props.packageGraph,
+    revealPackageId: props.graphRevealRequest?.packageId,
+    setCurrentPackage: props.setCurrentPackage,
     setMaxSubPackageDepth: settings.setMaxSubPackageDepth,
     showCompoundNodes: settings.showCompoundNodes,
     showVendorPackages: settings.showVendorPackages,
