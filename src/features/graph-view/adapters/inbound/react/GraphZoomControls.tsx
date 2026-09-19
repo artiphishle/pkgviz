@@ -1,18 +1,28 @@
 'use client';
-
+import { IconButton } from '@zora/button';
+import { Text } from '@zora/text';
+import { View } from '@zora/view';
 import type { GraphViewController } from '@zora/graph-view';
-import { CircleDotDashedIcon } from 'lucide-react';
 import type { ChangeEvent } from 'react';
+
+import type { ZoraMode } from '@/types/zora';
 
 interface GraphZoomControlsProps {
   readonly controller: GraphViewController | null;
   readonly maxZoom: number;
   readonly minZoom: number;
+  readonly mode: ZoraMode;
   readonly zoom: number;
 }
 
-/*** Renders graph zoom controls against the engine-neutral ZORA viewport controller. */
-export function GraphZoomControls({ controller, maxZoom, minZoom, zoom }: GraphZoomControlsProps) {
+/*** Renders graph zoom controls through ZORA except for the retained range slider. */
+export function GraphZoomControls({
+  controller,
+  maxZoom,
+  minZoom,
+  mode,
+  zoom,
+}: GraphZoomControlsProps) {
   /*** Applies one slider zoom value through the GraphView controller. */
   const handleSliderChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (controller === null) return;
@@ -21,16 +31,19 @@ export function GraphZoomControls({ controller, maxZoom, minZoom, zoom }: GraphZ
   };
 
   return (
-    <div className="p-4 flex items-center justify-center gap-2 border-t border-t-gray-200 dark:border-t-gray-800">
-      <label htmlFor="zoom">Zoom:</label>
-      <button
-        type="button"
-        title="Zoom to fit"
-        onClick={() => controller?.fit()}
-        className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
-      >
-        <CircleDotDashedIcon className="cursor-pointer" />
-      </button>
+    <View mode={mode} align="center" direction="row" gap="s" justify="center" p="m">
+      <Text mode={mode} variant="bodySmall">
+        Zoom:
+      </Text>
+      <IconButton
+        color="neutral"
+        icon={{ name: 'scan-outline' }}
+        label="Zoom to fit"
+        mode={mode}
+        size="s"
+        variant="ghost"
+        onPress={() => controller?.fit()}
+      />
       <input
         id="zoom"
         type="range"
@@ -40,8 +53,11 @@ export function GraphZoomControls({ controller, maxZoom, minZoom, zoom }: GraphZ
         value={zoom}
         onChange={handleSliderChange}
         className="w-64"
+        aria-label="Zoom"
       />
-      <span className="text-sm">{(zoom * 100).toFixed(0)}%</span>
-    </div>
+      <Text mode={mode} variant="caption">
+        {(zoom * 100).toFixed(0)}%
+      </Text>
+    </View>
   );
 }
