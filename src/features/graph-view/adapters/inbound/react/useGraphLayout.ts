@@ -9,7 +9,9 @@ import { fitGraphViewport } from '@/utils/graph/fitGraphViewport';
 export function useGraphLayout(input: UseGraphLayoutInput) {
   const { cy, elements, layout, revealPackageId, spacing } = input;
   const layoutRef = useRef<Layouts | null>(null);
+  const layoutRunningRef = useRef(false);
   const fitAfterLayout = useEffectEvent((instance: Core) => {
+    layoutRunningRef.current = false;
     fitGraphViewport(instance, revealPackageId);
   });
   const makeLayoutOptions = useCallback(
@@ -33,6 +35,7 @@ export function useGraphLayout(input: UseGraphLayoutInput) {
       if (cy.destroyed()) return;
       const activeLayout = cy.layout(makeLayoutOptions(layout));
       layoutRef.current = activeLayout;
+      layoutRunningRef.current = true;
       cy.one('layoutstop', () => fitAfterLayout(cy));
       activeLayout.run();
     });
@@ -41,8 +44,14 @@ export function useGraphLayout(input: UseGraphLayoutInput) {
       cancelAnimationFrame(frame);
       stopLayout(layoutRef.current);
       layoutRef.current = null;
+      layoutRunningRef.current = false;
     };
   }, [cy, elements, layout, makeLayoutOptions]);
+
+  useEffect(
+    () => observeGraphResize(cy, revealPackageId, layoutRunningRef),
+    [cy, revealPackageId]
+  );
 }
 
 interface UseGraphLayoutInput {
@@ -70,4 +79,25 @@ function stopLayout(layout: Layouts | null) {
   } catch {
     // Cytoscape may already have disposed the layout with the graph instance.
   }
+}
+
+/*** Refits only settled graph layouts after genuine container size changes. */
+function observeGraphResize(
+  cy: Core | null,
+  revealPackageId: string | undefined,
+  layoutRunningRef: { current: boolean }
+) {
+  if (cy === null || cy.destroyed()) return undefined;
+  const container = cy.container();
+  if (container === null) return undefined;
+
+  const observer = new ResizeObserver(() => {
+    requestAnimationFrame(() => {
+      if (cy.destroyed() || layoutRunningRef.current) return;
+      cy.resize();
+      fitGraphViewport(cy, revealPackageId);
+    });
+  });
+  observer.observe(container);
+  return () => observer.disconnect();
 }
