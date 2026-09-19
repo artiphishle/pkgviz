@@ -34,48 +34,64 @@ function useCycleDiagnosticFocus(
     visibleElements,
   } = input;
 
-  useEffect(() => {
-    if (cy === null || visibleElements === null || cy.destroyed()) return;
-    applyCycleHighlights(cy, cycleHighlights);
+  useEffect(
+    () =>
+      runCycleDiagnosticFocus(
+        {
+          cy,
+          cycleHighlights,
+          currentPackage,
+          setCurrentPackage,
+          setCytoscapeLayoutSpacing,
+          setSubPackageDepth,
+          spacing,
+          subPackageDepth,
+          visibleElements,
+        },
+        handledCycleSignatureRef
+      ),
+    [
+      cy,
+      cycleHighlights,
+      currentPackage,
+      handledCycleSignatureRef,
+      setCurrentPackage,
+      setCytoscapeLayoutSpacing,
+      setSubPackageDepth,
+      spacing,
+      subPackageDepth,
+      visibleElements,
+    ]
+  );
+}
 
-    if (cycleHighlights.length === 0) {
-      handledCycleSignatureRef.current = null;
-      return;
-    }
+/*** Runs one cycle-focus effect iteration and returns its optional animation-frame cleanup. */
+function runCycleDiagnosticFocus(
+  input: UseGraphFocusInput,
+  handledCycleSignatureRef: { current: string | null }
+) {
+  if (input.cy === null || input.visibleElements === null || input.cy.destroyed()) return undefined;
+  applyCycleHighlights(input.cy, input.cycleHighlights);
 
-    const signature = getCycleSignature(cycleHighlights);
-    if (handledCycleSignatureRef.current === signature) return;
+  if (input.cycleHighlights.length === 0) {
+    handledCycleSignatureRef.current = null;
+    return undefined;
+  }
 
-    if (
-      ensureCycleProjection({
-        cy,
-        cycleHighlights,
-        currentPackage,
-        setCurrentPackage,
-        setSubPackageDepth,
-        subPackageDepth,
-      })
-    ) {
-      return;
-    }
+  const signature = getCycleSignature(input.cycleHighlights);
+  if (handledCycleSignatureRef.current === signature) return undefined;
+  if (ensureCycleProjection(input)) return undefined;
 
-    const frame = requestAnimationFrame(() => {
-      if (cy.destroyed()) return;
-      handledCycleSignatureRef.current = signature;
-      focusCycleViewport({ cy, setCytoscapeLayoutSpacing, spacing });
+  const frame = requestAnimationFrame(() => {
+    if (input.cy === null || input.cy.destroyed()) return;
+    handledCycleSignatureRef.current = signature;
+    focusCycleViewport({
+      cy: input.cy,
+      setCytoscapeLayoutSpacing: input.setCytoscapeLayoutSpacing,
+      spacing: input.spacing,
     });
-    return () => cancelAnimationFrame(frame);
-  }, [
-    cy,
-    cycleHighlights,
-    currentPackage,
-    setCurrentPackage,
-    setCytoscapeLayoutSpacing,
-    setSubPackageDepth,
-    spacing,
-    subPackageDepth,
-    visibleElements,
-  ]);
+  });
+  return () => cancelAnimationFrame(frame);
 }
 
 /*** Keeps tree-driven reveal selection separate from cycle diagnostics. */
