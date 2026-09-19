@@ -3,17 +3,13 @@ import type { Core, ElementsDefinition } from 'cytoscape';
 import { useEffect, useRef } from 'react';
 
 import { createCycleFocus } from '@/features/audit/utils/cycleVisualization';
-import { getAdaptiveCycleLayoutSpacing } from '@/features/audit/utils/getAdaptiveCycleLayoutSpacing';
 import type { CycleHighlight } from '@/types/auditVisualization';
 import { applyCycleHighlights } from '@/utils/graph/applyCycleHighlights';
-import { fitGraph } from '@/utils/graph/fitGraph';
-import { revealGraphPackage } from '@/utils/graph/fitGraphViewport';
 
-/*** Owns cycle highlighting, adaptive cycle focus, tree reveal focus, and resize fitting. */
+/*** Owns cycle highlighting and the one-time projection change needed to expose active cycles. */
 export function useGraphFocus(input: UseGraphFocusInput) {
   const handledCycleSignatureRef = useRef<string | null>(null);
   useCycleDiagnosticFocus(input, handledCycleSignatureRef);
-  useTreeRevealFocus(input);
 }
 
 /*** Applies one cycle-focus transition per active-cycle set without fighting later manual navigation. */
@@ -21,113 +17,32 @@ function useCycleDiagnosticFocus(
   input: UseGraphFocusInput,
   handledCycleSignatureRef: { current: string | null }
 ) {
-  const {
-    cy,
-    cycleHighlights,
-    currentPackage,
-    setCurrentPackage,
-    setCytoscapeLayoutSpacing,
-    setSubPackageDepth,
-    spacing,
-    subPackageDepth,
-    visibleElements,
-  } = input;
+  const { cy, cycleHighlights, currentPackage, visibleElements } = input;
 
   useEffect(
-    () =>
-      runCycleDiagnosticFocus(
-        {
-          cy,
-          cycleHighlights,
-          currentPackage,
-          setCurrentPackage,
-          setCytoscapeLayoutSpacing,
-          setSubPackageDepth,
-          spacing,
-          subPackageDepth,
-          visibleElements,
-        },
-        handledCycleSignatureRef
-      ),
-    [
-      cy,
-      cycleHighlights,
-      currentPackage,
-      handledCycleSignatureRef,
-      setCurrentPackage,
-      setCytoscapeLayoutSpacing,
-      setSubPackageDepth,
-      spacing,
-      subPackageDepth,
-      visibleElements,
-    ]
+    () => runCycleDiagnosticFocus(input, handledCycleSignatureRef),
+    [input, handledCycleSignatureRef, cy, cycleHighlights, currentPackage, visibleElements]
   );
 }
 
-/*** Runs one cycle-focus effect iteration and returns its optional animation-frame cleanup. */
+/*** Runs one cycle-focus effect iteration without changing the viewport directly. */
 function runCycleDiagnosticFocus(
   input: UseGraphFocusInput,
   handledCycleSignatureRef: { current: string | null }
 ) {
-  const {
-    cy,
-    cycleHighlights,
-    currentPackage,
-    setCurrentPackage,
-    setCytoscapeLayoutSpacing,
-    setSubPackageDepth,
-    spacing,
-    subPackageDepth,
-    visibleElements,
-  } = input;
-  if (cy === null || visibleElements === null || cy.destroyed()) return undefined;
+  const { cy, cycleHighlights, visibleElements } = input;
+  if (cy === null || visibleElements === null || cy.destroyed()) return;
   applyCycleHighlights(cy, cycleHighlights);
 
   if (cycleHighlights.length === 0) {
     handledCycleSignatureRef.current = null;
-    return undefined;
+    return;
   }
 
   const signature = getCycleSignature(cycleHighlights);
-  if (handledCycleSignatureRef.current === signature) return undefined;
-  if (
-    ensureCycleProjection({
-      cy,
-      cycleHighlights,
-      currentPackage,
-      setCurrentPackage,
-      setSubPackageDepth,
-      subPackageDepth,
-    })
-  ) {
-    return undefined;
-  }
-
-  const frame = requestAnimationFrame(() => {
-    if (cy.destroyed()) return;
-    handledCycleSignatureRef.current = signature;
-    focusCycleViewport({ cy, setCytoscapeLayoutSpacing, spacing });
-  });
-  return () => cancelAnimationFrame(frame);
-}
-
-/*** Keeps tree-driven reveal selection separate from cycle diagnostics. */
-function useTreeRevealFocus(input: UseGraphFocusInput) {
-  const { cy, cycleHighlights, revealPackageId, visibleElements } = input;
-  const hasActiveCycles = cycleHighlights.length > 0;
-
-  useEffect(() => {
-    if (
-      cy === null ||
-      visibleElements === null ||
-      revealPackageId === undefined ||
-      hasActiveCycles ||
-      cy.destroyed()
-    ) {
-      return;
-    }
-    revealGraphPackage(cy, revealPackageId);
-  }, [cy, hasActiveCycles, revealPackageId, visibleElements]);
+  if (handledCycleSignatureRef.current === signature) return;
+  if (ensureCycleProjection({ ...input, cy })) return;
+  handledCycleSignatureRef.current = signature;
 }
 
 /*** Returns a stable identity for the current active-cycle set. */
@@ -158,70 +73,16 @@ function ensureCycleProjection(input: CycleProjectionInput): boolean {
   return scopeChanged || depthChanged;
 }
 
-/*** Fits the whole graph, measures the cycle, and applies at most one spacing reduction. */
-function focusCycleViewport(input: CycleViewportInput) {
-  fitGraph(input.cy);
-  const metrics = getCycleLayoutMetrics(input.cy);
-  if (!metrics) return;
-
-  const nextSpacing = getAdaptiveCycleLayoutSpacing(input.spacing, metrics);
-  if (nextSpacing < input.spacing) input.setCytoscapeLayoutSpacing(nextSpacing);
-}
-
-/*** Measures rendered cycle size and spread after the complete graph has been fitted. */
-function getCycleLayoutMetrics(cy: Core) {
-  const cycleNodes = cy.nodes('.auditCycle');
-  const viewportWidth = cy.width();
-  const viewportHeight = cy.height();
-  if (cycleNodes.empty() || viewportWidth <= 0 || viewportHeight <= 0) return null;
-
-  const cycleBox = cycleNodes.renderedBoundingBox();
-  const nodeSizes = cycleNodes.map(node => {
-    const nodeBox = node.renderedBoundingBox();
-    return Math.min(nodeBox.w, nodeBox.h);
-  });
-  const positions = cycleNodes.map(node => node.renderedPosition());
-  const distances = positions.flatMap((position, index) =>
-    positions.slice(index + 1).map(other => Math.hypot(position.x - other.x, position.y - other.y))
-  );
-
-  return {
-    viewportWidth,
-    viewportHeight,
-    cycleWidth: cycleBox.w,
-    cycleHeight: cycleBox.h,
-    averageNodeSize: nodeSizes.reduce((sum, size) => sum + size, 0) / nodeSizes.length,
-    averageNodeDistance:
-      distances.length === 0
-        ? 0
-        : distances.reduce((sum, distance) => sum + distance, 0) / distances.length,
-  };
-}
-
 interface UseGraphFocusInput {
   readonly cy: Core | null;
   readonly cycleHighlights: readonly CycleHighlight[];
   readonly currentPackage: string;
-  readonly revealPackageId?: string;
   readonly setCurrentPackage: (path: string) => void;
-  readonly setCytoscapeLayoutSpacing: (spacing: number) => void;
   readonly setSubPackageDepth: (depth: number) => void;
-  readonly spacing: number;
   readonly subPackageDepth: number;
   readonly visibleElements: ElementsDefinition | null;
 }
 
-interface CycleProjectionInput {
+interface CycleProjectionInput extends Omit<UseGraphFocusInput, 'cy' | 'visibleElements'> {
   readonly cy: Core;
-  readonly cycleHighlights: readonly CycleHighlight[];
-  readonly currentPackage: string;
-  readonly setCurrentPackage: (path: string) => void;
-  readonly setSubPackageDepth: (depth: number) => void;
-  readonly subPackageDepth: number;
-}
-
-interface CycleViewportInput {
-  readonly cy: Core;
-  readonly setCytoscapeLayoutSpacing: (spacing: number) => void;
-  readonly spacing: number;
 }
