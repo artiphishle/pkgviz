@@ -3,7 +3,7 @@ import { copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const ZORA_VERSION = '20.1.0';
+const ZORA_VERSION = '20.1.1';
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const outputDirectory = join(repositoryRoot, '.generated', 'zora', 'tree-view');
 const metadataPath = join(outputDirectory, 'zora-artifact.json');
