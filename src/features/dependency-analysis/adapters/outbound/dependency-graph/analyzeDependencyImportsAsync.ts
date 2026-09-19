@@ -51,10 +51,7 @@ type ImportNameMode = 'package' | 'specifier';
 type ImportIntrinsicMode = 'canonical' | 'kotlin-standard-library';
 
 /*** Preserves PKGViz presentation semantics independently from canonical graph classification. */
-function isIntrinsicImport(
-  evidence: DependencyImportEvidence,
-  mode: ImportIntrinsicMode
-): boolean {
+function isIntrinsicImport(evidence: DependencyImportEvidence, mode: ImportIntrinsicMode): boolean {
   if (mode === 'canonical') return evidence.classification === 'intrinsic';
 
   return (
