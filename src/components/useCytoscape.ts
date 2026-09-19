@@ -22,6 +22,7 @@ import { filterSubPackagesByDepth, getMaxDepth } from '@/utils/filter/filterSubP
 import { filterVendorPackages } from '@/utils/filter/filterVendorPackages';
 import { toggleCompoundNodes } from '@/utils/filter/toggleCompoundNodes';
 import { applyCycleHighlights } from '@/utils/graph/applyCycleHighlights';
+import { fitGraphViewport, revealGraphPackage } from '@/utils/graph/fitGraphViewport';
 import { hasChildren } from '@/utils/hasChildren';
 
 /*** Owns the Cytoscape instance, filtering, layout, styling, and interactions. */
@@ -38,14 +39,12 @@ export function useCytoscape(
 
   const layoutRef = useRef<Layouts | null>(null);
   const graphRevealRequestRef = useRef<GraphRevealRequest | null>(null);
-  const cycleHighlightsRef = useRef<readonly CycleHighlight[]>([]);
 
   const elementsRef = useRef<ElementsDefinition | null>(null);
   const filteredElementsRef = useRef<ElementsDefinition | null>(null);
   elementsRef.current = elements;
   filteredElementsRef.current = filteredElements;
   graphRevealRequestRef.current = graphRevealRequest;
-  cycleHighlightsRef.current = cycleHighlights;
 
   const {
     cytoscapeLayout,
@@ -152,20 +151,7 @@ export function useCytoscape(
 
         /*** Fits active cycles first, then a tree reveal, otherwise the complete graph. */
         const onStop = () => {
-          if (cy.destroyed()) return;
-          const cycleElements = cy.elements('.auditCycle');
-          if (!cycleElements.empty()) {
-            cy.fit(cycleElements, 80);
-            return;
-          }
-
-          const revealRequest = graphRevealRequestRef.current;
-          if (revealRequest) {
-            revealGraphPackage(cy, revealRequest.packageId);
-            return;
-          }
-
-          cy.fit(undefined, 50);
+          fitGraphViewport(cy, graphRevealRequestRef.current?.packageId);
         };
         cy.one('layoutstop', onStop);
 
@@ -195,18 +181,7 @@ export function useCytoscape(
 
     /*** Refits the graph after its container is resized. */
     const handleResize = () => {
-      if (cy.destroyed()) return;
-      const cycleElements = cy.elements('.auditCycle');
-      if (!cycleElements.empty()) {
-        cy.fit(cycleElements, 80);
-        return;
-      }
-      const revealRequest = graphRevealRequestRef.current;
-      if (revealRequest && cycleHighlightsRef.current.length === 0) {
-        revealGraphPackage(cy, revealRequest.packageId);
-        return;
-      }
-      cy.fit(undefined, 50);
+      fitGraphViewport(cy, graphRevealRequestRef.current?.packageId);
     };
     const observer = new ResizeObserver(() => requestAnimationFrame(handleResize));
     observer.observe(cyRef.current);
@@ -394,16 +369,4 @@ export function useCytoscape(
   }, [cyInstance, filteredElements, theme, cytoscapeLayout]);
 
   return { cyRef, cyInstance };
-}
-
-/*** Selects and fits one visible package node without changing the current graph projection. */
-function revealGraphPackage(cy: Core, packageId: string) {
-  if (!packageId || cy.destroyed()) return;
-
-  const node = cy.getElementById(packageId);
-  if (node.empty()) return;
-
-  cy.nodes().unselect();
-  node.select();
-  cy.fit(node, 140);
 }
