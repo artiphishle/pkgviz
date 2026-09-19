@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import {
@@ -8,6 +9,12 @@ import {
 
 import type { ImportDefinition } from '@/shared/types';
 import { toPosix } from '@/shared/utils/toPosix';
+
+interface OrderedImport {
+  readonly definition: ImportDefinition;
+  readonly position: number;
+  readonly ordinal: number;
+}
 
 /*** Returns PKGViz import definitions from the canonical dependency analyzer. */
 export async function analyzeDependencyImportsAsync(
@@ -20,7 +27,9 @@ export async function analyzeDependencyImportsAsync(
     projects: [{ id: 'current', rootPath: projectRoot }],
   });
   const nodes = new Map(graph.nodes.map(node => [node.id, node.data] as const));
-  const imports = new Map<string, ImportDefinition[]>();
+  const imports = new Map<string, OrderedImport[]>();
+  const sourceTextByFile = new Map<string, Promise<string>>();
+  let ordinal = 0;
 
   for (const edge of graph.edges) {
     const target = nodes.get(edge.target);
@@ -31,24 +40,53 @@ export async function analyzeDependencyImportsAsync(
     const pkg = targetPackage(target);
     for (const evidence of edge.data.evidence) {
       if (pkg === '') continue;
-      const sourceFile = toPosix(
-        path.relative(analysisRoot, path.resolve(projectRoot, evidence.sourceFile))
-      );
+      const absoluteSourceFile = path.resolve(projectRoot, evidence.sourceFile);
+      const sourceFile = toPosix(path.relative(analysisRoot, absoluteSourceFile));
+      const sourceText = await readSourceTextAsync(sourceTextByFile, absoluteSourceFile);
       const current = imports.get(sourceFile) ?? [];
       current.push({
-        name: importNameMode === 'specifier' ? evidence.specifier : pkg,
-        pkg,
-        isIntrinsic: isIntrinsicImport(evidence, intrinsicMode),
+        definition: {
+          name: importNameMode === 'specifier' ? evidence.specifier : pkg,
+          pkg,
+          isIntrinsic: isIntrinsicImport(evidence, intrinsicMode),
+        },
+        position: sourceText.indexOf(evidence.specifier),
+        ordinal,
       });
+      ordinal += 1;
       imports.set(sourceFile, current);
     }
   }
 
-  return imports;
+  return new Map(
+    [...imports].map(([sourceFile, entries]) => [
+      sourceFile,
+      entries
+        .sort((left, right) => {
+          const leftPosition = left.position < 0 ? Number.MAX_SAFE_INTEGER : left.position;
+          const rightPosition = right.position < 0 ? Number.MAX_SAFE_INTEGER : right.position;
+          return leftPosition - rightPosition || left.ordinal - right.ordinal;
+        })
+        .map(({ definition }) => definition),
+    ])
+  );
 }
 
 type ImportNameMode = 'package' | 'specifier';
 type ImportIntrinsicMode = 'canonical' | 'kotlin-standard-library' | 'python-legacy';
+
+/*** Reads source content once so adapter output preserves source declaration order. */
+function readSourceTextAsync(
+  cache: Map<string, Promise<string>>,
+  sourceFile: string
+): Promise<string> {
+  const cached = cache.get(sourceFile);
+  if (cached !== undefined) return cached;
+
+  const sourceText = readFile(sourceFile, 'utf8');
+  cache.set(sourceFile, sourceText);
+  return sourceText;
+}
 
 /*** Preserves PKGViz presentation semantics independently from canonical graph classification. */
 function isIntrinsicImport(evidence: DependencyImportEvidence, mode: ImportIntrinsicMode): boolean {
