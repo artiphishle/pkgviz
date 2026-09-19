@@ -40,7 +40,7 @@ export function HomeGraph({
       graphRevealRequest={graphRevealRequest}
       overlay={
         cycleInspection === null ? null : (
-          <CycleInspector inspection={cycleInspection} onClose={onCloseInspection} />
+          <CycleInspector inspection={cycleInspection} mode={mode} onClose={onCloseInspection} />
         )
       }
     />
