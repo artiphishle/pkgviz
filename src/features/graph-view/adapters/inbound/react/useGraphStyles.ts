@@ -18,12 +18,13 @@ export function useGraphStyles(input: UseGraphStylesInput) {
   const theme = resolvedTheme === 'dark' ? 'dark' : 'light';
 
   useEffect(() => {
-    const container = input.cy?.container();
-    if (input.cy === null || input.visibleElements === null || container === null) return;
+    const cy = input.cy;
+    const visibleElements = input.visibleElements;
+    if (cy === null || visibleElements === null) return;
+    const container = cy.container();
+    if (container === null) return;
 
-    input.cy
-      .style([...getCommonStyle(input.visibleElements, theme), ...getLayoutStyle(input.layout)])
-      .update();
+    cy.style([...getCommonStyle(visibleElements, theme), ...getLayoutStyle(input.layout)]).update();
     container.style.background = getCanvasBg(theme);
   }, [input.cy, input.layout, input.visibleElements, theme]);
 }
