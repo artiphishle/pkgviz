@@ -1,6 +1,6 @@
 import type { ElementsDefinition } from 'cytoscape';
 
-import { isIntrinsicGraphNode } from '@/features/graph-view/utils/isIntrinsicGraphNode';
+import { isIntrinsicGraphNode } from '@/utils/filter/isIntrinsicGraphNode';
 
 /***
  * Omits relationship-free containers in flat views, but preserves actual isolated leaf packages.

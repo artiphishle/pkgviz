@@ -1,6 +1,6 @@
 import type { ElementsDefinition } from 'cytoscape';
 
-import { isIntrinsicGraphNode } from '@/features/graph-view/utils/isIntrinsicGraphNode';
+import { isIntrinsicGraphNode } from '@/utils/filter/isIntrinsicGraphNode';
 
 /***
  * Skips a unique chain of structural project packages, stopping before real dependency endpoints.
