@@ -4,35 +4,28 @@ import { join } from 'node:path';
 
 import { assert, describe, it } from '@artiphishle/testosterone';
 
-import { getAuditEvaluationAction } from '@/app/actions/audit.actions';
-import { getProjectVisualizationAction } from '@/app/actions/project.actions';
+import { loadProjectOverviewAsync } from '@/features/project-analysis/composition/loadProjectOverviewAsync';
+import { runProjectAnalysisActionAsync } from '@/utils/runProjectAnalysisActionAsync';
 
 describe('[project analysis actions]', () => {
   it('returns a serializable failure for a missing project root', async () => {
     const root = await mkdtemp(join(tmpdir(), 'pkgviz-missing-'));
     await rm(root, { recursive: true, force: true });
 
-    const previousProjectPath = process.env.NEXT_PUBLIC_PROJECT_PATH;
-    process.env.NEXT_PUBLIC_PROJECT_PATH = root;
+    const projectResult = await runProjectAnalysisActionAsync(() => loadProjectOverviewAsync(root));
+    const expected = {
+      ok: false,
+      error: `Invalid or unavailable project path: ${root}`,
+    };
 
-    try {
-      const [projectResult, auditResult] = await Promise.all([
-        getProjectVisualizationAction(),
-        getAuditEvaluationAction(),
-      ]);
-      const expected = {
-        ok: false,
-        error: `Invalid or unavailable project path: ${root}`,
-      };
+    assert.deepEqual(projectResult, expected);
+  });
 
-      assert.deepEqual(projectResult, expected);
-      assert.deepEqual(auditResult, expected);
-    } finally {
-      if (previousProjectPath === undefined) {
-        delete process.env.NEXT_PUBLIC_PROJECT_PATH;
-      } else {
-        process.env.NEXT_PUBLIC_PROJECT_PATH = previousProjectPath;
-      }
-    }
+  it('keeps unexpected analysis failures inside the persistent project error UI contract', async () => {
+    const projectResult = await runProjectAnalysisActionAsync(() =>
+      Promise.reject(new Error('analysis failed'))
+    );
+
+    assert.deepEqual(projectResult, { ok: false, error: 'analysis failed' });
   });
 });

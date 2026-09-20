@@ -181,12 +181,16 @@ not additional component effects. Source changes are not evidence of browser res
 | P1 | Keep compound cycle highlights paint-only | PKGViz | Cycle compounds use their border/title and an outline, without the group-wide red underlay. Normal bounded compound fills remain visible; light/dark style regressions pass. |
 | P1 | Resolve overlap warnings | Shared | Integrated from ZORA 20.4.1 ([PR #494](https://github.com/ankhorage/zora/pull/494)): the three reported Coderadar dependencies become self-loops after depth projection. The owner now sizes loop control points outside measured node bounds after size/style/layout changes, never on pan or zoom. Dependencies and weights are retained. Browser acceptance remains pending; this is not a blanket guarantee against other overlap warnings. |
 | P2 | Reduce label detail, pixel density, edge routing cost or compound content | Shared | Proposal only: requires measured benefit and user agreement on visual tradeoffs. No quality-reducing defaults enabled. |
-| P2 | Share graph/audit project analysis | PKGViz | Source review found separate initial analysis calls. Proposal only; snapshot freshness and failure behavior need an explicit design. |
+| P0 | Share graph/tree/audit project analysis | PKGViz | Implemented: the request-time page load derives all three results from one snapshot. Concurrent reads for the same path share only in-flight work; settled successes and failures are discarded so later loads remain fresh and retryable. Client mounting no longer starts analysis server actions. |
 
-### Presentation CPU measurement
+### Performance measurements
 
 Measured improvements on the local synthetic benchmark below:
 
+- **50% fewer complete project-analysis pipelines during initial loading:** graph/tree and audit
+  previously performed two independent language detection, filesystem parsing, and graph-building
+  pipelines. The shared snapshot reduces that deterministic work count from two to one. This is a
+  workflow count, not a claim that wall-clock loading time is exactly halved.
 - **About 77 times faster graph-model preparation:** 294.5 ms down to 3.8 ms without cycle
   overlays, removing about 291 ms of CPU work from each measured model update.
 - **About 84 times faster with 50 cycle overlays:** 342.6 ms down to 4.1 ms, while preserving
