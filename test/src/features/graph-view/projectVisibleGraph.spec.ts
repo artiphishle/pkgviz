@@ -4,6 +4,42 @@ import type { ElementsDefinition } from 'cytoscape';
 import { projectVisibleGraph } from '@/features/graph-view/utils/projectVisibleGraph';
 
 describe('[graph view projection]', () => {
+  it('bounds depth relative to the active package and only the enabled node categories', () => {
+    const elements: ElementsDefinition = {
+      nodes: [
+        ...['io', 'io.app', 'io.app.a', 'io.app.a.child', 'io.app.b'].map(id => ({
+          data: { id, isIntrinsic: true },
+        })),
+        ...['vendor', 'vendor.one', 'vendor.one.two', 'vendor.one.two.three'].map(id => ({
+          data: { id, isIntrinsic: false },
+          classes: 'isVendor',
+        })),
+      ],
+      edges: ['vendor', 'vendor.one', 'vendor.one.two', 'vendor.one.two.three'].map(target => ({
+        data: { source: 'io.app.a.child', target },
+      })),
+    };
+    const input = {
+      elements,
+      currentPackage: 'io.app',
+      showCompoundNodes: false,
+      subPackageDepth: 8,
+    };
+    expect(projectVisibleGraph({ ...input, showVendorPackages: false }).maxSubPackageDepth).toBe(2);
+    expect(projectVisibleGraph({ ...input, showVendorPackages: true }).maxSubPackageDepth).toBe(4);
+    expect(
+      projectVisibleGraph({ ...input, currentPackage: '', showVendorPackages: false })
+        .maxSubPackageDepth
+    ).toBe(4);
+    const maximum = projectVisibleGraph({
+      ...input,
+      showVendorPackages: false,
+      subPackageDepth: 2,
+    });
+    const excessive = projectVisibleGraph({ ...input, showVendorPackages: false });
+    expect(maximum.elements).toEqual(excessive.elements);
+  });
+
   it('skips single-child package levels until the first relevant branching scope', () => {
     const elements = createDeepElements();
 

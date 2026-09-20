@@ -2,7 +2,7 @@
 
 import type { GraphViewController } from '@zora/graph-view';
 import { CircleDotDashedIcon } from 'lucide-react';
-import type { ChangeEvent } from 'react';
+import React, { type ChangeEvent } from 'react';
 
 interface GraphZoomControlsProps {
   readonly controller: GraphViewController | null;
@@ -25,8 +25,9 @@ export function GraphZoomControls({ controller, maxZoom, minZoom, zoom }: GraphZ
       <label htmlFor="zoom">Zoom:</label>
       <button
         type="button"
-        title="Zoom to fit"
-        onClick={() => controller?.fit()}
+        title="Fit graph and optimize spacing for readability"
+        aria-label="Fit graph and optimize spacing for readability"
+        onClick={() => controller?.fit({ optimizeSpacing: true })}
         className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
       >
         <CircleDotDashedIcon className="cursor-pointer" />
@@ -36,7 +37,7 @@ export function GraphZoomControls({ controller, maxZoom, minZoom, zoom }: GraphZ
         type="range"
         min={minZoom}
         max={maxZoom}
-        step="0.05"
+        step="any"
         value={zoom}
         onChange={handleSliderChange}
         className="w-64"

@@ -19,6 +19,7 @@ export function useGraphProjection(input: UseGraphProjectionInput): ElementsDefi
     preservePackageScope,
     setCurrentPackage,
     setMaxSubPackageDepth,
+    setSubPackageDepth,
     showCompoundNodes,
     showVendorPackages,
     subPackageDepth,
@@ -48,8 +49,11 @@ export function useGraphProjection(input: UseGraphProjectionInput): ElementsDefi
   useEffect(() => {
     if (projection === null) return;
     setMaxSubPackageDepth(projection.maxSubPackageDepth);
+    if (projection.redirectPackage === null && subPackageDepth > projection.maxSubPackageDepth) {
+      setSubPackageDepth(projection.maxSubPackageDepth);
+    }
     if (projection.redirectPackage !== null) setCurrentPackage(projection.redirectPackage);
-  }, [projection, setCurrentPackage, setMaxSubPackageDepth]);
+  }, [projection, setCurrentPackage, setMaxSubPackageDepth, setSubPackageDepth, subPackageDepth]);
 
   return projection?.redirectPackage === null ? projection.elements : null;
 }
@@ -60,6 +64,7 @@ interface UseGraphProjectionInput {
   readonly preservePackageScope?: boolean;
   readonly setCurrentPackage: (path: string) => void;
   readonly setMaxSubPackageDepth: (depth: number) => void;
+  readonly setSubPackageDepth: (depth: number) => void;
   readonly showCompoundNodes: boolean;
   readonly showVendorPackages: boolean;
   readonly subPackageDepth: number;

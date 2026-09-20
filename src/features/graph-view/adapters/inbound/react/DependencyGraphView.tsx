@@ -1,14 +1,9 @@
 'use client';
 
-import {
-  GraphView,
-  type GraphViewController,
-  type GraphViewElementEvent,
-  type GraphViewLayoutName,
-} from '@zora/graph-view';
+import { GraphView, type GraphViewElementEvent, type GraphViewLayoutName } from '@zora/graph-view';
 import type { ElementsDefinition, LayoutOptions } from 'cytoscape';
 import { useTheme } from 'next-themes';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 
 import { useSettings } from '@/contexts/SettingsContext';
 import { createGraphViewModel } from '@/features/graph-view/adapters/inbound/react/createGraphViewModel';
@@ -17,12 +12,10 @@ import { GraphZoomControls } from '@/features/graph-view/adapters/inbound/react/
 import { useGraphFocus } from '@/features/graph-view/adapters/inbound/react/useGraphFocus';
 import { useGraphInteractions } from '@/features/graph-view/adapters/inbound/react/useGraphInteractions';
 import { useGraphProjection } from '@/features/graph-view/adapters/inbound/react/useGraphProjection';
+import { useGraphViewport } from '@/features/graph-view/adapters/inbound/react/useGraphViewport';
 import { LAYOUTS } from '@/layouts/constants';
 import { getCanvasBg } from '@/layouts/style';
 import type { CycleHighlight } from '@/types/auditVisualization';
-
-const MIN_ZOOM = 0.5;
-const MAX_ZOOM = 2;
 
 /*** Renders PKGViz graph policy through the materialized ZORA GraphView runtime. */
 export function DependencyGraphView(props: DependencyGraphViewProps) {
@@ -35,6 +28,7 @@ export function DependencyGraphView(props: DependencyGraphViewProps) {
     preservePackageScope: props.cycleHighlights.length > 0,
     setCurrentPackage: props.setCurrentPackage,
     setMaxSubPackageDepth: settings.setMaxSubPackageDepth,
+    setSubPackageDepth: settings.setSubPackageDepth,
     showCompoundNodes: settings.showCompoundNodes,
     showVendorPackages: settings.showVendorPackages,
     subPackageDepth: settings.subPackageDepth,
@@ -64,6 +58,7 @@ export function DependencyGraphView(props: DependencyGraphViewProps) {
       layout={presentation.layout}
       layoutOptions={presentation.layoutOptions}
       model={presentation.model}
+      onSpacingFactorChange={settings.setCytoscapeLayoutSpacing}
       spacingFactor={settings.cytoscapeLayoutSpacing}
       styles={presentation.styles}
       theme={theme}
@@ -108,7 +103,7 @@ function useGraphViewPresentation(input: GraphViewPresentationInput) {
 
 /*** Owns GraphView controller callbacks and renders the viewport plus zoom controls. */
 function DependencyGraphCanvas(props: DependencyGraphCanvasProps) {
-  const viewport = useGraphViewport(props);
+  const viewport = useGraphViewport(props.layout);
   const interactions = useGraphInteractions(props.model.nodes, props.model.edges);
 
   /*** Handles structural graph navigation without touching the rendering engine. */
@@ -125,15 +120,18 @@ function DependencyGraphCanvas(props: DependencyGraphCanvasProps) {
           edges={interactions.edges}
           layout={props.layout}
           layoutOptions={props.layoutOptions}
-          maxZoom={MAX_ZOOM}
-          minZoom={MIN_ZOOM}
+          maxZoom={2}
+          minZoom={0.5}
+          minReadableLabelSize={24}
+          maxFitLabelSize={24}
           nodes={interactions.nodes}
           zoomMode="fit-relative"
           sizeNodesToLabels
           onLayoutComplete={viewport.handleLayoutComplete}
           onNodeEvent={handleNodeEvent}
           onReady={viewport.handleReady}
-          onViewportChange={nextViewport => viewport.setZoom(nextViewport.zoom)}
+          onViewportChange={viewport.handleViewportChange}
+          onSpacingFactorChange={props.onSpacingFactorChange}
           spacingFactor={props.spacingFactor}
           style={{ background: getCanvasBg(props.theme) }}
           styleRules={props.styles}
@@ -142,34 +140,12 @@ function DependencyGraphCanvas(props: DependencyGraphCanvasProps) {
       </div>
       <GraphZoomControls
         controller={viewport.controller}
-        maxZoom={MAX_ZOOM}
-        minZoom={MIN_ZOOM}
+        maxZoom={viewport.max}
+        minZoom={viewport.min}
         zoom={viewport.zoom}
       />
     </div>
   );
-}
-
-/*** Coordinates controller readiness and intentional layout-algorithm viewport requests. */
-function useGraphViewport(props: DependencyGraphCanvasProps) {
-  const [controller, setController] = useState<GraphViewController | null>(null);
-  const [zoom, setZoom] = useState(1);
-  const previousLayoutRef = React.useRef(props.layout);
-
-  /*** Recenters after an intentional layout-algorithm change. */
-  const handleLayoutComplete = (nextController: GraphViewController) => {
-    const layoutChanged = previousLayoutRef.current !== props.layout;
-    previousLayoutRef.current = props.layout;
-    if (layoutChanged) nextController.fit();
-  };
-
-  /*** Captures the ready controller and its initial fitted zoom. */
-  const handleReady = (nextController: GraphViewController) => {
-    setController(nextController);
-    setZoom(nextController.getViewport().zoom);
-  };
-
-  return { controller, handleLayoutComplete, handleReady, setZoom, zoom };
 }
 
 /*** Narrows persisted Cytoscape layout names to the layouts supported by ZORA GraphView. */
@@ -198,6 +174,7 @@ interface GraphViewPresentationInput {
 }
 
 interface DependencyGraphCanvasProps extends DependencyGraphViewProps {
+  readonly onSpacingFactorChange: (spacingFactor: number) => void;
   readonly layout: GraphViewLayoutName;
   readonly layoutOptions: Readonly<Record<string, unknown>>;
   readonly model: NonNullable<ReturnType<typeof createGraphViewModel>>;

@@ -43,6 +43,7 @@ describe('[cycle projection workflow]', () => {
         preservePackageScope: highlights.length > 0,
         setCurrentPackage: navigate,
         setMaxSubPackageDepth,
+        setSubPackageDepth,
         showCompoundNodes: false,
         showVendorPackages: true,
       });

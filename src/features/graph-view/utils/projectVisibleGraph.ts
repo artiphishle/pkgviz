@@ -26,7 +26,12 @@ export function projectVisibleGraph(input: ProjectVisibleGraphInput): ProjectVis
       input.showCompoundNodes ? visible : removeEmptyStructuralNodes(visible),
       input.currentPackage
     ),
-    maxSubPackageDepth: getMaxDepth(input.elements),
+    maxSubPackageDepth: Math.max(
+      1,
+      getMaxDepth(
+        input.showVendorPackages ? packageFiltered : filterVendorPackages(packageFiltered)
+      )
+    ),
     redirectPackage: resolveRedirectPackage(input),
   };
 }

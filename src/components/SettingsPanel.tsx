@@ -139,13 +139,13 @@ function LayoutSpacingSettings() {
   const { cytoscapeLayoutSpacing, setCytoscapeLayoutSpacing } = useSettings();
 
   return (
-    <SidebarSection title={t('settings.layoutSpacing') + ': ' + cytoscapeLayoutSpacing}>
+    <SidebarSection title={t('settings.layoutSpacing') + ': ' + cytoscapeLayoutSpacing.toFixed(2)}>
       <SidebarRow>
         <SettingsSlider
           ariaLabel={t('settings.layoutSpacing')}
           max={1}
           min={0.1}
-          step={0.1}
+          step={0.01}
           value={cytoscapeLayoutSpacing}
           onValueChange={setCytoscapeLayoutSpacing}
         />
@@ -162,7 +162,7 @@ function SettingsSlider({ ariaLabel, max, min, onValueChange, step, value }: Set
       max={max}
       step={step}
       value={[value]}
-      onValueChange={([nextValue]) => onValueChange(Number(nextValue.toFixed(1)))}
+      onValueChange={([nextValue]) => onValueChange(nextValue)}
       aria-label={ariaLabel}
       className="relative flex h-5 w-full touch-none select-none items-center"
     >
