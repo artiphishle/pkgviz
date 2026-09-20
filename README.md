@@ -150,6 +150,13 @@ cp .env.tpl .env
 bun dev
 ```
 
+### Cycle highlights
+
+Cycle highlighting is disabled by default. `NEXT_PUBLIC_SETTINGS_SHOW_CYCLES=true` enables all
+detected cycles initially; an explicit per-cycle choice in localStorage takes precedence, including
+an explicit disabled choice. Choices are scoped to `NEXT_PUBLIC_PROJECT_PATH` and survive tab changes
+and reloads. This affects visualization only, not audit detection or blocking rules.
+
 ## Performance
 
 Graph rendering follows the applicable [Cytoscape performance guidance](https://js.cytoscape.org/#performance).
@@ -168,8 +175,9 @@ not additional component effects. Source changes are not evidence of browser res
 | P1 | Normalize zoom to the current view | ZORA | Integrated from 20.4.0: 100% means the visible-node fit; the UI range is 50–200% of that fit. Navigation rebases the viewport through the owner lifecycle. |
 | P1 | Avoid layout animation overhead | ZORA | Current GraphView forces non-animated layouts; PKGViz layout-option values do not override that owner policy. |
 | P1 | Keep ordinary edges opaque and labels limited | PKGViz | Existing baseline: solid opaque edges; ordinary edges have no labels. Cycle-step labels and directed arrows retain their meaning. |
-| P1 | Bound displayed graph size | PKGViz | Existing package/depth/vendor projection; lifted edge weights remain covered by regression tests. |
-| P1 | Resolve overlap warnings | Shared | Still open: compound/ancestor-edge handling is tested at model/style boundaries, not proven warning-free in the browser. |
+| P1 | Bound displayed graph size | PKGViz | Vendor-independent navigation skips empty structural chains while retaining real isolated packages and external dependencies. Lifted edge weights and original edge IDs remain covered by regression tests. |
+| P1 | Bound compound paint intensity | PKGViz | Prepared depth steps approach, but never exceed, an 18% cumulative tint. Numeric style rules grow with hierarchy depth, not node count; no per-frame ancestry callbacks. Browser appearance acceptance pending. |
+| P1 | Resolve overlap warnings | Shared | The three reported Coderadar edges become self-loops after depth projection. Renderer geometry reproduced control points inside measured node bounds. ZORA [PR #494](https://github.com/ankhorage/zora/pull/494) fixes loop sizing; release, integration and browser acceptance remain pending. |
 | P2 | Reduce label detail, pixel density, edge routing cost or compound content | Shared | Proposal only: requires measured benefit and user agreement on visual tradeoffs. No quality-reducing defaults enabled. |
 | P2 | Share graph/audit project analysis | PKGViz | Source review found separate initial analysis calls. Proposal only; snapshot freshness and failure behavior need an explicit design. |
 
@@ -177,9 +185,9 @@ not additional component effects. Source changes are not evidence of browser res
 
 Measured improvements on the local synthetic benchmark below:
 
-- **About 80 times faster graph-model preparation:** 294.5 ms down to 3.7 ms without cycle
+- **About 77 times faster graph-model preparation:** 294.5 ms down to 3.8 ms without cycle
   overlays, removing about 291 ms of CPU work from each measured model update.
-- **About 86 times faster with 50 cycle overlays:** 342.6 ms down to 4.0 ms, while preserving
+- **About 84 times faster with 50 cycle overlays:** 342.6 ms down to 4.1 ms, while preserving
   cycle-color precedence and directed-edge step numbering.
 
 These gains reduce the work needed to prepare graph updates without removing graph details.
@@ -189,11 +197,15 @@ Run `bun test/benchmarks/graphPresentation.ts`. The synthetic fixture contains 5
 15,000 directed edges, and an optional 50 cycle overlays. Each result is the median of nine samples
 after three warmups, on the same machine/runtime (macOS arm64, Bun 1.4.2).
 
-| Operation | Before (`5496a87`) | Indexed presentation |
+| Operation | Before (`5496a87`) | Current presentation |
 | --- | ---: | ---: |
-| Model, no cycle overlays | 294.5 ms | 3.7 ms |
-| Model, 50 cycle overlays | 342.6 ms | 4.0 ms |
-| Package/depth projection (unchanged) | 6.4 ms | 6.2 ms |
+| Model, no cycle overlays | 294.5 ms | 3.8 ms |
+| Model, 50 cycle overlays | 342.6 ms | 4.1 ms |
+| Package/depth projection | 6.4 ms | 8.1 ms |
+
+Rechecked on 2026-09-20 with bounded compound shading and corrected package projection. Projection
+now retains original edge evidence and removes empty structural containers: its additional work is
+shown explicitly, not counted as a speed improvement.
 
 These are local CPU microbenchmarks, not browser frame-rate, layout, memory, network, or end-to-end
 measurements. Timings vary; there is no timing threshold in the regression suite. Update this table
@@ -201,7 +213,7 @@ when owner fixes are released/integrated or measurements change. Further optimiz
 must be reported before implementation. E2E and smoke tests are currently excluded by agreement.
 
 The materialization command uses a project-local Ankh provider cache under `.generated/ankh`.
-This avoids reusing an older globally cached GraphView after an owner release. The generated
+This isolates the project from the global cache, but a local catalog can also retain an older release. The generated
 `zora-artifact.json` records the actual published version used; generated artifacts and caches are
 not committed. The CLI still follows its published provider catalog and cache refresh policy.
 

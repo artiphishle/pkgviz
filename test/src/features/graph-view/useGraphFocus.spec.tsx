@@ -73,9 +73,9 @@ describe('[cycle projection workflow]', () => {
       await act(async () => root.render(<Harness highlights={active} />));
       expect(transitions).toEqual(['io.reflectoring']);
       await act(async () => root.render(<Harness highlights={[]} />));
-      expect(transitions).toEqual(['io.reflectoring', ancestor]);
+      expect(transitions).toEqual(['io.reflectoring']);
       await act(async () => root.render(<Harness highlights={active} />));
-      expect(transitions).toEqual(['io.reflectoring', ancestor, 'io.reflectoring']);
+      expect(transitions).toEqual(['io.reflectoring']);
     } finally {
       await act(async () => root.unmount());
       host.unmount();

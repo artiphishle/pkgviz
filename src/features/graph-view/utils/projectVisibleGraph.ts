@@ -1,5 +1,6 @@
 import type { ElementsDefinition } from 'cytoscape';
 
+import { removeEmptyStructuralNodes } from '@/features/graph-view/utils/removeEmptyStructuralNodes';
 import { filterByPackagePrefix } from '@/utils/filter/filterByPackagePrefix';
 import { filterEmptyPackages } from '@/utils/filter/filterEmptyPackages';
 import { filterSubPackagesByDepth, getMaxDepth } from '@/utils/filter/filterSubPackagesFromDepth';
@@ -21,9 +22,12 @@ export function projectVisibleGraph(input: ProjectVisibleGraphInput): ProjectVis
   const visible = input.showVendorPackages ? depthFiltered : filterVendorPackages(depthFiltered);
 
   return {
-    elements: labelVisibleNodes(visible, input.currentPackage),
+    elements: labelVisibleNodes(
+      input.showCompoundNodes ? visible : removeEmptyStructuralNodes(visible),
+      input.currentPackage
+    ),
     maxSubPackageDepth: getMaxDepth(input.elements),
-    redirectPackage: resolveRedirectPackage(input, visible),
+    redirectPackage: resolveRedirectPackage(input),
   };
 }
 
@@ -48,14 +52,11 @@ interface ProjectVisibleGraphResult {
  * An active cycle can require an ancestor package as a visible node. Redirecting into that package
  * hides it again and causes an endless focus/redirect loop, repeatedly remounting the renderer.
  */
-function resolveRedirectPackage(
-  input: ProjectVisibleGraphInput,
-  visible: ElementsDefinition
-): string | null {
+function resolveRedirectPackage(input: ProjectVisibleGraphInput): string | null {
   const currentPackage = input.currentPackage.replaceAll('/', '.');
   if (input.preservePackageScope) return null;
 
-  const nextPackage = filterEmptyPackages(currentPackage, visible);
+  const nextPackage = filterEmptyPackages(currentPackage, input.elements);
   return nextPackage === currentPackage ? null : nextPackage;
 }
 

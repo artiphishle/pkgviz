@@ -6,7 +6,7 @@ import { createGraphViewModel } from '@/features/graph-view/adapters/inbound/rea
 import { getStyle } from '@/layouts/style';
 
 describe('[getStyle]', () => {
-  it('keeps nested compound fills transparent and reserves real node padding', () => {
+  it('keeps nested compound fills visible and bounded while reserving real node padding', () => {
     const elements = {
       nodes: [
         { data: { id: 'p' } },
@@ -22,8 +22,11 @@ describe('[getStyle]', () => {
       style: getStyle(elements, 'light'),
     });
     try {
-      expect(cy.getElementById('p').style('background-opacity')).toBe('0');
-      expect(cy.getElementById('p.c').style('background-opacity')).toBe('0');
+      const outer = Number(cy.getElementById('p').style('background-opacity'));
+      const inner = Number(cy.getElementById('p.c').style('background-opacity'));
+      expect(outer > 0).toBe(true);
+      expect(1 - (1 - outer) * (1 - inner) > outer).toBe(true);
+      expect(1 - (1 - outer) * (1 - inner) < 0.18).toBe(true);
       expect(cy.getElementById('p.c.leaf').style('padding')).toBe('12px');
     } finally {
       cy.destroy();

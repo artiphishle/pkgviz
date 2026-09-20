@@ -1,5 +1,6 @@
 import type { ElementsDefinition, StylesheetJson } from 'cytoscape';
 
+import { createCompoundOpacityIndex } from '@/features/graph-view/utils/createCompoundOpacityIndex';
 import { getWeightBuckets } from '@/layouts/getWeightBuckets';
 
 export type ThemeKey = 'dark' | 'light';
@@ -17,6 +18,7 @@ const palette = {
     nodeBorderVendor: '#E2D5FF',
     nodeBgVendor: '#D1C4FF',
     nodeText: '#0B5FFF',
+    compoundBg: '#7892B3',
 
     selectedFill: '#0B5FFF',
     selectedFillVendor: '#a025aa',
@@ -35,6 +37,7 @@ const palette = {
     nodeBorder: '#2A3A4A',
     nodeBorderVendor: '#351542',
     nodeText: '#E8F0FF',
+    compoundBg: '#A9BCD5',
 
     selectedFill: '#2E6FFF',
     selectedFillVendor: '#4E25AA',
@@ -56,6 +59,7 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
     ...getNodeInteractionStyles(colors),
     ...getNodeStateStyles(colors),
     ...getCompoundStyles(colors),
+    ...getCompoundOpacityStyles(filteredElements),
     ...getEdgeBaseStyles(colors),
     ...getEdgeWeightStyles(colors, thresholds),
     ...getCycleEdgeStyles(colors),
@@ -160,7 +164,7 @@ function getNodeStateStyles(colors: Palette): StylesheetJson {
 }
 
 /***
- * Shows compound boundaries without accumulating opaque color across overlapping ancestors.
+ * Shows softly tinted compound boundaries with bounded, prepared nested-depth opacity.
  * @performance Keep grouping paint-only; do not add nested DOM surfaces or extra graph elements.
  */
 function getCompoundStyles(colors: Palette): StylesheetJson {
@@ -168,8 +172,8 @@ function getCompoundStyles(colors: Palette): StylesheetJson {
     {
       selector: 'node:parent, node:parent:selected',
       style: {
-        'background-opacity': 0,
-        'background-color': colors.selectedFill,
+        'background-opacity': 0.04,
+        'background-color': colors.compoundBg,
         color: colors.nodeText,
         'border-width': 1,
         'border-opacity': 0.35,
@@ -195,6 +199,27 @@ function getCompoundStyles(colors: Palette): StylesheetJson {
       },
     },
   ];
+}
+
+/***
+ * Emits one numeric paint rule per visible depth, including depths created by detached endpoints.
+ * @performance Bound stylesheet size by hierarchy depth, not node count; no style callbacks.
+ */
+function getCompoundOpacityStyles(elements: ElementsDefinition): StylesheetJson {
+  const ids = new Set(elements.nodes.map(node => node.data.id));
+  const parents = new Map(
+    elements.nodes.flatMap(node => {
+      const { id, parent } = node.data;
+      return typeof id === 'string' && typeof parent === 'string' && ids.has(parent)
+        ? [[id, parent] as const]
+        : [];
+    })
+  );
+  const opacities = createCompoundOpacityIndex(parents, new Set());
+  return [...new Set(opacities.values())].map(opacity => ({
+    selector: `node:parent[compoundFillOpacity = ${opacity}]`,
+    style: { 'background-opacity': opacity },
+  }));
 }
 
 /***

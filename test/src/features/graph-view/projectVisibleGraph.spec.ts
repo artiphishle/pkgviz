@@ -29,7 +29,7 @@ describe('[graph view projection]', () => {
       subPackageDepth: 1,
     });
 
-    expect(src.redirectPackage).toBe('src.io');
+    expect(src.redirectPackage).toBe('src.io.reflectoring');
     expect(io.redirectPackage).toBe('src.io.reflectoring');
     expect(reflectoring.redirectPackage).toBeNull();
   });
@@ -61,8 +61,71 @@ describe('[graph view projection]', () => {
 
     expect(elements.nodes[1]?.data.parent).toBe('src');
     expect(elements.nodes[1]?.data.parentInactive).toBeUndefined();
-    expect(result.elements.nodes[1]?.data.parent).toBeUndefined();
-    expect(result.elements.nodes[1]?.data.parentInactive).toBe('src');
+    const child = result.elements.nodes.find(node => node.data.id === 'src.feature');
+    expect(child?.data.parent).toBeUndefined();
+    expect(child?.data.parentInactive).toBe('src');
+    expect(result.elements.nodes.some(node => node.data.id === 'src')).toBe(false);
+  });
+});
+
+describe('[package scope with external dependencies]', () => {
+  const elements: ElementsDefinition = {
+    nodes: [
+      'io',
+      'io.reflectoring',
+      'io.reflectoring.a',
+      'io.reflectoring.b',
+      'io.reflectoring.isolated',
+    ].map(id => ({ data: { id, isIntrinsic: true } })),
+    edges: [
+      { data: { id: 'ab', source: 'io.reflectoring.a', target: 'io.reflectoring.b', weight: 2 } },
+      { data: { id: 'external', source: 'io.reflectoring.a', target: 'lombok', weight: 3 } },
+    ],
+  };
+  const graph = {
+    ...elements,
+    nodes: [...elements.nodes, { data: { id: 'lombok', isIntrinsic: false }, classes: 'isVendor' }],
+  };
+  const input = {
+    elements: graph,
+    currentPackage: '',
+    showCompoundNodes: false,
+    subPackageDepth: 2,
+  };
+
+  it('chooses the same relevant package scope with or without vendors', () => {
+    expect(projectVisibleGraph({ ...input, showVendorPackages: true }).redirectPackage).toBe(
+      'io.reflectoring'
+    );
+    expect(projectVisibleGraph({ ...input, showVendorPackages: false }).redirectPackage).toBe(
+      'io.reflectoring'
+    );
+  });
+
+  it('keeps adjacent vendors, edge weights and real isolated packages after navigating', () => {
+    const result = projectVisibleGraph({
+      ...input,
+      currentPackage: 'io.reflectoring',
+      showVendorPackages: true,
+    });
+    expect(result.redirectPackage).toBeNull();
+    expect(result.elements.nodes.map(node => node.data.id)).toEqual([
+      'io.reflectoring.a',
+      'io.reflectoring.b',
+      'io.reflectoring.isolated',
+      'lombok',
+    ]);
+    expect(result.elements.edges.map(edge => edge.data.weight)).toEqual([2, 3]);
+  });
+
+  it('does not skip a package that itself participates in dependencies', () => {
+    const related = {
+      ...graph,
+      edges: [...graph.edges, { data: { source: 'io', target: 'lombok' } }],
+    };
+    expect(
+      projectVisibleGraph({ ...input, elements: related, showVendorPackages: true }).redirectPackage
+    ).toBeNull();
   });
 });
 

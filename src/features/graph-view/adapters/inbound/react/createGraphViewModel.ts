@@ -1,6 +1,7 @@
 import type { GraphViewEdge, GraphViewNode } from '@zora/graph-view';
 import type { ElementsDefinition } from 'cytoscape';
 
+import { createCompoundOpacityIndex } from '@/features/graph-view/utils/createCompoundOpacityIndex';
 import { readNodeDefinitionId } from '@/features/graph-view/utils/readNodeDefinitionId';
 import type { CycleHighlight } from '@/types/auditVisualization';
 
@@ -27,11 +28,15 @@ export function createGraphViewModel(
   const packageParents = indexPackageParents(allElements);
   const parentNodeIds = new Set([...visibleNodeIds].filter(id => packageParents.has(id)));
   const cycles = indexCyclePresentation(cycleHighlights);
+  const appearance = {
+    cycles: cycles.nodes,
+    opacity: createCompoundOpacityIndex(parentById, detachedNodeIds),
+  };
 
   return {
     edges: visibleElements.edges.flatMap(edge => createGraphViewEdge(edge, cycles.edges)),
     nodes: visibleElements.nodes.flatMap(node =>
-      createGraphViewNode(node, parentById, detachedNodeIds, parentNodeIds, cycles.nodes)
+      createGraphViewNode(node, parentById, detachedNodeIds, parentNodeIds, appearance)
     ),
     parentNodeIds,
   };
@@ -153,12 +158,15 @@ function createGraphViewNode(
   parentById: ReadonlyMap<string, string>,
   detachedNodeIds: ReadonlySet<string>,
   parentNodeIds: ReadonlySet<string>,
-  cycleColors: ReadonlyMap<string, string>
+  appearance: {
+    readonly cycles: ReadonlyMap<string, string>;
+    readonly opacity: ReadonlyMap<string, number>;
+  }
 ): GraphViewNode[] {
   const id = readNodeDefinitionId(node);
   if (id === null) return [];
 
-  const cycleColor = cycleColors.get(id);
+  const cycleColor = appearance.cycles.get(id);
   const parentId = detachedNodeIds.has(id) ? undefined : parentById.get(id);
   const label = readString(node.data.label) ?? readString(node.data.name) ?? id;
 
@@ -174,6 +182,7 @@ function createGraphViewNode(
       ),
       data: {
         ...node.data,
+        compoundFillOpacity: appearance.opacity.get(id) ?? 0.04,
         parent: parentId,
         ...(cycleColor !== undefined ? { auditCycleColor: cycleColor } : {}),
       },

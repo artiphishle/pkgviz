@@ -98,7 +98,8 @@ export function getMaxDepthByRoot(elements: ElementsDefinition): Record<string, 
 
 /***
  * Filters sub-packages so only the desired number of levels under each root are shown.
- *
+ * @performance Aggregate weights and origin IDs in local maps without repeatedly copying growing
+ * evidence arrays. Inputs remain immutable; a large lifted bundle must stay linear in edge count.
  */
 export function filterSubPackagesByDepth(
   elements: ElementsDefinition,
@@ -126,6 +127,7 @@ export function filterSubPackagesByDepth(
 
   // 4) Lift & aggregate edges to visible ancestors (sum weights)
   const edgeMap = new Map<string, EdgeDefinition>();
+  const edgeOrigins = new Map<string, string[]>();
 
   for (const e of elements.edges) {
     const rawSource = e.data.source;
@@ -142,13 +144,17 @@ export function filterSubPackagesByDepth(
     }
 
     const key = `${liftedSource}->${liftedTarget}`;
+    const origins = edgeOrigins.get(key) ?? [];
+    origins.push(e.data.id ?? `${rawSource}->${rawTarget}`);
+    edgeOrigins.set(key, origins);
     if (!edgeMap.has(key)) {
       // clone with lifted endpoints; keep your metadata; (optionally set a stable id)
       edgeMap.set(key, {
         ...e,
         data: {
           ...e.data,
-          // id: key, // uncomment if you want stable, deduped edge ids
+          id: key,
+          originalEdgeIds: origins,
           source: liftedSource,
           target: liftedTarget,
           // initialize aggregated weight
