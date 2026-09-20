@@ -4,10 +4,14 @@
     "pkgviz": "bin/pkgviz.ts"
   },
   "files": [
-    "/bin",
-    "/src",
+    "bin",
+    "src",
     "tsconfig.json",
-    ".next"
+    ".next/BUILD_ID",
+    ".next/*.js",
+    ".next/*.json",
+    ".next/server",
+    ".next/static"
   ],
   "type": "module",
   "engines": {
