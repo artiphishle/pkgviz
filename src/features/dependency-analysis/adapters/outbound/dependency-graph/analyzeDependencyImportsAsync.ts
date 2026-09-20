@@ -1,4 +1,4 @@
-import { readFile, realpath } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import {
@@ -6,6 +6,7 @@ import {
   type DependencyGraphNodeData,
   type DependencyImportEvidence,
 } from '@ankhorage/dependency-graph';
+import { resolveFileSystemPathWithinRoot } from '@ankhorage/utility/node/fs';
 
 import type { ImportDefinition } from '@/shared/types';
 import { toPosix } from '@/shared/utils/toPosix';
@@ -35,10 +36,14 @@ export async function analyzeDependencyImportsAsync(
   importNameMode: ImportNameMode = 'package',
   intrinsicMode: ImportIntrinsicMode = 'canonical'
 ): Promise<ReadonlyMap<string, readonly ImportDefinition[]>> {
-  const [canonicalProjectRoot, canonicalAnalysisRoot] = await Promise.all([
-    realpath(projectRoot),
-    realpath(analysisRoot),
-  ]);
+  const canonicalProjectRoot = resolveFileSystemPathWithinRoot(projectRoot, '.', {
+    allowRoot: true,
+  });
+  const canonicalAnalysisRoot = resolveFileSystemPathWithinRoot(
+    canonicalProjectRoot,
+    resolveFileSystemPathWithinRoot(analysisRoot, '.', { allowRoot: true }),
+    { allowRoot: true }
+  );
   const graph = await createDependencyGraphAsync({
     projects: [{ id: 'current', rootPath: canonicalProjectRoot }],
   });
