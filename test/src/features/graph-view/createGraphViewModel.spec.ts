@@ -4,7 +4,7 @@ import type { ElementsDefinition } from 'cytoscape';
 import { createGraphViewModel } from '@/features/graph-view/adapters/inbound/react/createGraphViewModel';
 
 describe('[createGraphViewModel]', () => {
-  it('prepares label geometry once with the same label, name and id precedence', () => {
+  it('resolves labels without overriding owner-measured label geometry', () => {
     const elements = {
       nodes: [
         { data: { id: 'a', name: 'name', label: 'relative.a' } },
@@ -15,7 +15,7 @@ describe('[createGraphViewModel]', () => {
     };
     const model = createGraphViewModel(elements, elements, []);
     expect(model.nodes.map(node => node.label)).toEqual(['relative.a', 'name-b', 'c']);
-    expect(model.nodes.map(node => node.data?.labelWidth)).toEqual([70, 42, 7]);
+    expect(model.nodes.every(node => node.data?.labelWidth === undefined)).toBe(true);
   });
 
   it('recognizes hidden descendants and missing intermediate packages without prefix collisions', () => {

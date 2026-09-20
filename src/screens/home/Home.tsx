@@ -9,12 +9,13 @@ import Breadcrumb from '@/components/Breadcrumb';
 import Header from '@/components/Header';
 import ProjectLoadError from '@/components/ProjectLoadError';
 import { SettingsProvider } from '@/contexts/SettingsContext';
+import { useCycleSelection } from '@/features/audit/adapters/inbound/react/useCycleSelection';
 import { resolveProjectTreeNavigation } from '@/features/project-tree/application/use-cases/resolveProjectTreeNavigation';
 import { findProjectTreeNodeByGraphPackage } from '@/features/project-tree/utils/findProjectTreeNodeByGraphPackage';
 import { HomeGraph } from '@/screens/home/HomeGraph';
 import { HomeSidebar } from '@/screens/home/HomeSidebar';
 import type { Audit } from '@/types/audit';
-import type { CycleHighlight, CycleInspection } from '@/types/auditVisualization';
+import type { CycleInspection } from '@/types/auditVisualization';
 import type { ProjectTreeNode } from '@/types/projectTree';
 
 /*** Renders the PKGViz home screen and composes project navigation, diagnostics, and the graph. */
@@ -25,7 +26,7 @@ export default function HomeScreen() {
   const [selectedTreeId, setSelectedTreeId] = useState<string | null>(null);
   const [auditEvaluation, setAuditEvaluation] = useState<Audit['evaluation'] | null>(null);
   const [projectError, setProjectError] = useState<string | null>(null);
-  const [cycleHighlights, setCycleHighlights] = useState<readonly CycleHighlight[]>([]);
+  const cycleSelection = useCycleSelection(auditEvaluation?.cyclicPackages ?? EMPTY_CYCLES);
   const [cycleInspection, setCycleInspection] = useState<CycleInspection | null>(null);
 
   useEffect(() => {
@@ -98,7 +99,7 @@ export default function HomeScreen() {
             projectTree={projectTree}
             selectedTreeId={selectedTreeId}
             onProjectTreeSelect={selectProjectTreeNode}
-            onCycleHighlightsChange={setCycleHighlights}
+            cycleSelection={cycleSelection}
             onCycleInspectionChange={setCycleInspection}
           />
           {projectError ? (
@@ -106,7 +107,7 @@ export default function HomeScreen() {
           ) : (
             <HomeGraph
               currentPackage={currentPackage}
-              cycleHighlights={cycleHighlights}
+              cycleHighlights={cycleSelection.highlights}
               cycleInspection={cycleInspection}
               packageGraph={packageGraph}
               setCurrentPackage={navigateToPackage}
@@ -118,6 +119,8 @@ export default function HomeScreen() {
     </>
   );
 }
+
+const EMPTY_CYCLES: NonNullable<Audit['evaluation']>['cyclicPackages'] = [];
 
 /*** Normalizes graph navigation paths to the package-id representation used by Cytoscape. */
 function normalizeGraphPackage(path: string): string {

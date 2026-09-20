@@ -21,7 +21,7 @@ import { LAYOUTS } from '@/layouts/constants';
 import { getCanvasBg } from '@/layouts/style';
 import type { CycleHighlight } from '@/types/auditVisualization';
 
-const MIN_ZOOM = 0.05;
+const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 2;
 
 /*** Renders PKGViz graph policy through the materialized ZORA GraphView runtime. */
@@ -128,6 +128,8 @@ function DependencyGraphCanvas(props: DependencyGraphCanvasProps) {
           maxZoom={MAX_ZOOM}
           minZoom={MIN_ZOOM}
           nodes={interactions.nodes}
+          zoomMode="fit-relative"
+          sizeNodesToLabels
           onLayoutComplete={viewport.handleLayoutComplete}
           onNodeEvent={handleNodeEvent}
           onReady={viewport.handleReady}

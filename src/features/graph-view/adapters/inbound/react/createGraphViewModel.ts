@@ -145,9 +145,8 @@ function isAncestor(
 /***
  * Converts one visible node using prepared parent and cycle lookups.
  * @performance
- * Derive labelWidth from the resolved label here, once per model update. The stylesheet consumes
- * data(labelWidth); replacing it with a style callback repeats work during style recalculation.
- * Keep label precedence and width preparation aligned; model/style tests cover their agreement.
+ * Resolve labels once per model update. ZORA measures styled labels during reconciliation;
+ * do not restore character-count width estimates or per-frame consumer measurement callbacks.
  */
 function createGraphViewNode(
   node: ElementsDefinition['nodes'][number],
@@ -175,7 +174,6 @@ function createGraphViewNode(
       ),
       data: {
         ...node.data,
-        labelWidth: label.length * 7,
         parent: parentId,
         ...(cycleColor !== undefined ? { auditCycleColor: cycleColor } : {}),
       },

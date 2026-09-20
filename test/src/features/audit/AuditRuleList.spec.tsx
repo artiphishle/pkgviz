@@ -34,7 +34,7 @@ describe('[AuditRuleList]', () => {
     const { container, getByText } = render(
       <AuditRuleList
         evaluation={failedEvaluation}
-        onCycleHighlightsChange={() => undefined}
+        cycleSelection={{ highlights: [], selectedIds: [], setSelected: () => undefined }}
         onCycleInspectionChange={() => undefined}
       />
     );
@@ -64,7 +64,7 @@ describe('[AuditRuleList]', () => {
     const { container } = render(
       <AuditRuleList
         evaluation={passedEvaluation}
-        onCycleHighlightsChange={() => undefined}
+        cycleSelection={{ highlights: [], selectedIds: [], setSelected: () => undefined }}
         onCycleInspectionChange={() => undefined}
       />
     );

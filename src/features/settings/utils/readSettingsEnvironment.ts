@@ -4,6 +4,7 @@ import type { LayoutOptions } from 'cytoscape';
 /*** Reads and validates PKGViz viewer defaults from public settings environment variables. */
 export function readSettingsEnvironment(): SettingsEnvironment {
   const environment = {
+    NEXT_PUBLIC_SETTINGS_SHOW_CYCLES: process.env.NEXT_PUBLIC_SETTINGS_SHOW_CYCLES,
     NEXT_PUBLIC_SETTINGS_LAYOUT: process.env.NEXT_PUBLIC_SETTINGS_LAYOUT,
     NEXT_PUBLIC_SETTINGS_LAYOUT_SPACING: process.env.NEXT_PUBLIC_SETTINGS_LAYOUT_SPACING,
     NEXT_PUBLIC_SETTINGS_SHOW_COMPOUNDNODES: process.env.NEXT_PUBLIC_SETTINGS_SHOW_COMPOUNDNODES,
@@ -16,6 +17,7 @@ export function readSettingsEnvironment(): SettingsEnvironment {
   const subPackageDepth = readEnvNumber('NEXT_PUBLIC_SETTINGS_SUBPACKAGE_DEPTH', environment);
 
   return {
+    showCycles: readEnvBoolean('NEXT_PUBLIC_SETTINGS_SHOW_CYCLES', environment) ?? false,
     cytoscapeLayout: isSupportedLayout(layout) ? layout : 'concentric',
     cytoscapeLayoutSpacing:
       layoutSpacing !== undefined && layoutSpacing >= 0.1 && layoutSpacing <= 1 ? layoutSpacing : 1,
@@ -42,6 +44,7 @@ function isSupportedLayout(value: string | undefined): value is LayoutOptions['n
 }
 
 interface SettingsEnvironment {
+  readonly showCycles: boolean;
   readonly cytoscapeLayout: LayoutOptions['name'];
   readonly cytoscapeLayoutSpacing: number;
   readonly showCompoundNodes: boolean;

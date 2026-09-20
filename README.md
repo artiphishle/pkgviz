@@ -164,7 +164,8 @@ not additional component effects. Source changes are not evidence of browser res
 | P0 | Settle obsolete layouts safely and release resources | ZORA | Integrated from 20.3.8: asynchronous ELK completion is isolated and stale results are discarded. ELK computation itself remains uncancellable; browser workload acceptance is pending. |
 | P1 | Batch graph mutations and use ID lookup | ZORA | Integrated: batched element reconciliation retains identity and uses direct ID lookup. |
 | P1 | Keep hover/selection updates independent of layout | PKGViz | Restored leaf-neighborhood presentation through public GraphView events. Prepared model data is reused; selection outlines and hover paint preserve measured node dimensions in regression tests. |
-| P1 | Replace function-valued styles with data mappings | PKGViz | Implemented: label and width use prepared presentation data. Headless regression coverage preserves dimensions and cycle styling. |
+| P1 | Avoid repeated label measurement | Shared | Labels use prepared data; ZORA 20.4.0 measures styled text during reconciliation and writes only changed sizes. No character-count width estimates or per-frame measurement callbacks. Browser acceptance pending. |
+| P1 | Normalize zoom to the current view | ZORA | Integrated from 20.4.0: 100% means the visible-node fit; the UI range is 50–200% of that fit. Navigation rebases the viewport through the owner lifecycle. |
 | P1 | Avoid layout animation overhead | ZORA | Current GraphView forces non-animated layouts; PKGViz layout-option values do not override that owner policy. |
 | P1 | Keep ordinary edges opaque and labels limited | PKGViz | Existing baseline: solid opaque edges; ordinary edges have no labels. Cycle-step labels and directed arrows retain their meaning. |
 | P1 | Bound displayed graph size | PKGViz | Existing package/depth/vendor projection; lifted edge weights remain covered by regression tests. |

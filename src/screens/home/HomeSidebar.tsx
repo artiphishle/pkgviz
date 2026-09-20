@@ -9,17 +9,16 @@ import { AuditRulePanel } from '@/features/audit/adapters/inbound/react/AuditRul
 import { ProjectTreePanel } from '@/features/project-tree/adapters/inbound/react/ProjectTreePanel';
 import { t } from '@/i18n/i18n';
 import type { Audit } from '@/types/audit';
-import type { CycleHighlight, CycleInspection } from '@/types/auditVisualization';
+import type { CycleInspection, CycleSelection } from '@/types/auditVisualization';
 import type { ProjectTreeNode } from '@/types/projectTree';
 
 /*** Composes Tree, Rules, and Export above persistent graph settings. */
 export function HomeSidebar(props: HomeSidebarProps) {
   const [activeTool, setActiveTool] = React.useState<string | null>('tree');
 
-  /*** Exits diagnostics cleanly when switching away from Rules. */
+  /*** Closes the evidence panel without changing the user's cycle visualization choices. */
   const selectTool = (value: string) => {
     if (activeTool === 'rules' && value !== 'rules') {
-      props.onCycleHighlightsChange([]);
       props.onCycleInspectionChange(null);
     }
     setActiveTool(value);
@@ -30,7 +29,7 @@ export function HomeSidebar(props: HomeSidebarProps) {
       <SidebarToolTabs
         activeTool={activeTool}
         evaluation={props.evaluation}
-        onCycleHighlightsChange={props.onCycleHighlightsChange}
+        cycleSelection={props.cycleSelection}
         onCycleInspectionChange={props.onCycleInspectionChange}
         onProjectTreeSelect={props.onProjectTreeSelect}
         onValueChange={selectTool}
@@ -48,7 +47,7 @@ export function HomeSidebar(props: HomeSidebarProps) {
 function SidebarToolTabs({
   activeTool,
   evaluation,
-  onCycleHighlightsChange,
+  cycleSelection,
   onCycleInspectionChange,
   onProjectTreeSelect,
   onValueChange,
@@ -84,7 +83,7 @@ function SidebarToolTabs({
             evaluation === null ? null : (
               <AuditRulePanel
                 evaluation={evaluation}
-                onCycleHighlightsChange={onCycleHighlightsChange}
+                cycleSelection={cycleSelection}
                 onCycleInspectionChange={onCycleInspectionChange}
               />
             ),
@@ -100,14 +99,14 @@ interface HomeSidebarProps {
   readonly projectTree: readonly ProjectTreeNode[];
   readonly selectedTreeId: string | null;
   readonly onProjectTreeSelect: (node: ProjectTreeNode) => void;
-  readonly onCycleHighlightsChange: (highlights: readonly CycleHighlight[]) => void;
+  readonly cycleSelection: CycleSelection;
   readonly onCycleInspectionChange: (inspection: CycleInspection | null) => void;
 }
 
 interface SidebarToolTabsProps {
   readonly activeTool: string | null;
   readonly evaluation: Audit['evaluation'] | null;
-  readonly onCycleHighlightsChange: (highlights: readonly CycleHighlight[]) => void;
+  readonly cycleSelection: CycleSelection;
   readonly onCycleInspectionChange: (inspection: CycleInspection | null) => void;
   readonly onProjectTreeSelect: (node: ProjectTreeNode) => void;
   readonly onValueChange: (value: string) => void;

@@ -3,6 +3,7 @@ import { describe, expect, it } from '@artiphishle/testosterone';
 import { readSettingsEnvironment } from '@/features/settings/utils/readSettingsEnvironment';
 
 const SETTINGS_ENV_NAMES = [
+  'NEXT_PUBLIC_SETTINGS_SHOW_CYCLES',
   'NEXT_PUBLIC_SETTINGS_LAYOUT',
   'NEXT_PUBLIC_SETTINGS_LAYOUT_SPACING',
   'NEXT_PUBLIC_SETTINGS_SHOW_COMPOUNDNODES',
@@ -14,6 +15,7 @@ describe('[readSettingsEnvironment]', () => {
   it('uses the documented defaults when settings are absent', () => {
     withSettingsEnvironment({}, () => {
       expect(readSettingsEnvironment()).toEqual({
+        showCycles: false,
         cytoscapeLayout: 'concentric',
         cytoscapeLayoutSpacing: 1,
         showCompoundNodes: true,
@@ -27,6 +29,7 @@ describe('[readSettingsEnvironment]', () => {
     withSettingsEnvironment(
       {
         NEXT_PUBLIC_SETTINGS_LAYOUT: 'breadthfirst',
+        NEXT_PUBLIC_SETTINGS_SHOW_CYCLES: 'true',
         NEXT_PUBLIC_SETTINGS_LAYOUT_SPACING: '0.5',
         NEXT_PUBLIC_SETTINGS_SHOW_COMPOUNDNODES: 'false',
         NEXT_PUBLIC_SETTINGS_SHOW_VENDORPACKAGES: 'true',
@@ -34,6 +37,7 @@ describe('[readSettingsEnvironment]', () => {
       },
       () => {
         expect(readSettingsEnvironment()).toEqual({
+          showCycles: true,
           cytoscapeLayout: 'breadthfirst',
           cytoscapeLayoutSpacing: 0.5,
           showCompoundNodes: false,
@@ -54,6 +58,7 @@ describe('[readSettingsEnvironment]', () => {
       },
       () => {
         expect(readSettingsEnvironment()).toEqual({
+          showCycles: false,
           cytoscapeLayout: 'concentric',
           cytoscapeLayoutSpacing: 1,
           showCompoundNodes: true,

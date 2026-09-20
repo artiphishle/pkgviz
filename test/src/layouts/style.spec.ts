@@ -70,11 +70,11 @@ describe('[getStyle]', () => {
       cy.style(getStyle(elements, 'dark')).update();
       cy.style(getStyle(elements, 'light')).update();
       expect(cy.getElementById('a').height()).toBe(before);
-      expect(cy.getElementById('a').width()).toBe('package.a'.length * 7);
+      expect(cy.getElementById('a').width()).toBe(24);
       expect(cy.getElementById('a').style('label')).toBe('package.a');
-      cy.getElementById('a').data({ label: 'renamed', labelWidth: 49 });
+      cy.getElementById('a').data({ label: 'renamed' });
       expect(cy.getElementById('a').style('label')).toBe('renamed');
-      expect(cy.getElementById('a').width()).toBe(49);
+      expect(cy.getElementById('a').width()).toBe(24);
     } finally {
       cy.destroy();
     }

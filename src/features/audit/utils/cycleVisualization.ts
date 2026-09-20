@@ -18,14 +18,19 @@ export function getCycleColor(index: number): string {
 }
 
 /*** Returns the stable UI identity for one cycle occurrence. */
-export function getCycleId(cycle: PackageCycleDetail, index: number): string {
-  return cycle.packages.join('→') + ':' + index;
+export function getCycleId(cycle: PackageCycleDetail): string {
+  return JSON.stringify([
+    [...new Set(cycle.packages)].sort(),
+    cycle.edges
+      .map(edge => [edge.from, edge.to])
+      .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b))),
+  ]);
 }
 
 /*** Creates one stable cycle highlight descriptor. */
 function createCycleHighlight(cycle: PackageCycleDetail, index: number): CycleHighlight {
   return {
-    id: getCycleId(cycle, index),
+    id: getCycleId(cycle),
     color: getCycleColor(index),
     cycle,
   };
@@ -37,7 +42,7 @@ export function createCycleHighlights(
   selectedCycleIds: readonly string[]
 ): readonly CycleHighlight[] {
   return cycles.flatMap((cycle, index) => {
-    const id = getCycleId(cycle, index);
+    const id = getCycleId(cycle);
     return selectedCycleIds.includes(id) ? [createCycleHighlight(cycle, index)] : [];
   });
 }

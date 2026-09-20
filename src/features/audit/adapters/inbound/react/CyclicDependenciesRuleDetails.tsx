@@ -6,27 +6,20 @@ import { SidebarRow } from '@/components/sidebar/SidebarRow';
 import { SidebarSection } from '@/components/sidebar/SidebarSection';
 import { ToggleSwitch } from '@/components/ToggleSwitch';
 import {
-  createCycleHighlights,
   createCycleInspection,
   getCycleColor,
   getCycleId,
 } from '@/features/audit/utils/cycleVisualization';
 import { t } from '@/i18n/i18n';
 import type { PackageCycleDetail } from '@/types/audit';
-import type { CycleHighlight, CycleInspection } from '@/types/auditVisualization';
+import type { CycleInspection, CycleSelection } from '@/types/auditVisualization';
 
 /*** Renders one violated cyclic-dependencies rule with every cycle disabled by default. */
 export function CyclicDependenciesRuleDetails({
   cycles,
-  onCycleHighlightsChange,
+  cycleSelection,
   onCycleInspectionChange,
 }: CyclicDependenciesRuleDetailsProps) {
-  const [selectedCycleIds, setSelectedCycleIds] = React.useState<readonly string[]>([]);
-
-  React.useEffect(() => {
-    onCycleHighlightsChange(createCycleHighlights(cycles, selectedCycleIds));
-  }, [cycles, onCycleHighlightsChange, selectedCycleIds]);
-
   return (
     <SidebarSection
       title={
@@ -37,24 +30,18 @@ export function CyclicDependenciesRuleDetails({
       }
     >
       {cycles.map((cycle, index) => (
-        <SidebarRow key={getCycleId(cycle, index)}>
+        <SidebarRow key={getCycleId(cycle)}>
           <CycleRow
             color={getCycleColor(index)}
             cycle={cycle}
             index={index}
-            selected={selectedCycleIds.includes(getCycleId(cycle, index))}
+            selected={cycleSelection.selectedIds.includes(getCycleId(cycle))}
             onInspect={() =>
               onCycleInspectionChange(
                 createCycleInspection(cycle, index, t('audit.cycle') + ' ' + (index + 1))
               )
             }
-            onSelectedChange={selected => {
-              const id = getCycleId(cycle, index);
-              const nextSelectedCycleIds = selected
-                ? [...selectedCycleIds, id]
-                : selectedCycleIds.filter(currentId => currentId !== id);
-              setSelectedCycleIds(nextSelectedCycleIds);
-            }}
+            onSelectedChange={selected => cycleSelection.setSelected(getCycleId(cycle), selected)}
           />
         </SidebarRow>
       ))}
@@ -99,7 +86,7 @@ function CycleRow({ color, cycle, index, onInspect, onSelectedChange, selected }
 
 interface CyclicDependenciesRuleDetailsProps {
   readonly cycles: readonly PackageCycleDetail[];
-  readonly onCycleHighlightsChange: (highlights: readonly CycleHighlight[]) => void;
+  readonly cycleSelection: CycleSelection;
   readonly onCycleInspectionChange: (inspection: CycleInspection | null) => void;
 }
 

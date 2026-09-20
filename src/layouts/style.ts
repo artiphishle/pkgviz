@@ -85,8 +85,8 @@ function getNodeInteractionStyles(colors: Palette): StylesheetJson {
 /***
  * Maps prepared node presentation data without per-element style callbacks.
  * @performance
- * Preserve data(label) and data(labelWidth): createGraphViewModel prepares them outside Cytoscape
- * style recalculation. Keep height independent of the previous rendered height, otherwise repeated
+ * Preserve data(label): createGraphViewModel prepares labels outside Cytoscape style recalculation.
+ * ZORA owns measured label width. Keep height independent of the previous rendered height, otherwise repeated
  * style updates can change geometry and trigger further layout work. The style regression tests
  * cover stable dimensions across theme changes and updates to prepared label data.
  */
@@ -102,7 +102,7 @@ function getNodeBaseStyles(colors: Palette): StylesheetJson {
         label: 'data(label)',
         'text-valign': 'center',
         'text-halign': 'center',
-        width: 'data(labelWidth)',
+        width: 24,
         height: 24,
         padding: '12px',
         'border-width': 1,

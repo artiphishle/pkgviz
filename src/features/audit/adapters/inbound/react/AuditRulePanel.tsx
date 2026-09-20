@@ -3,18 +3,18 @@ import React from 'react';
 
 import { AuditRuleList } from '@/features/audit/adapters/inbound/react/AuditRuleList';
 import type { Audit } from '@/types/audit';
-import type { CycleHighlight, CycleInspection } from '@/types/auditVisualization';
+import type { CycleInspection, CycleSelection } from '@/types/auditVisualization';
 
 /*** Renders violated audit rules while the Rules sidebar tab is active. */
 export function AuditRulePanel({
   evaluation,
-  onCycleHighlightsChange,
+  cycleSelection,
   onCycleInspectionChange,
 }: AuditRulePanelProps) {
   return (
     <AuditRuleList
       evaluation={evaluation}
-      onCycleHighlightsChange={onCycleHighlightsChange}
+      cycleSelection={cycleSelection}
       onCycleInspectionChange={onCycleInspectionChange}
     />
   );
@@ -22,6 +22,6 @@ export function AuditRulePanel({
 
 interface AuditRulePanelProps {
   readonly evaluation: Audit['evaluation'];
-  readonly onCycleHighlightsChange: (highlights: readonly CycleHighlight[]) => void;
+  readonly cycleSelection: CycleSelection;
   readonly onCycleInspectionChange: (inspection: CycleInspection | null) => void;
 }
