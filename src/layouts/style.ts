@@ -65,6 +65,7 @@ type Palette = (typeof palette)[ThemeKey];
 
 /***
  * Maps prepared node presentation data without per-element style callbacks.
+ * @performance
  * Preserve data(label) and data(labelWidth): createGraphViewModel prepares them outside Cytoscape
  * style recalculation. Keep height independent of the previous rendered height, otherwise repeated
  * style updates can change geometry and trigger further layout work. The style regression tests
@@ -168,6 +169,7 @@ function getCompoundStyles(colors: Palette): StylesheetJson {
 
 /***
  * Keeps ordinary directed edges opaque to avoid the extra rendering cost of translucent arrows.
+ * @performance
  * Hushed edges are an intentional interaction state, not the base rendering policy. Retain arrows
  * and loop-capable routing: cheaper edge styles must not silently remove dependency direction or
  * lifted self-loops. Measure and discuss those visual tradeoffs before changing this baseline.

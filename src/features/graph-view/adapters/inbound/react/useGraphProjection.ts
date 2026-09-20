@@ -6,6 +6,7 @@ import { projectVisibleGraph } from '@/features/graph-view/utils/projectVisibleG
 
 /***
  * Projects graph inputs without changing the explicitly selected package scope.
+ * @performance
  * Package/depth/vendor projection traverses nodes and aggregates edges. Keep it memoized on its
  * actual inputs so unrelated UI renders do not repeat that work or replace the visible graph data.
  * Preserve lifted-edge weights and reveal semantics when optimizing; projectVisibleGraph tests
