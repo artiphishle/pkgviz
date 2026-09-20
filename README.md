@@ -150,6 +150,44 @@ cp .env.tpl .env
 bun dev
 ```
 
+## Performance
+
+Graph rendering follows the applicable [Cytoscape performance guidance](https://js.cytoscape.org/#performance).
+PKGViz owns package projection and presentation; ZORA GraphView owns the renderer, layout lifecycle,
+and viewport workflow. A topology change must produce a correctly framed graph through that workflow,
+not additional component effects. Source changes are not evidence of browser responsiveness.
+
+| Priority | Recommendation / responsibility | Owner | Status and evidence |
+| --- | --- | --- | --- |
+| P0 | Avoid repeated full-graph searches | PKGViz | Implemented: package-ancestor and cycle-overlay indexes replace per-element scans. CPU measurements below. |
+| P0 | Avoid unnecessary element replacement and layout work | ZORA | [PR #491](https://github.com/ankhorage/zora/pull/491) tested, not yet released or integrated. Presentation-only updates must preserve viewport and selection. |
+| P0 | Settle obsolete layouts safely and release resources | ZORA | PR #491 isolates asynchronous ELK completion. ELK computation itself remains uncancellable; browser workload acceptance is pending. |
+| P1 | Batch graph mutations and use ID lookup | ZORA | Current artifact batches updates and uses ID lookup for targeted selection/focus. Full replacement remains until #491 is consumed. |
+| P1 | Replace function-valued styles with data mappings | PKGViz | Implemented: label and width use prepared presentation data. Headless regression coverage preserves dimensions and cycle styling. |
+| P1 | Avoid layout animation overhead | ZORA | Current GraphView forces non-animated layouts; PKGViz layout-option values do not override that owner policy. |
+| P1 | Keep ordinary edges opaque and labels limited | PKGViz | Existing baseline: solid opaque edges; ordinary edges have no labels. Cycle-step labels and directed arrows retain their meaning. |
+| P1 | Bound displayed graph size | PKGViz | Existing package/depth/vendor projection; lifted edge weights remain covered by regression tests. |
+| P1 | Resolve overlap warnings | Shared | Still open: compound/ancestor-edge handling is tested at model/style boundaries, not proven warning-free in the browser. |
+| P2 | Reduce label detail, pixel density, edge routing cost or compound content | Shared | Proposal only: requires measured benefit and user agreement on visual tradeoffs. No quality-reducing defaults enabled. |
+| P2 | Share graph/audit project analysis | PKGViz | Source review found separate initial analysis calls. Proposal only; snapshot freshness and failure behavior need an explicit design. |
+
+### Presentation CPU measurement
+
+Run `bun test/benchmarks/graphPresentation.ts`. The synthetic fixture contains 5,251 package nodes,
+15,000 directed edges, and an optional 50 cycle overlays. Each result is the median of nine samples
+after three warmups, on the same machine/runtime (macOS arm64, Bun 1.4.2).
+
+| Operation | Before (`5496a87`) | Indexed presentation |
+| --- | ---: | ---: |
+| Model, no cycle overlays | 294.5 ms | 3.7 ms |
+| Model, 50 cycle overlays | 342.6 ms | 4.0 ms |
+| Package/depth projection (unchanged) | 6.4 ms | 6.2 ms |
+
+These are local CPU microbenchmarks, not browser frame-rate, layout, memory, network, or end-to-end
+measurements. Timings vary; there is no timing threshold in the regression suite. Update this table
+when owner fixes are released/integrated or measurements change. Further optimization candidates
+must be reported before implementation. E2E and smoke tests are currently excluded by agreement.
+
 ## Documentation
 
 Find the official documentation at Github Pages here:

@@ -1,14 +1,15 @@
 import { describe, expect, it } from '@artiphishle/testosterone';
 
-import cytoscape from 'cytoscape';
+import cytoscape, { type ElementsDefinition } from 'cytoscape';
 
+import { createGraphViewModel } from '@/features/graph-view/adapters/inbound/react/createGraphViewModel';
 import { getStyle } from '@/layouts/style';
 
 describe('[getStyle]', () => {
   it('keeps node dimensions stable across repeated style and highlight updates', () => {
     const elements = { nodes: [{ data: { id: 'a', name: 'a', label: 'package.a' } }], edges: [] };
     const cy = cytoscape({
-      elements,
+      elements: toRenderableElements(elements),
       headless: true,
       styleEnabled: true,
       style: getStyle(elements, 'light'),
@@ -19,6 +20,10 @@ describe('[getStyle]', () => {
       cy.style(getStyle(elements, 'light')).update();
       expect(cy.getElementById('a').height()).toBe(before);
       expect(cy.getElementById('a').width()).toBe('package.a'.length * 7);
+      expect(cy.getElementById('a').style('label')).toBe('package.a');
+      cy.getElementById('a').data({ label: 'renamed', labelWidth: 49 });
+      expect(cy.getElementById('a').style('label')).toBe('renamed');
+      expect(cy.getElementById('a').width()).toBe(49);
     } finally {
       cy.destroy();
     }
@@ -39,7 +44,7 @@ describe('[getStyle]', () => {
       ],
     };
     const cy = cytoscape({
-      elements,
+      elements: toRenderableElements(elements),
       headless: true,
       style: getStyle(elements, 'light'),
       styleEnabled: true,
@@ -77,7 +82,7 @@ describe('[getStyle]', () => {
       ],
     };
     const cy = cytoscape({
-      elements,
+      elements: toRenderableElements(elements),
       headless: true,
       style: getStyle(elements, 'light'),
       styleEnabled: true,
@@ -93,3 +98,17 @@ describe('[getStyle]', () => {
     }
   });
 });
+
+function toRenderableElements(elements: ElementsDefinition): ElementsDefinition {
+  const model = createGraphViewModel(elements, elements, []);
+  return {
+    nodes: model.nodes.map(node => ({
+      classes: node.classes,
+      data: { ...node.data, id: node.id, label: node.label, parent: node.parentId },
+    })),
+    edges: model.edges.map(edge => ({
+      classes: edge.classes,
+      data: { ...edge.data, id: edge.id, source: edge.source, target: edge.target },
+    })),
+  };
+}

@@ -1,4 +1,4 @@
-import type { ElementsDefinition, NodeSingular, StylesheetJson } from 'cytoscape';
+import type { ElementsDefinition, StylesheetJson } from 'cytoscape';
 
 import { getWeightBuckets } from '@/layouts/getWeightBuckets';
 
@@ -52,6 +52,20 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
   const { thresholds } = getWeightBuckets(3, 'linear', filteredElements);
 
   return [
+    ...getNodeBaseStyles(colors),
+    ...getNodeStateStyles(colors),
+    ...getCompoundStyles(colors),
+    ...getEdgeBaseStyles(colors),
+    ...getEdgeWeightStyles(colors, thresholds),
+    ...getCycleEdgeStyles(colors),
+  ];
+}
+
+type Palette = (typeof palette)[ThemeKey];
+
+/*** Maps prepared node presentation data without per-element style callbacks. */
+function getNodeBaseStyles(colors: Palette): StylesheetJson {
+  return [
     {
       selector: 'node',
       style: {
@@ -59,12 +73,10 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         'background-color': colors.nodeBg,
         'border-color': colors.nodeBorder,
         color: colors.nodeText,
-        label: getNodeLabel,
+        label: 'data(label)',
         'text-valign': 'center',
         'text-halign': 'center',
-        width: (node: NodeSingular) => {
-          return getNodeLabel(node).length * 7;
-        },
+        width: 'data(labelWidth)',
         height: 24,
         padding: '8px 8px',
         'border-width': 1,
@@ -78,6 +90,12 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         'background-color': colors.nodeBgVendor,
       },
     },
+  ];
+}
+
+/*** Preserves selected-node and audit-cycle presentation without changing base geometry. */
+function getNodeStateStyles(colors: Palette): StylesheetJson {
+  return [
     {
       selector: 'node.auditCycle',
       style: {
@@ -107,6 +125,12 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
       selector: 'node.isVendor:selected',
       style: { 'background-color': colors.selectedFillVendor },
     },
+  ];
+}
+
+/*** Styles compound containers while retaining their package-relative labels. */
+function getCompoundStyles(colors: Palette): StylesheetJson {
+  return [
     {
       selector: 'node:parent, node:parent:selected',
       style: {
@@ -123,7 +147,7 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         'font-size': 14,
         'font-weight': 'bold',
         'font-style': 'italic',
-        label: getNodeLabel,
+        label: 'data(label)',
       },
     },
     {
@@ -133,6 +157,12 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         'border-color': colors.nodeBorderVendor,
       },
     },
+  ];
+}
+
+/*** Keeps directed edges opaque and preserves loop routing and existing highlight states. */
+function getEdgeBaseStyles(colors: Palette): StylesheetJson {
+  return [
     {
       selector: 'edge',
       style: {
@@ -166,6 +196,12 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         'source-arrow-color': colors.weightXl,
       },
     },
+  ];
+}
+
+/*** Applies the existing aggregate dependency-weight buckets. */
+function getEdgeWeightStyles(colors: Palette, thresholds: readonly number[]): StylesheetJson {
+  return [
     { selector: 'edge[weight <= 1]', style: { label: '' } },
     {
       selector: `edge[weight > 1][weight <= ${thresholds[0]}]`,
@@ -192,6 +228,12 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         'target-arrow-color': colors.weightXl,
       },
     },
+  ];
+}
+
+/*** Shows audit steps above compound content only for active cycle edges. */
+function getCycleEdgeStyles(colors: Palette): StylesheetJson {
+  return [
     {
       selector: 'edge.auditCycle',
       style: {
@@ -214,9 +256,4 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
       },
     },
   ];
-}
-
-/*** Uses the projected package-relative label while keeping unnamed graph nodes readable. */
-function getNodeLabel(node: NodeSingular): string {
-  return String(node.data('label') ?? node.data('name') ?? node.id());
 }
