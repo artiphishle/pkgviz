@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises';
+import { readFile, realpath } from 'node:fs/promises';
 import path from 'node:path';
 
 import {
@@ -35,8 +35,12 @@ export async function analyzeDependencyImportsAsync(
   importNameMode: ImportNameMode = 'package',
   intrinsicMode: ImportIntrinsicMode = 'canonical'
 ): Promise<ReadonlyMap<string, readonly ImportDefinition[]>> {
+  const [canonicalProjectRoot, canonicalAnalysisRoot] = await Promise.all([
+    realpath(projectRoot),
+    realpath(analysisRoot),
+  ]);
   const graph = await createDependencyGraphAsync({
-    projects: [{ id: 'current', rootPath: projectRoot }],
+    projects: [{ id: 'current', rootPath: canonicalProjectRoot }],
   });
   const nodes = new Map(graph.nodes.map(node => [node.id, node.data] as const));
   const imports = new Map<string, OrderedImport[]>();
@@ -53,14 +57,14 @@ export async function analyzeDependencyImportsAsync(
     for (const evidence of edge.data.evidence) {
       if (pkg === '') continue;
       ordinal = await appendEvidenceAsync({
-        analysisRoot,
+        analysisRoot: canonicalAnalysisRoot,
         evidence,
         importNameMode,
         imports,
         intrinsicMode,
         ordinal,
         pkg,
-        projectRoot,
+        projectRoot: canonicalProjectRoot,
         sourceTextByFile,
       });
     }
