@@ -4,7 +4,13 @@ import { useEffect, useMemo } from 'react';
 
 import { projectVisibleGraph } from '@/features/graph-view/utils/projectVisibleGraph';
 
-/*** Projects graph inputs without changing the explicitly selected package scope. */
+/***
+ * Projects graph inputs without changing the explicitly selected package scope.
+ * Package/depth/vendor projection traverses nodes and aggregates edges. Keep it memoized on its
+ * actual inputs so unrelated UI renders do not repeat that work or replace the visible graph data.
+ * Preserve lifted-edge weights and reveal semantics when optimizing; projectVisibleGraph tests
+ * cover those behaviors. Do not add a second independently maintained projection state.
+ */
 export function useGraphProjection(input: UseGraphProjectionInput): ElementsDefinition | null {
   const {
     currentPackage,

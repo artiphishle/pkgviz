@@ -4,7 +4,13 @@ import type { ElementsDefinition } from 'cytoscape';
 import { readNodeDefinitionId } from '@/features/graph-view/utils/readNodeDefinitionId';
 import type { CycleHighlight } from '@/types/auditVisualization';
 
-/*** Projects PKGViz Cytoscape-shaped graph data into the engine-neutral ZORA GraphView contract. */
+/***
+ * Projects PKGViz graph data into the engine-neutral ZORA GraphView contract.
+ * Performance invariant: build package and cycle indexes once per projection, then use lookups
+ * in element conversion. Do not move full-graph or full-cycle scans into the node/edge callbacks.
+ * Recheck test/benchmarks/graphPresentation.ts and the README Performance evidence when changing
+ * this path; CPU model timings do not establish browser rendering or layout performance.
+ */
 export function createGraphViewModel(
   allElements: ElementsDefinition,
   visibleElements: ElementsDefinition,
@@ -36,7 +42,13 @@ interface GraphViewModel {
   readonly parentNodeIds: ReadonlySet<string>;
 }
 
-/*** Indexes package ancestry once instead of scanning the full graph for each visible package. */
+/***
+ * Indexes package ancestry once instead of scanning the full graph for each visible package.
+ * Replacing this set with nodes.some(...) per visible node restores quadratic work for large
+ * projections. Walk dotted boundaries, including missing intermediate packages, so hidden
+ * descendants remain navigable without confusing sibling prefixes such as a.b and a.bc.
+ * Mutation is confined to this fresh index; source elements are never modified.
+ */
 function indexPackageParents(elements: ElementsDefinition): ReadonlySet<string> {
   const parents = new Set<string>();
   for (const node of elements.nodes) {
@@ -54,7 +66,12 @@ function indexPackageParents(elements: ElementsDefinition): ReadonlySet<string> 
   return parents;
 }
 
-/*** Indexes cycle overlays with last-cycle precedence and the first matching directed-edge step. */
+/***
+ * Indexes cycle overlays with last-cycle precedence and the first matching directed-edge step.
+ * Visit overlay membership once, not every cycle for every rendered element. The reverse edge
+ * traversal makes the first occurrence win within a cycle; later cycles still overwrite earlier
+ * ones. Keep directed source/target keys distinct. Model regression tests protect this precedence.
+ */
 function indexCyclePresentation(highlights: readonly CycleHighlight[]) {
   const nodes = new Map<string, string>();
   const edges = new Map<string, Map<string, { readonly color: string; readonly step: number }>>();
@@ -122,7 +139,12 @@ function isAncestor(
   return false;
 }
 
-/*** Convert one visible node while projecting safe parent and audit-cycle presentation metadata. */
+/***
+ * Converts one visible node using prepared parent and cycle lookups.
+ * Derive labelWidth from the resolved label here, once per model update. The stylesheet consumes
+ * data(labelWidth); replacing it with a style callback repeats work during style recalculation.
+ * Keep label precedence and width preparation aligned; model/style tests cover their agreement.
+ */
 function createGraphViewNode(
   node: ElementsDefinition['nodes'][number],
   parentById: ReadonlyMap<string, string>,

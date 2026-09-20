@@ -173,6 +173,16 @@ not additional component effects. Source changes are not evidence of browser res
 
 ### Presentation CPU measurement
 
+Measured improvements on the local synthetic benchmark below:
+
+- **About 80 times faster graph-model preparation:** 294.5 ms down to 3.7 ms without cycle
+  overlays, removing about 291 ms of CPU work from each measured model update.
+- **About 86 times faster with 50 cycle overlays:** 342.6 ms down to 4.0 ms, while preserving
+  cycle-color precedence and directed-edge step numbering.
+
+These gains reduce the work needed to prepare graph updates without removing graph details.
+They describe model preparation only, not the speed of the entire application or browser renderer.
+
 Run `bun test/benchmarks/graphPresentation.ts`. The synthetic fixture contains 5,251 package nodes,
 15,000 directed edges, and an optional 50 cycle overlays. Each result is the median of nine samples
 after three warmups, on the same machine/runtime (macOS arm64, Bun 1.4.2).

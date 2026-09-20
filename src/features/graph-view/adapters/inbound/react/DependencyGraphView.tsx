@@ -71,7 +71,12 @@ export function DependencyGraphView(props: DependencyGraphViewProps) {
   );
 }
 
-/*** Memoizes GraphView model, style, and layout inputs from the active PKGViz projection. */
+/***
+ * Memoizes GraphView model, style, and layout inputs from the active PKGViz projection.
+ * Stable inputs avoid repeated projection work and let the owner distinguish presentation from
+ * topology/layout changes. Do not recreate these objects on unrelated renders or add compensating
+ * layout effects here. ZORA owns runtime reconciliation; memoization alone is not a correctness gate.
+ */
 function useGraphViewPresentation(input: GraphViewPresentationInput) {
   const model = useMemo(
     () =>
