@@ -1,5 +1,6 @@
-import type { ElementsDefinition, NodeSingular, StylesheetJson } from 'cytoscape';
+import type { ElementsDefinition, StylesheetJson } from 'cytoscape';
 
+import { createCompoundOpacityIndex } from '@/features/graph-view/utils/createCompoundOpacityIndex';
 import { getWeightBuckets } from '@/layouts/getWeightBuckets';
 
 export type ThemeKey = 'dark' | 'light';
@@ -17,6 +18,7 @@ const palette = {
     nodeBorderVendor: '#E2D5FF',
     nodeBgVendor: '#D1C4FF',
     nodeText: '#0B5FFF',
+    compoundBg: '#7892B3',
 
     selectedFill: '#0B5FFF',
     selectedFillVendor: '#a025aa',
@@ -35,6 +37,7 @@ const palette = {
     nodeBorder: '#2A3A4A',
     nodeBorderVendor: '#351542',
     nodeText: '#E8F0FF',
+    compoundBg: '#A9BCD5',
 
     selectedFill: '#2E6FFF',
     selectedFillVendor: '#4E25AA',
@@ -52,6 +55,47 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
   const { thresholds } = getWeightBuckets(3, 'linear', filteredElements);
 
   return [
+    ...getNodeBaseStyles(colors),
+    ...getNodeInteractionStyles(colors),
+    ...getNodeStateStyles(colors),
+    ...getCompoundStyles(colors),
+    ...getCompoundOpacityStyles(filteredElements),
+    ...getEdgeBaseStyles(colors),
+    ...getEdgeWeightStyles(colors, thresholds),
+    ...getCycleEdgeStyles(colors),
+  ];
+}
+
+type Palette = (typeof palette)[ThemeKey];
+
+/***
+ * Shows leaf neighborhoods without changing layout geometry or dimming compound descendants.
+ * @performance Use paint-only interaction styles; border size, labels and dimensions stay stable.
+ */
+function getNodeInteractionStyles(colors: Palette): StylesheetJson {
+  return [
+    { selector: 'node:childless.hushed', style: { opacity: 0.2 } },
+    {
+      selector: 'node.highlight-outgoer, node.highlight-incomer',
+      style: { 'border-color': colors.selectedRing, opacity: 1 },
+    },
+    {
+      selector: 'node:childless.highlight',
+      style: { 'background-color': colors.selectedFill, color: colors.selectedText, opacity: 1 },
+    },
+  ];
+}
+
+/***
+ * Maps prepared node presentation data without per-element style callbacks.
+ * @performance
+ * Preserve data(label): createGraphViewModel prepares labels outside Cytoscape style recalculation.
+ * ZORA owns measured label width. Keep height independent of the previous rendered height, otherwise repeated
+ * style updates can change geometry and trigger further layout work. The style regression tests
+ * cover stable dimensions across theme changes and updates to prepared label data.
+ */
+function getNodeBaseStyles(colors: Palette): StylesheetJson {
+  return [
     {
       selector: 'node',
       style: {
@@ -59,16 +103,12 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         'background-color': colors.nodeBg,
         'border-color': colors.nodeBorder,
         color: colors.nodeText,
-        label: 'data(name)',
+        label: 'data(label)',
         'text-valign': 'center',
         'text-halign': 'center',
-        width: (node: NodeSingular) => {
-          return node.data('name').length * 7;
-        },
-        height: (node: NodeSingular) => {
-          return node.height() / 2 + 10;
-        },
-        padding: '8px 8px',
+        width: 24,
+        height: 24,
+        padding: '12px',
         'border-width': 1,
         'font-size': '14px',
         'overlay-opacity': 0, // avoid gray overlay
@@ -80,18 +120,16 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         'background-color': colors.nodeBgVendor,
       },
     },
-    {
-      selector: 'node.auditCycleMuted',
-      style: {
-        opacity: 0.18,
-      },
-    },
-    {
-      selector: 'node.auditCycleContext',
-      style: {
-        opacity: 0.5,
-      },
-    },
+  ];
+}
+
+/***
+ * Preserves selected-node and audit-cycle presentation.
+ * @performance Selection uses an outline: changing border width changes layout dimensions.
+ * Audit overlays retain their existing geometry and remain separate from transient interactions.
+ */
+function getNodeStateStyles(colors: Palette): StylesheetJson {
+  return [
     {
       selector: 'node.auditCycle',
       style: {
@@ -110,7 +148,8 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
       style: {
         'background-color': colors.selectedFill,
         'border-color': colors.selectedRing,
-        'border-width': 3,
+        'outline-color': colors.selectedRing,
+        'outline-width': 2,
         color: colors.selectedText,
         'background-opacity': 1,
         opacity: 1,
@@ -121,23 +160,35 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
       selector: 'node.isVendor:selected',
       style: { 'background-color': colors.selectedFillVendor },
     },
+  ];
+}
+
+/***
+ * Shows softly tinted compound boundaries with bounded, prepared nested-depth opacity.
+ * @performance Keep grouping paint-only; do not add nested DOM surfaces or extra graph elements.
+ */
+function getCompoundStyles(colors: Palette): StylesheetJson {
+  return [
     {
       selector: 'node:parent, node:parent:selected',
       style: {
-        'background-opacity': 0.3,
-        'background-color': colors.selectedFill,
+        'background-opacity': 0.04,
+        'background-color': colors.compoundBg,
         color: colors.nodeText,
-        'border-width': 2,
+        'border-width': 1,
+        'border-opacity': 0.35,
         'border-color': colors.nodeBorder,
         'text-valign': 'top',
         'text-margin-y': -5,
-        padding: '10px',
-        'padding-top': '20px',
+        padding: '16px',
+        'text-background-color': colors.canvasBg,
+        'text-background-opacity': 0.85,
+        'text-background-padding': '3px',
         'text-halign': 'center',
         'font-size': 14,
         'font-weight': 'bold',
         'font-style': 'italic',
-        label: 'data(name)',
+        label: 'data(label)',
       },
     },
     {
@@ -147,6 +198,50 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         'border-color': colors.nodeBorderVendor,
       },
     },
+    {
+      selector: 'node:parent.auditCycle, node:parent.auditCycle:selected',
+      style: {
+        'underlay-opacity': 0,
+        'border-color': 'data(auditCycleColor)',
+        'border-opacity': 0.8,
+        'outline-color': 'data(auditCycleColor)',
+        'outline-width': 2,
+        color: 'data(auditCycleColor)',
+      },
+    },
+  ];
+}
+
+/***
+ * Emits one numeric paint rule per visible depth, including depths created by detached endpoints.
+ * @performance Bound stylesheet size by hierarchy depth, not node count; no style callbacks.
+ */
+function getCompoundOpacityStyles(elements: ElementsDefinition): StylesheetJson {
+  const ids = new Set(elements.nodes.map(node => node.data.id));
+  const parents = new Map(
+    elements.nodes.flatMap(node => {
+      const { id, parent } = node.data;
+      return typeof id === 'string' && typeof parent === 'string' && ids.has(parent)
+        ? [[id, parent] as const]
+        : [];
+    })
+  );
+  const opacities = createCompoundOpacityIndex(parents, new Set());
+  return [...new Set(opacities.values())].map(opacity => ({
+    selector: `node:parent[compoundFillOpacity = ${opacity}]`,
+    style: { 'background-opacity': opacity },
+  }));
+}
+
+/***
+ * Keeps ordinary directed edges opaque to avoid the extra rendering cost of translucent arrows.
+ * @performance
+ * Hushed edges are an intentional interaction state, not the base rendering policy. Retain arrows
+ * and loop-capable routing: cheaper edge styles must not silently remove dependency direction or
+ * lifted self-loops. Measure and discuss those visual tradeoffs before changing this baseline.
+ */
+function getEdgeBaseStyles(colors: Palette): StylesheetJson {
+  return [
     {
       selector: 'edge',
       style: {
@@ -180,6 +275,12 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         'source-arrow-color': colors.weightXl,
       },
     },
+  ];
+}
+
+/*** Applies the existing aggregate dependency-weight buckets. */
+function getEdgeWeightStyles(colors: Palette, thresholds: readonly number[]): StylesheetJson {
+  return [
     { selector: 'edge[weight <= 1]', style: { label: '' } },
     {
       selector: `edge[weight > 1][weight <= ${thresholds[0]}]`,
@@ -206,13 +307,12 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         'target-arrow-color': colors.weightXl,
       },
     },
-    {
-      selector: 'edge.auditCycleMuted',
-      style: {
-        opacity: 0.06,
-        'line-opacity': 0.06,
-      },
-    },
+  ];
+}
+
+/*** Shows audit steps above compound content only for active cycle edges. */
+function getCycleEdgeStyles(colors: Palette): StylesheetJson {
+  return [
     {
       selector: 'edge.auditCycle',
       style: {
@@ -229,7 +329,9 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         'text-background-color': colors.canvasBg,
         'text-background-opacity': 0.9,
         'text-background-padding': '3px',
-        'z-index': 999,
+        'z-compound-depth': 'top',
+        'z-index-compare': 'manual',
+        'z-index': 9999,
       },
     },
   ];

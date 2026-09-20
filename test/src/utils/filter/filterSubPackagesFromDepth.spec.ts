@@ -53,6 +53,8 @@ describe('[filterSubPackagesByDepth]', () => {
     );
 
     expect(selfLoop?.data.weight).toBe(6);
+    expect(selfLoop?.data.id).toBe('app.feature->app.feature');
+    expect(selfLoop?.data.originalEdgeIds).toEqual(['app.feature.a->app.feature.b']);
   });
 });
 

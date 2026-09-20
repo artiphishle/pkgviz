@@ -24,6 +24,8 @@ const en: ILanguage = {
   'audit.loadError': 'Unable to load audit details.',
   'audit.noRules': 'No audit rules are enabled.',
   'audit.cycle': 'Cycle',
+  'audit.cycles': 'cycles',
+  'audit.findings': 'findings',
   'audit.imports': 'imports',
   'audit.cyclePath': 'Cycle path',
   'audit.dependencyEvidence': 'Dependency evidence',

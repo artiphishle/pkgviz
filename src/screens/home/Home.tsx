@@ -1,113 +1,78 @@
 'use client';
-import { toErrorMessage } from '@ankhorage/utility/error';
-import type { ElementsDefinition } from 'cytoscape';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
-import { getAuditEvaluationAction } from '@/app/actions/audit.actions';
-import { getProjectVisualizationAction } from '@/app/actions/project.actions';
 import Breadcrumb from '@/components/Breadcrumb';
 import Header from '@/components/Header';
 import ProjectLoadError from '@/components/ProjectLoadError';
 import { SettingsProvider } from '@/contexts/SettingsContext';
-import { getGraphRevealScope } from '@/features/project-tree/utils/getGraphRevealScope';
+import { useCycleSelection } from '@/features/audit/adapters/inbound/react/useCycleSelection';
+import { resolveProjectTreeNavigation } from '@/features/project-tree/application/use-cases/resolveProjectTreeNavigation';
+import { findProjectTreeNodeByGraphPackage } from '@/features/project-tree/utils/findProjectTreeNodeByGraphPackage';
 import { HomeGraph } from '@/screens/home/HomeGraph';
 import { HomeSidebar } from '@/screens/home/HomeSidebar';
 import type { Audit } from '@/types/audit';
-import type { CycleHighlight, CycleInspection } from '@/types/auditVisualization';
-import type { GraphRevealRequest, ProjectTreeNode } from '@/types/projectTree';
+import type { CycleInspection } from '@/types/auditVisualization';
+import type { ProjectOverview } from '@/types/projectAnalysis';
+import type { ProjectAnalysisActionResult } from '@/types/projectAnalysisActionResult';
+import type { ProjectTreeNode } from '@/types/projectTree';
 
 /*** Renders the PKGViz home screen and composes project navigation, diagnostics, and the graph. */
-export default function HomeScreen() {
+export default function HomeScreen({ project }: HomeScreenProps) {
   const [currentPackage, setCurrentPackage] = useState<string>('');
-  const [packageGraph, setPackageGraph] = useState<ElementsDefinition | null>(null);
-  const [projectTree, setProjectTree] = useState<readonly ProjectTreeNode[]>([]);
+  const packageGraph = project.ok ? project.value.graph : null;
+  const projectTree = project.ok ? project.value.tree : [];
   const [selectedTreeId, setSelectedTreeId] = useState<string | null>(null);
-  const [graphRevealRequest, setGraphRevealRequest] = useState<GraphRevealRequest | null>(null);
-  const [auditEvaluation, setAuditEvaluation] = useState<Audit['evaluation'] | null>(null);
-  const [projectError, setProjectError] = useState<string | null>(null);
-  const [cycleHighlights, setCycleHighlights] = useState<readonly CycleHighlight[]>([]);
+  const auditEvaluation = project.ok ? project.value.evaluation : null;
+  const projectError = project.ok ? null : project.error;
+  const cycleSelection = useCycleSelection(auditEvaluation?.cyclicPackages ?? EMPTY_CYCLES);
   const [cycleInspection, setCycleInspection] = useState<CycleInspection | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    void getProjectVisualizationAction()
-      .then(result => {
-        if (cancelled) return;
-        if (result.ok) {
-          setPackageGraph(result.value.graph);
-          setProjectTree(result.value.tree);
-        } else {
-          setProjectError(result.error);
-        }
-      })
-      .catch(error => {
-        if (!cancelled) setProjectError(toErrorMessage(error, 'Unable to load project graph.'));
-      });
-
-    void getAuditEvaluationAction()
-      .then(result => {
-        if (cancelled) return;
-        if (result.ok) {
-          setAuditEvaluation(result.value);
-        } else {
-          setProjectError(result.error);
-        }
-      })
-      .catch(error => {
-        if (!cancelled) setProjectError(toErrorMessage(error, 'Unable to load project audit.'));
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  /*** Navigates manually and clears any stale tree-driven graph reveal request. */
+  /*** Navigates graph scope and mirrors the matching package selection in the project tree. */
   const navigateToPackage = (path: string) => {
-    setGraphRevealRequest(null);
-    setCurrentPackage(path);
+    const packageName = normalizeGraphPackage(path);
+    const matchingTreeNode = findProjectTreeNodeByGraphPackage(projectTree, packageName);
+    setCurrentPackage(packageName);
+    setSelectedTreeId(matchingTreeNode?.id ?? null);
   };
 
-  /*** Selects a project-tree node and reveals its owning package in the graph. */
+  /*** Navigates only into packages with graph descendants; selecting a leaf keeps the current view. */
   const selectProjectTreeNode = (node: ProjectTreeNode) => {
     setSelectedTreeId(node.id);
-    if (!node.graphPackage) return;
-
-    setCurrentPackage(getGraphRevealScope(node.graphPackage));
-    setGraphRevealRequest({
-      packageId: node.graphPackage,
-      treeNodeId: node.id,
-    });
+    setCurrentPackage(
+      resolveProjectTreeNavigation(
+        node,
+        packageGraph?.nodes.map(candidate => String(candidate.data.id ?? '')) ?? [],
+        currentPackage
+      )
+    );
   };
 
   return (
     <>
       <Header title="nav.packages">
-        <Breadcrumb
-          path={currentPackage.replace(/\./g, '/')}
-          onNavigate={(path: string) => navigateToPackage(path.replace(/\//g, '.'))}
-        />
+        <Breadcrumb path={currentPackage.replace(/\./g, '/')} onNavigate={navigateToPackage} />
       </Header>
       <SettingsProvider>
-        <main data-testid="main" className="flex min-w-0 flex-1 flex-row dark:bg-[#171717]">
+        <main
+          data-testid="main"
+          className="flex min-h-0 min-w-0 flex-1 flex-row overflow-hidden dark:bg-[#171717]"
+        >
           <HomeSidebar
             evaluation={auditEvaluation}
             projectTree={projectTree}
             selectedTreeId={selectedTreeId}
             onProjectTreeSelect={selectProjectTreeNode}
-            onCycleHighlightsChange={setCycleHighlights}
+            cycleSelection={cycleSelection}
+            inspectedCycleId={cycleInspection?.id ?? null}
             onCycleInspectionChange={setCycleInspection}
-            setCurrentPackage={navigateToPackage}
           />
           {projectError ? (
             <ProjectLoadError message={projectError} />
           ) : (
             <HomeGraph
               currentPackage={currentPackage}
-              cycleHighlights={cycleHighlights}
+              cycleHighlights={cycleSelection.highlights}
               cycleInspection={cycleInspection}
-              graphRevealRequest={graphRevealRequest}
               packageGraph={packageGraph}
               setCurrentPackage={navigateToPackage}
               onCloseInspection={() => setCycleInspection(null)}
@@ -117,4 +82,15 @@ export default function HomeScreen() {
       </SettingsProvider>
     </>
   );
+}
+
+const EMPTY_CYCLES: NonNullable<Audit['evaluation']>['cyclicPackages'] = [];
+
+interface HomeScreenProps {
+  readonly project: ProjectAnalysisActionResult<ProjectOverview>;
+}
+
+/*** Normalizes graph navigation paths to the package-id representation used by Cytoscape. */
+function normalizeGraphPackage(path: string): string {
+  return path.replaceAll('/', '.').replace(/^\.+|\.+$/g, '');
 }

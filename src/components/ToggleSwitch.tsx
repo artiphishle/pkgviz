@@ -12,8 +12,15 @@ export function ToggleSwitch({ ariaLabel, checkedColor, id, onToggle, value }: T
       checked={value}
       onCheckedChange={onToggle}
     >
+      {value && checkedColor ? (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 rounded-full opacity-25"
+          style={{ backgroundColor: checkedColor }}
+        />
+      ) : null}
       <Switch.Thumb
-        className="block size-[16px] translate-x-0.5 rounded-full bg-neutral-500 transition-transform duration-100 will-change-transform data-[state=checked]:translate-x-[24px] data-[state=checked]:bg-blue-500 dark:bg-neutral-500 dark:data-[state=checked]:bg-white"
+        className="relative block size-[16px] translate-x-0.5 rounded-full bg-neutral-500 transition-transform duration-100 will-change-transform data-[state=checked]:translate-x-[24px] data-[state=checked]:bg-blue-500 dark:bg-neutral-500 dark:data-[state=checked]:bg-white"
         style={value && checkedColor ? { backgroundColor: checkedColor } : undefined}
       />
     </Switch.Root>

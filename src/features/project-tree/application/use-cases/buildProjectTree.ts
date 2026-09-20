@@ -19,9 +19,10 @@ export function buildProjectTree(
         };
       }
 
+      const children = buildProjectTree(value, itemPath);
       return {
-        children: buildProjectTree(value, itemPath),
-        graphPackage: itemPath.replaceAll('/', '.'),
+        children,
+        graphPackage: getCommonGraphPackage(children),
         id: `directory:${itemPath}`,
         kind: 'directory' as const,
         label: name,
@@ -36,6 +37,22 @@ function compareEntries(
 ) {
   const kindDelta = Number(isParsedFile(left)) - Number(isParsedFile(right));
   return kindDelta || leftName.localeCompare(rightName);
+}
+
+/*** Derives the graph package represented by a filesystem directory from its descendants. */
+function getCommonGraphPackage(children: readonly ProjectTreeNode[]): string {
+  const packages = children
+    .map(child => child.graphPackage)
+    .filter(packageName => packageName.length);
+  const [firstPackage, ...remainingPackages] = packages;
+  if (!firstPackage) return '';
+
+  const firstSegments = firstPackage.split('.');
+  const mismatchIndex = firstSegments.findIndex((segment, index) =>
+    remainingPackages.some(packageName => packageName.split('.').at(index) !== segment)
+  );
+  const commonLength = mismatchIndex === -1 ? firstSegments.length : mismatchIndex;
+  return firstSegments.slice(0, commonLength).join('.');
 }
 
 /*** Distinguishes parsed files from recursive directory records without relying on class names. */

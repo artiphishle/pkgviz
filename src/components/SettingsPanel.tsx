@@ -76,10 +76,25 @@ function SubPackageDepthSettings() {
 function LayoutSettings() {
   const { cytoscapeLayout, setCytoscapeLayout } = useSettings();
 
+  /*** Lets the Select close immediately before starting a potentially expensive graph layout. */
+  const selectLayout = (layout: string) => {
+    if (
+      layout !== 'breadthfirst' &&
+      layout !== 'circle' &&
+      layout !== 'concentric' &&
+      layout !== 'elk' &&
+      layout !== 'grid'
+    ) {
+      return;
+    }
+
+    React.startTransition(() => setCytoscapeLayout(layout));
+  };
+
   return (
     <SidebarSection title={t('settings.layout')}>
       <SidebarRow>
-        <Select.Root value={cytoscapeLayout} onValueChange={setCytoscapeLayout}>
+        <Select.Root value={cytoscapeLayout} onValueChange={selectLayout}>
           <Select.Trigger
             aria-label={t('cytoscapeLayout')}
             className="inline-flex h-9 w-full items-center justify-between rounded-md border px-3"
@@ -124,13 +139,13 @@ function LayoutSpacingSettings() {
   const { cytoscapeLayoutSpacing, setCytoscapeLayoutSpacing } = useSettings();
 
   return (
-    <SidebarSection title={t('settings.layoutSpacing') + ': ' + cytoscapeLayoutSpacing}>
+    <SidebarSection title={t('settings.layoutSpacing') + ': ' + cytoscapeLayoutSpacing.toFixed(2)}>
       <SidebarRow>
         <SettingsSlider
           ariaLabel={t('settings.layoutSpacing')}
           max={1}
           min={0.1}
-          step={0.1}
+          step={0.01}
           value={cytoscapeLayoutSpacing}
           onValueChange={setCytoscapeLayoutSpacing}
         />
@@ -147,7 +162,7 @@ function SettingsSlider({ ariaLabel, max, min, onValueChange, step, value }: Set
       max={max}
       step={step}
       value={[value]}
-      onValueChange={([nextValue]) => onValueChange(Number(nextValue.toFixed(1)))}
+      onValueChange={([nextValue]) => onValueChange(nextValue)}
       aria-label={ariaLabel}
       className="relative flex h-5 w-full touch-none select-none items-center"
     >

@@ -1,56 +1,104 @@
 'use client';
-import type { Core, ElementsDefinition } from 'cytoscape';
-import { useEffect } from 'react';
 
+import type { ElementsDefinition } from 'cytoscape';
+import { useEffect, useRef } from 'react';
+
+import { createCycleFocus } from '@/features/audit/utils/cycleVisualization';
+import { readNodeDefinitionId } from '@/features/graph-view/utils/readNodeDefinitionId';
 import type { CycleHighlight } from '@/types/auditVisualization';
-import { applyCycleHighlights } from '@/utils/graph/applyCycleHighlights';
-import { fitGraphViewport, revealGraphPackage } from '@/utils/graph/fitGraphViewport';
 
-/*** Owns cycle highlighting, tree reveal focus, and resize-driven viewport fitting. */
+/*** Expands package projection once when active cycles are not yet visible. */
 export function useGraphFocus(input: UseGraphFocusInput) {
-  const { cy, cycleHighlights, revealPackageId, visibleElements } = input;
+  const handledCycleSignatureRef = useRef<string | null>(null);
+  const {
+    cycleHighlights,
+    currentPackage,
+    setCurrentPackage,
+    setSubPackageDepth,
+    subPackageDepth,
+    visibleElements,
+  } = input;
 
-  useEffect(() => {
-    if (cy === null || visibleElements === null || cy.destroyed()) return;
-    const highlighted = applyCycleHighlights(cy, cycleHighlights);
-    if (highlighted.empty()) return;
+  useEffect(
+    () =>
+      runCycleProjectionFocus(
+        {
+          cycleHighlights,
+          currentPackage,
+          setCurrentPackage,
+          setSubPackageDepth,
+          subPackageDepth,
+          visibleElements,
+        },
+        handledCycleSignatureRef
+      ),
+    [
+      cycleHighlights,
+      currentPackage,
+      setCurrentPackage,
+      setSubPackageDepth,
+      subPackageDepth,
+      visibleElements,
+    ]
+  );
+}
 
-    const frame = requestAnimationFrame(() => fitGraphViewport(cy, revealPackageId));
-    return () => cancelAnimationFrame(frame);
-  }, [cy, cycleHighlights, revealPackageId, visibleElements]);
+/*** Runs one cycle-projection iteration without touching layout or viewport state. */
+function runCycleProjectionFocus(
+  input: UseGraphFocusInput,
+  handledCycleSignatureRef: { current: string | null }
+) {
+  if (input.visibleElements === null) return;
 
-  useEffect(() => {
-    if (
-      cy === null ||
-      visibleElements === null ||
-      revealPackageId === undefined ||
-      cycleHighlights.length > 0 ||
-      cy.destroyed()
-    ) {
-      return;
-    }
-    revealGraphPackage(cy, revealPackageId);
-  }, [cy, cycleHighlights, revealPackageId, visibleElements]);
+  if (input.cycleHighlights.length === 0) {
+    handledCycleSignatureRef.current = null;
+    return;
+  }
 
-  useEffect(() => observeGraphResize(cy, revealPackageId), [cy, revealPackageId]);
+  const signature = getCycleSignature(input.cycleHighlights);
+  if (handledCycleSignatureRef.current === signature) return;
+  if (ensureCycleProjection(input)) return;
+  handledCycleSignatureRef.current = signature;
+}
+
+/*** Returns a stable identity for the current active-cycle set. */
+function getCycleSignature(highlights: readonly CycleHighlight[]): string {
+  return highlights
+    .map(highlight => highlight.id)
+    .sort()
+    .join('|');
+}
+
+/*** Expands only the projection dimensions required to expose every active cycle package. */
+function ensureCycleProjection(input: UseGraphFocusInput): boolean {
+  if (input.visibleElements === null) return false;
+  const activePackageNames = [
+    ...new Set(input.cycleHighlights.flatMap(highlight => highlight.cycle.packages)),
+  ];
+  const visibleNodeIds = new Set(
+    input.visibleElements.nodes
+      .map(node => readNodeDefinitionId(node))
+      .filter((id): id is string => id !== null)
+  );
+  if (activePackageNames.every(packageName => visibleNodeIds.has(packageName))) return false;
+
+  const focus = createCycleFocus(input.cycleHighlights);
+  if (!focus) return false;
+
+  const normalizedCurrentPackage = input.currentPackage.replace(/\//g, '.');
+  const scopeChanged = focus.currentPackage !== normalizedCurrentPackage;
+  const depthChanged = focus.packageDepth > input.subPackageDepth;
+
+  if (scopeChanged) input.setCurrentPackage(focus.currentPackage);
+  if (depthChanged) input.setSubPackageDepth(focus.packageDepth);
+  return scopeChanged || depthChanged;
 }
 
 interface UseGraphFocusInput {
-  readonly cy: Core | null;
   readonly cycleHighlights: readonly CycleHighlight[];
-  readonly revealPackageId?: string;
+  readonly currentPackage: string;
+  readonly setCurrentPackage: (path: string) => void;
+  readonly setSubPackageDepth: (depth: number) => void;
+  readonly subPackageDepth: number;
   readonly visibleElements: ElementsDefinition | null;
-}
-
-/*** Observes graph container resizing and re-applies the current viewport focus policy. */
-function observeGraphResize(cy: Core | null, revealPackageId?: string) {
-  if (cy === null || cy.destroyed()) return undefined;
-  const container = cy.container();
-  if (container === null) return undefined;
-
-  const observer = new ResizeObserver(() => {
-    requestAnimationFrame(() => fitGraphViewport(cy, revealPackageId));
-  });
-  observer.observe(container);
-  return () => observer.disconnect();
 }

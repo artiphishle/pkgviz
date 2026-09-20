@@ -3,24 +3,24 @@ import { type TreeItemNode, TreeView } from '@zora/tree-view';
 import { FileCode2Icon, FolderIcon } from 'lucide-react';
 import React from 'react';
 
+import { useProjectTreeExpansion } from '@/features/project-tree/adapters/inbound/react/useProjectTreeExpansion';
 import { findProjectTreeNode } from '@/features/project-tree/utils/findProjectTreeNode';
 import type { ProjectTreeNode } from '@/types/projectTree';
 
 /*** Adapts PKGViz's serializable project tree to the generated ZORA browser TreeView. */
 export function ProjectTreePanel({ nodes, onSelect, selectedId }: ProjectTreePanelProps) {
   const treeNodes = React.useMemo(() => nodes.map(toTreeItemNode), [nodes]);
-  const defaultExpandedIds = React.useMemo(
-    () => nodes.filter(node => node.kind === 'directory').map(node => node.id),
-    [nodes]
-  );
+  const expansion = useProjectTreeExpansion(nodes, selectedId);
 
   return (
     <div className="px-2 pt-2 text-xs">
       <TreeView
         ariaLabel="Project tree"
-        defaultExpandedIds={defaultExpandedIds}
+        expansionIndicator="folder"
+        expandedIds={expansion.expandedIds}
         nodes={treeNodes}
         selectedId={selectedId ?? undefined}
+        onExpandedChange={expansion.onExpandedChange}
         onSelect={id => {
           const node = findProjectTreeNode(nodes, id);
           if (node) onSelect(node);

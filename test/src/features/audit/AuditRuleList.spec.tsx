@@ -30,12 +30,11 @@ const cycles: readonly PackageCycleDetail[] = [
 ];
 
 describe('[AuditRuleList]', () => {
-  it('shows violated cycles compactly and leaves every cycle disabled by default', () => {
+  it('shows violated cycles compactly with right-aligned disabled switches by default', () => {
     const { container, getByText } = render(
       <AuditRuleList
         evaluation={failedEvaluation}
-        onCycleFocusChange={() => undefined}
-        onCycleHighlightsChange={() => undefined}
+        cycleSelection={{ highlights: [], selectedIds: [], setSelected: () => undefined }}
         onCycleInspectionChange={() => undefined}
       />
     );
@@ -50,6 +49,14 @@ describe('[AuditRuleList]', () => {
     );
     expect(switches.length).toBe(2);
     expect(switches.every(control => control.getAttribute('aria-checked') === 'false')).toBe(true);
+    expect(switches.every(control => control.className.includes('shrink-0'))).toBe(true);
+    expect(
+      switches.every(control =>
+        control.parentElement
+          ?.querySelector('button:not([role="switch"])')
+          ?.className.includes('flex-1')
+      )
+    ).toBe(true);
     expect(container.textContent?.includes('src/a.ts')).toBe(false);
   });
 
@@ -57,8 +64,7 @@ describe('[AuditRuleList]', () => {
     const { container } = render(
       <AuditRuleList
         evaluation={passedEvaluation}
-        onCycleFocusChange={() => undefined}
-        onCycleHighlightsChange={() => undefined}
+        cycleSelection={{ highlights: [], selectedIds: [], setSelected: () => undefined }}
         onCycleInspectionChange={() => undefined}
       />
     );

@@ -1,15 +1,14 @@
+import { toErrorMessage } from '@ankhorage/utility/error';
+
 import type { ProjectAnalysisActionResult } from '@/types/projectAnalysisActionResult';
 
-/*** Run project analysis while serializing expected invalid-root failures across server actions. */
+/*** Runs project analysis while serializing failures for the persistent project error UI. */
 export async function runProjectAnalysisActionAsync<T>(
   operation: () => Promise<T>
 ): Promise<ProjectAnalysisActionResult<T>> {
   try {
     return { ok: true, value: await operation() };
   } catch (error) {
-    if (error instanceof Error && error.name === 'ProjectPathUnavailableError') {
-      return { ok: false, error: error.message };
-    }
-    throw error;
+    return { ok: false, error: toErrorMessage(error, 'Unable to load project.') };
   }
 }

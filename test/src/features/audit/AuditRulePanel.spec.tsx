@@ -9,8 +9,7 @@ describe('[AuditRulePanel]', () => {
     const { getByText } = render(
       <AuditRulePanel
         evaluation={evaluation}
-        onCycleFocusChange={() => undefined}
-        onCycleHighlightsChange={() => undefined}
+        cycleSelection={{ highlights: [], selectedIds: [], setSelected: () => undefined }}
         onCycleInspectionChange={() => undefined}
       />
     );
