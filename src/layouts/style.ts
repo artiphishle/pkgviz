@@ -53,6 +53,7 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
 
   return [
     ...getNodeBaseStyles(colors),
+    ...getNodeInteractionStyles(colors),
     ...getNodeStateStyles(colors),
     ...getCompoundStyles(colors),
     ...getEdgeBaseStyles(colors),
@@ -62,6 +63,24 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
 }
 
 type Palette = (typeof palette)[ThemeKey];
+
+/***
+ * Shows leaf neighborhoods without changing layout geometry or dimming compound descendants.
+ * @performance Use paint-only interaction styles; border size, labels and dimensions stay stable.
+ */
+function getNodeInteractionStyles(colors: Palette): StylesheetJson {
+  return [
+    { selector: 'node:childless.hushed', style: { opacity: 0.2 } },
+    {
+      selector: 'node.highlight-outgoer, node.highlight-incomer',
+      style: { 'border-color': colors.selectedRing, opacity: 1 },
+    },
+    {
+      selector: 'node:childless.highlight',
+      style: { 'background-color': colors.selectedFill, color: colors.selectedText, opacity: 1 },
+    },
+  ];
+}
 
 /***
  * Maps prepared node presentation data without per-element style callbacks.
@@ -100,7 +119,11 @@ function getNodeBaseStyles(colors: Palette): StylesheetJson {
   ];
 }
 
-/*** Preserves selected-node and audit-cycle presentation without changing base geometry. */
+/***
+ * Preserves selected-node and audit-cycle presentation.
+ * @performance Selection uses an outline: changing border width changes layout dimensions.
+ * Audit overlays retain their existing geometry and remain separate from transient interactions.
+ */
 function getNodeStateStyles(colors: Palette): StylesheetJson {
   return [
     {
@@ -121,7 +144,8 @@ function getNodeStateStyles(colors: Palette): StylesheetJson {
       style: {
         'background-color': colors.selectedFill,
         'border-color': colors.selectedRing,
-        'border-width': 3,
+        'outline-color': colors.selectedRing,
+        'outline-width': 2,
         color: colors.selectedText,
         'background-opacity': 1,
         opacity: 1,

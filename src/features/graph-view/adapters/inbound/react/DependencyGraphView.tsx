@@ -15,6 +15,7 @@ import { createGraphViewModel } from '@/features/graph-view/adapters/inbound/rea
 import { createGraphViewStyles } from '@/features/graph-view/adapters/inbound/react/createGraphViewStyles';
 import { GraphZoomControls } from '@/features/graph-view/adapters/inbound/react/GraphZoomControls';
 import { useGraphFocus } from '@/features/graph-view/adapters/inbound/react/useGraphFocus';
+import { useGraphInteractions } from '@/features/graph-view/adapters/inbound/react/useGraphInteractions';
 import { useGraphProjection } from '@/features/graph-view/adapters/inbound/react/useGraphProjection';
 import { LAYOUTS } from '@/layouts/constants';
 import { getCanvasBg } from '@/layouts/style';
@@ -109,9 +110,11 @@ function useGraphViewPresentation(input: GraphViewPresentationInput) {
 /*** Owns GraphView controller callbacks and renders the viewport plus zoom controls. */
 function DependencyGraphCanvas(props: DependencyGraphCanvasProps) {
   const viewport = useGraphViewport(props);
+  const interactions = useGraphInteractions(props.model.nodes, props.model.edges);
 
   /*** Handles structural graph navigation without touching the rendering engine. */
   const handleNodeEvent = (event: GraphViewElementEvent) => {
+    interactions.handleNodeEvent(event);
     if (event.type !== 'double-press' || !props.model.parentNodeIds.has(event.id)) return;
     props.setCurrentPackage(event.id);
   };
@@ -120,12 +123,12 @@ function DependencyGraphCanvas(props: DependencyGraphCanvasProps) {
     <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2 overflow-hidden px-8">
       <div className="relative min-h-0 flex-1 overflow-hidden">
         <GraphView
-          edges={props.model.edges}
+          edges={interactions.edges}
           layout={props.layout}
           layoutOptions={props.layoutOptions}
           maxZoom={MAX_ZOOM}
           minZoom={MIN_ZOOM}
-          nodes={props.model.nodes}
+          nodes={interactions.nodes}
           onLayoutComplete={viewport.handleLayoutComplete}
           onNodeEvent={handleNodeEvent}
           onReady={viewport.handleReady}

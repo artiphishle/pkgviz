@@ -160,9 +160,10 @@ not additional component effects. Source changes are not evidence of browser res
 | Priority | Recommendation / responsibility | Owner | Status and evidence |
 | --- | --- | --- | --- |
 | P0 | Avoid repeated full-graph searches | PKGViz | Implemented: package-ancestor and cycle-overlay indexes replace per-element scans. CPU measurements below. |
-| P0 | Avoid unnecessary element replacement and layout work | ZORA | [PR #491](https://github.com/ankhorage/zora/pull/491) tested, not yet released or integrated. Presentation-only updates must preserve viewport and selection. |
-| P0 | Settle obsolete layouts safely and release resources | ZORA | PR #491 isolates asynchronous ELK completion. ELK computation itself remains uncancellable; browser workload acceptance is pending. |
-| P1 | Batch graph mutations and use ID lookup | ZORA | Current artifact batches updates and uses ID lookup for targeted selection/focus. Full replacement remains until #491 is consumed. |
+| P0 | Avoid unnecessary element replacement and layout work | ZORA | Released in 20.3.8 and materialized in PKGViz: [PR #491](https://github.com/ankhorage/zora/pull/491) reconciles presentation updates in place. Owner regressions preserve selection, positions and viewport without relayout. |
+| P0 | Settle obsolete layouts safely and release resources | ZORA | Integrated from 20.3.8: asynchronous ELK completion is isolated and stale results are discarded. ELK computation itself remains uncancellable; browser workload acceptance is pending. |
+| P1 | Batch graph mutations and use ID lookup | ZORA | Integrated: batched element reconciliation retains identity and uses direct ID lookup. |
+| P1 | Keep hover/selection updates independent of layout | PKGViz | Restored leaf-neighborhood presentation through public GraphView events. Prepared model data is reused; selection outlines and hover paint preserve measured node dimensions in regression tests. |
 | P1 | Replace function-valued styles with data mappings | PKGViz | Implemented: label and width use prepared presentation data. Headless regression coverage preserves dimensions and cycle styling. |
 | P1 | Avoid layout animation overhead | ZORA | Current GraphView forces non-animated layouts; PKGViz layout-option values do not override that owner policy. |
 | P1 | Keep ordinary edges opaque and labels limited | PKGViz | Existing baseline: solid opaque edges; ordinary edges have no labels. Cycle-step labels and directed arrows retain their meaning. |
@@ -197,6 +198,11 @@ These are local CPU microbenchmarks, not browser frame-rate, layout, memory, net
 measurements. Timings vary; there is no timing threshold in the regression suite. Update this table
 when owner fixes are released/integrated or measurements change. Further optimization candidates
 must be reported before implementation. E2E and smoke tests are currently excluded by agreement.
+
+The materialization command uses a project-local Ankh provider cache under `.generated/ankh`.
+This avoids reusing an older globally cached GraphView after an owner release. The generated
+`zora-artifact.json` records the actual published version used; generated artifacts and caches are
+not committed. The CLI still follows its published provider catalog and cache refresh policy.
 
 ## Documentation
 

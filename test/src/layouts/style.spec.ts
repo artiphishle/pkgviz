@@ -6,6 +6,33 @@ import { createGraphViewModel } from '@/features/graph-view/adapters/inbound/rea
 import { getStyle } from '@/layouts/style';
 
 describe('[getStyle]', () => {
+  it('keeps selection and hover paint changes out of layout geometry', () => {
+    const elements = { nodes: [{ data: { id: 'a', label: 'package.a' } }], edges: [] };
+    const cy = cytoscape({
+      elements: toRenderableElements(elements),
+      headless: true,
+      styleEnabled: true,
+      style: getStyle(elements, 'light'),
+    });
+    try {
+      const node = cy.getElementById('a');
+      const before = node.layoutDimensions({ nodeDimensionsIncludeLabels: true });
+      node.addClass('highlight');
+      expect(node.style('background-color')).toBe('rgb(11,95,255)');
+      expect(node.layoutDimensions({ nodeDimensionsIncludeLabels: true })).toEqual(before);
+      node.select();
+      expect(node.style('outline-width')).toBe('2px');
+      expect(node.layoutDimensions({ nodeDimensionsIncludeLabels: true })).toEqual(before);
+      node.removeClass('highlight');
+      node.unselect();
+      node.addClass('hushed');
+      expect(node.style('opacity')).toBe('0.2');
+      expect(node.layoutDimensions({ nodeDimensionsIncludeLabels: true })).toEqual(before);
+    } finally {
+      cy.destroy();
+    }
+  });
+
   it('keeps node dimensions stable across repeated style and highlight updates', () => {
     const elements = { nodes: [{ data: { id: 'a', name: 'a', label: 'package.a' } }], edges: [] };
     const cy = cytoscape({
