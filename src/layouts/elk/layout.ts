@@ -1,6 +1,4 @@
-import cytoscape from 'cytoscape';
-import elk from 'cytoscape-elk';
-cytoscape.use(elk as cytoscape.Ext);
+import type cytoscape from 'cytoscape';
 
 type ElkLayoutOptions = cytoscape.BaseLayoutOptions &
   cytoscape.AnimatedLayoutOptions & {

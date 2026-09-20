@@ -59,15 +59,13 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         'background-color': colors.nodeBg,
         'border-color': colors.nodeBorder,
         color: colors.nodeText,
-        label: 'data(name)',
+        label: getNodeLabel,
         'text-valign': 'center',
         'text-halign': 'center',
         width: (node: NodeSingular) => {
-          return node.data('name').length * 7;
+          return getNodeLabel(node).length * 7;
         },
-        height: (node: NodeSingular) => {
-          return node.height() / 2 + 10;
-        },
+        height: 24,
         padding: '8px 8px',
         'border-width': 1,
         'font-size': '14px',
@@ -125,7 +123,7 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
         'font-size': 14,
         'font-weight': 'bold',
         'font-style': 'italic',
-        label: 'data(name)',
+        label: getNodeLabel,
       },
     },
     {
@@ -216,4 +214,9 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
       },
     },
   ];
+}
+
+/*** Uses the projected package-relative label while keeping unnamed graph nodes readable. */
+function getNodeLabel(node: NodeSingular): string {
+  return String(node.data('label') ?? node.data('name') ?? node.id());
 }

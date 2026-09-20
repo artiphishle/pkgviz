@@ -5,6 +5,25 @@ import cytoscape from 'cytoscape';
 import { getStyle } from '@/layouts/style';
 
 describe('[getStyle]', () => {
+  it('keeps node dimensions stable across repeated style and highlight updates', () => {
+    const elements = { nodes: [{ data: { id: 'a', name: 'a', label: 'package.a' } }], edges: [] };
+    const cy = cytoscape({
+      elements,
+      headless: true,
+      styleEnabled: true,
+      style: getStyle(elements, 'light'),
+    });
+    try {
+      const before = cy.getElementById('a').height();
+      cy.style(getStyle(elements, 'dark')).update();
+      cy.style(getStyle(elements, 'light')).update();
+      expect(cy.getElementById('a').height()).toBe(before);
+      expect(cy.getElementById('a').width()).toBe('package.a'.length * 7);
+    } finally {
+      cy.destroy();
+    }
+  });
+
   it('applies compound-safe endpoints while retaining bezier loop routing', () => {
     const elements = {
       nodes: [

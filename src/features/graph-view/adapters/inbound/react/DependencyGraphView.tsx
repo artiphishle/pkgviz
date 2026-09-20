@@ -102,38 +102,12 @@ function useGraphViewPresentation(input: GraphViewPresentationInput) {
 
 /*** Owns GraphView controller callbacks and renders the viewport plus zoom controls. */
 function DependencyGraphCanvas(props: DependencyGraphCanvasProps) {
-  const [controller, setController] = useState<GraphViewController | null>(null);
-  const [zoom, setZoom] = useState(1);
-  const handledRevealRequestRef = React.useRef<string | null>(null);
-  const previousLayoutRef = React.useRef(props.layout);
-
-  React.useEffect(() => {
-    if (props.graphRevealRequest === null) handledRevealRequestRef.current = null;
-  }, [props.graphRevealRequest]);
+  const viewport = useGraphViewport(props);
 
   /*** Handles structural graph navigation without touching the rendering engine. */
   const handleNodeEvent = (event: GraphViewElementEvent) => {
     if (event.type !== 'double-press' || !props.model.parentNodeIds.has(event.id)) return;
     props.setCurrentPackage(event.id);
-  };
-
-  /*** Fits explicit reveals once and recenters after an intentional layout-algorithm change. */
-  const handleLayoutComplete = (nextController: GraphViewController) => {
-    const layoutChanged = previousLayoutRef.current !== props.layout;
-    previousLayoutRef.current = props.layout;
-
-    const revealRequest = props.graphRevealRequest;
-    if (
-      props.cycleHighlights.length === 0 &&
-      revealRequest !== null &&
-      handledRevealRequestRef.current !== revealRequest.treeNodeId
-    ) {
-      handledRevealRequestRef.current = revealRequest.treeNodeId;
-      nextController.fit({ nodeIds: [revealRequest.packageId], padding: 140 });
-      return;
-    }
-
-    if (layoutChanged) nextController.fit();
   };
 
   return (
@@ -146,13 +120,10 @@ function DependencyGraphCanvas(props: DependencyGraphCanvasProps) {
           maxZoom={MAX_ZOOM}
           minZoom={MIN_ZOOM}
           nodes={props.model.nodes}
-          onLayoutComplete={handleLayoutComplete}
+          onLayoutComplete={viewport.handleLayoutComplete}
           onNodeEvent={handleNodeEvent}
-          onReady={nextController => {
-            setController(nextController);
-            setZoom(nextController.getViewport().zoom);
-          }}
-          onViewportChange={viewport => setZoom(viewport.zoom)}
+          onReady={viewport.handleReady}
+          onViewportChange={nextViewport => viewport.setZoom(nextViewport.zoom)}
           spacingFactor={props.spacingFactor}
           style={{ background: getCanvasBg(props.theme) }}
           styleRules={props.styles}
@@ -160,13 +131,50 @@ function DependencyGraphCanvas(props: DependencyGraphCanvasProps) {
         {props.overlay}
       </div>
       <GraphZoomControls
-        controller={controller}
+        controller={viewport.controller}
         maxZoom={MAX_ZOOM}
         minZoom={MIN_ZOOM}
-        zoom={zoom}
+        zoom={viewport.zoom}
       />
     </div>
   );
+}
+
+/*** Coordinates controller readiness and one-shot package or algorithm viewport requests. */
+function useGraphViewport(props: DependencyGraphCanvasProps) {
+  const [controller, setController] = useState<GraphViewController | null>(null);
+  const [zoom, setZoom] = useState(1);
+  const handledRevealRequestRef = React.useRef<string | null>(null);
+  const previousLayoutRef = React.useRef(props.layout);
+
+  React.useEffect(() => {
+    if (props.graphRevealRequest === null) handledRevealRequestRef.current = null;
+  }, [props.graphRevealRequest]);
+
+  /*** Fits explicit reveals once and recenters after an intentional layout-algorithm change. */
+  const handleLayoutComplete = (nextController: GraphViewController) => {
+    const layoutChanged = previousLayoutRef.current !== props.layout;
+    previousLayoutRef.current = props.layout;
+    const revealRequest = props.graphRevealRequest;
+    if (
+      props.cycleHighlights.length === 0 &&
+      revealRequest !== null &&
+      handledRevealRequestRef.current !== revealRequest.treeNodeId
+    ) {
+      handledRevealRequestRef.current = revealRequest.treeNodeId;
+      nextController.fit({ nodeIds: [revealRequest.packageId], padding: 140 });
+      return;
+    }
+    if (layoutChanged) nextController.fit();
+  };
+
+  /*** Captures the ready controller and its initial fitted zoom. */
+  const handleReady = (nextController: GraphViewController) => {
+    setController(nextController);
+    setZoom(nextController.getViewport().zoom);
+  };
+
+  return { controller, handleLayoutComplete, handleReady, setZoom, zoom };
 }
 
 /*** Narrows persisted Cytoscape layout names to the layouts supported by ZORA GraphView. */
