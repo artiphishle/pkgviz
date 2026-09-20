@@ -198,6 +198,17 @@ function getCompoundStyles(colors: Palette): StylesheetJson {
         'border-color': colors.nodeBorderVendor,
       },
     },
+    {
+      selector: 'node:parent.auditCycle, node:parent.auditCycle:selected',
+      style: {
+        'underlay-opacity': 0,
+        'border-color': 'data(auditCycleColor)',
+        'border-opacity': 0.8,
+        'outline-color': 'data(auditCycleColor)',
+        'outline-width': 2,
+        color: 'data(auditCycleColor)',
+      },
+    },
   ];
 }
 

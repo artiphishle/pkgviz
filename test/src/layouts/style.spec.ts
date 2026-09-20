@@ -6,6 +6,34 @@ import { createGraphViewModel } from '@/features/graph-view/adapters/inbound/rea
 import { getStyle } from '@/layouts/style';
 
 describe('[getStyle]', () => {
+  it('marks cycle compounds without coloring their entire underlay in either theme', () => {
+    const elements = {
+      nodes: [
+        { data: { id: 'p', auditCycleColor: '#dc2626' }, classes: 'auditCycle' },
+        { data: { id: 'p.c', parent: 'p' } },
+      ],
+      edges: [],
+    };
+    for (const theme of ['light', 'dark'] as const) {
+      const cy = cytoscape({
+        elements: toRenderableElements(elements),
+        headless: true,
+        styleEnabled: true,
+        style: getStyle(elements, theme),
+      });
+      try {
+        const parent = cy.getElementById('p');
+        for (const selected of [false, true]) {
+          if (selected) parent.select();
+          expect(parent.style('underlay-opacity')).toBe('0');
+          expect(parent.style('border-color')).toBe('rgb(220,38,38)');
+          expect(Number(parent.style('background-opacity')) < 0.18).toBe(true);
+        }
+      } finally {
+        cy.destroy();
+      }
+    }
+  });
   it('keeps nested compound fills visible and bounded while reserving real node padding', () => {
     const elements = {
       nodes: [

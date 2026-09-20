@@ -11,6 +11,7 @@ import type { CycleInspection, CycleSelection } from '@/types/auditVisualization
 export function AuditRuleList({
   evaluation,
   cycleSelection,
+  inspectedCycleId,
   onCycleInspectionChange,
 }: AuditRuleListProps) {
   return (
@@ -23,6 +24,7 @@ export function AuditRuleList({
             evaluation={evaluation}
             rule={rule}
             cycleSelection={cycleSelection}
+            inspectedCycleId={inspectedCycleId}
             onCycleInspectionChange={onCycleInspectionChange}
           />
         ))}
@@ -34,6 +36,7 @@ export function AuditRuleList({
 function RuleDetails({
   evaluation,
   cycleSelection,
+  inspectedCycleId,
   onCycleInspectionChange,
   rule,
 }: RuleDetailsProps) {
@@ -42,6 +45,7 @@ function RuleDetails({
       <CyclicDependenciesRuleDetails
         cycles={evaluation.cyclicPackages}
         cycleSelection={cycleSelection}
+        inspectedCycleId={inspectedCycleId}
         onCycleInspectionChange={onCycleInspectionChange}
       />
     );
@@ -61,6 +65,7 @@ function RuleDetails({
 }
 
 interface AuditRuleListProps {
+  readonly inspectedCycleId?: string | null;
   readonly evaluation: Audit['evaluation'];
   readonly cycleSelection: CycleSelection;
   readonly onCycleInspectionChange: (inspection: CycleInspection | null) => void;

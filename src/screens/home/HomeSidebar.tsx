@@ -30,6 +30,7 @@ export function HomeSidebar(props: HomeSidebarProps) {
         activeTool={activeTool}
         evaluation={props.evaluation}
         cycleSelection={props.cycleSelection}
+        inspectedCycleId={props.inspectedCycleId}
         onCycleInspectionChange={props.onCycleInspectionChange}
         onProjectTreeSelect={props.onProjectTreeSelect}
         onValueChange={selectTool}
@@ -48,6 +49,7 @@ function SidebarToolTabs({
   activeTool,
   evaluation,
   cycleSelection,
+  inspectedCycleId,
   onCycleInspectionChange,
   onProjectTreeSelect,
   onValueChange,
@@ -55,6 +57,17 @@ function SidebarToolTabs({
   selectedTreeId,
 }: SidebarToolTabsProps) {
   const violatedRuleCount = evaluation?.rules.filter(rule => rule.status === 'failed').length ?? 0;
+  const findingCount =
+    evaluation?.rules
+      .filter(rule => rule.status === 'failed')
+      .reduce(
+        (count, rule) =>
+          count +
+          (rule.id === 'cyclic-dependencies'
+            ? evaluation.cyclicPackages.length
+            : rule.details.length),
+        0
+      ) ?? 0;
 
   return (
     <SidebarTabs
@@ -75,15 +88,14 @@ function SidebarToolTabs({
         },
         {
           id: 'rules',
-          label: t('settings.rules'),
-          badge: violatedRuleCount,
-          badgeTone: 'danger',
+          label: `${t('settings.rules')} · ${findingCount} ${t('audit.findings')}`,
           disabled: violatedRuleCount === 0,
           content:
             evaluation === null ? null : (
               <AuditRulePanel
                 evaluation={evaluation}
                 cycleSelection={cycleSelection}
+                inspectedCycleId={inspectedCycleId}
                 onCycleInspectionChange={onCycleInspectionChange}
               />
             ),
@@ -95,6 +107,7 @@ function SidebarToolTabs({
 }
 
 interface HomeSidebarProps {
+  readonly inspectedCycleId: string | null;
   readonly evaluation: Audit['evaluation'] | null;
   readonly projectTree: readonly ProjectTreeNode[];
   readonly selectedTreeId: string | null;
@@ -104,6 +117,7 @@ interface HomeSidebarProps {
 }
 
 interface SidebarToolTabsProps {
+  readonly inspectedCycleId: string | null;
   readonly activeTool: string | null;
   readonly evaluation: Audit['evaluation'] | null;
   readonly cycleSelection: CycleSelection;

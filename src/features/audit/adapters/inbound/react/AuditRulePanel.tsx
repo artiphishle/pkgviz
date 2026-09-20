@@ -9,18 +9,21 @@ import type { CycleInspection, CycleSelection } from '@/types/auditVisualization
 export function AuditRulePanel({
   evaluation,
   cycleSelection,
+  inspectedCycleId,
   onCycleInspectionChange,
 }: AuditRulePanelProps) {
   return (
     <AuditRuleList
       evaluation={evaluation}
       cycleSelection={cycleSelection}
+      inspectedCycleId={inspectedCycleId}
       onCycleInspectionChange={onCycleInspectionChange}
     />
   );
 }
 
 interface AuditRulePanelProps {
+  readonly inspectedCycleId?: string | null;
   readonly evaluation: Audit['evaluation'];
   readonly cycleSelection: CycleSelection;
   readonly onCycleInspectionChange: (inspection: CycleInspection | null) => void;

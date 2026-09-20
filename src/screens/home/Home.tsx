@@ -100,6 +100,7 @@ export default function HomeScreen() {
             selectedTreeId={selectedTreeId}
             onProjectTreeSelect={selectProjectTreeNode}
             cycleSelection={cycleSelection}
+            inspectedCycleId={cycleInspection?.id ?? null}
             onCycleInspectionChange={setCycleInspection}
           />
           {projectError ? (
