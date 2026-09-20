@@ -20,7 +20,6 @@ import { useGraphProjection } from '@/features/graph-view/adapters/inbound/react
 import { LAYOUTS } from '@/layouts/constants';
 import { getCanvasBg } from '@/layouts/style';
 import type { CycleHighlight } from '@/types/auditVisualization';
-import type { GraphRevealRequest } from '@/types/projectTree';
 
 const MIN_ZOOM = 0.05;
 const MAX_ZOOM = 2;
@@ -33,7 +32,7 @@ export function DependencyGraphView(props: DependencyGraphViewProps) {
   const visibleElements = useGraphProjection({
     currentPackage: props.currentPackage,
     elements: props.packageGraph,
-    revealPackageId: props.graphRevealRequest?.packageId,
+    preservePackageScope: props.cycleHighlights.length > 0,
     setCurrentPackage: props.setCurrentPackage,
     setMaxSubPackageDepth: settings.setMaxSubPackageDepth,
     showCompoundNodes: settings.showCompoundNodes,
@@ -149,31 +148,16 @@ function DependencyGraphCanvas(props: DependencyGraphCanvasProps) {
   );
 }
 
-/*** Coordinates controller readiness and one-shot package or algorithm viewport requests. */
+/*** Coordinates controller readiness and intentional layout-algorithm viewport requests. */
 function useGraphViewport(props: DependencyGraphCanvasProps) {
   const [controller, setController] = useState<GraphViewController | null>(null);
   const [zoom, setZoom] = useState(1);
-  const handledRevealRequestRef = React.useRef<string | null>(null);
   const previousLayoutRef = React.useRef(props.layout);
 
-  React.useEffect(() => {
-    if (props.graphRevealRequest === null) handledRevealRequestRef.current = null;
-  }, [props.graphRevealRequest]);
-
-  /*** Fits explicit reveals once and recenters after an intentional layout-algorithm change. */
+  /*** Recenters after an intentional layout-algorithm change. */
   const handleLayoutComplete = (nextController: GraphViewController) => {
     const layoutChanged = previousLayoutRef.current !== props.layout;
     previousLayoutRef.current = props.layout;
-    const revealRequest = props.graphRevealRequest;
-    if (
-      props.cycleHighlights.length === 0 &&
-      revealRequest !== null &&
-      handledRevealRequestRef.current !== revealRequest.treeNodeId
-    ) {
-      handledRevealRequestRef.current = revealRequest.treeNodeId;
-      nextController.fit({ nodeIds: [revealRequest.packageId], padding: 140 });
-      return;
-    }
     if (layoutChanged) nextController.fit();
   };
 
@@ -200,7 +184,6 @@ interface DependencyGraphViewProps {
   readonly packageGraph: ElementsDefinition;
   readonly setCurrentPackage: (path: string) => void;
   readonly cycleHighlights: readonly CycleHighlight[];
-  readonly graphRevealRequest: GraphRevealRequest | null;
   readonly overlay?: React.ReactNode;
 }
 

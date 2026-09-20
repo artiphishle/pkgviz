@@ -34,11 +34,11 @@ describe('[graph view projection]', () => {
     expect(reflectoring.redirectPackage).toBeNull();
   });
 
-  it('does not skip the parent scope of an explicit reveal target', () => {
+  it('does not skip an explicit cycle scope even when it has only one direct package', () => {
     const result = projectVisibleGraph({
       currentPackage: 'src.io',
       elements: createDeepElements(),
-      revealPackageId: 'src.io.reflectoring',
+      preservePackageScope: true,
       showCompoundNodes: false,
       showVendorPackages: true,
       subPackageDepth: 1,

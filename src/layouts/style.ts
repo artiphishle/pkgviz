@@ -104,7 +104,7 @@ function getNodeBaseStyles(colors: Palette): StylesheetJson {
         'text-halign': 'center',
         width: 'data(labelWidth)',
         height: 24,
-        padding: '8px 8px',
+        padding: '12px',
         'border-width': 1,
         'font-size': '14px',
         'overlay-opacity': 0, // avoid gray overlay
@@ -159,21 +159,27 @@ function getNodeStateStyles(colors: Palette): StylesheetJson {
   ];
 }
 
-/*** Styles compound containers while retaining their package-relative labels. */
+/***
+ * Shows compound boundaries without accumulating opaque color across overlapping ancestors.
+ * @performance Keep grouping paint-only; do not add nested DOM surfaces or extra graph elements.
+ */
 function getCompoundStyles(colors: Palette): StylesheetJson {
   return [
     {
       selector: 'node:parent, node:parent:selected',
       style: {
-        'background-opacity': 0.3,
+        'background-opacity': 0,
         'background-color': colors.selectedFill,
         color: colors.nodeText,
-        'border-width': 2,
+        'border-width': 1,
+        'border-opacity': 0.35,
         'border-color': colors.nodeBorder,
         'text-valign': 'top',
         'text-margin-y': -5,
-        padding: '10px',
-        'padding-top': '20px',
+        padding: '16px',
+        'text-background-color': colors.canvasBg,
+        'text-background-opacity': 0.85,
+        'text-background-padding': '3px',
         'text-halign': 'center',
         'font-size': 14,
         'font-weight': 'bold',

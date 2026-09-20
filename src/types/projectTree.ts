@@ -12,8 +12,3 @@ export interface ProjectVisualization {
   readonly graph: ElementsDefinition;
   readonly tree: readonly ProjectTreeNode[];
 }
-
-export interface GraphRevealRequest {
-  readonly packageId: string;
-  readonly treeNodeId: string;
-}

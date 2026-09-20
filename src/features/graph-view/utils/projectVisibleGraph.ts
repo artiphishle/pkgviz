@@ -30,7 +30,7 @@ export function projectVisibleGraph(input: ProjectVisibleGraphInput): ProjectVis
 interface ProjectVisibleGraphInput {
   readonly currentPackage: string;
   readonly elements: ElementsDefinition;
-  readonly revealPackageId?: string;
+  readonly preservePackageScope?: boolean;
   readonly showCompoundNodes: boolean;
   readonly showVendorPackages: boolean;
   readonly subPackageDepth: number;
@@ -42,14 +42,18 @@ interface ProjectVisibleGraphResult {
   readonly redirectPackage: string | null;
 }
 
-/*** Skips package levels that contain no branching point while preserving explicit reveal targets. */
+/***
+ * Skips empty package levels only when no explicit cycle scope owns the projection.
+ * @performance
+ * An active cycle can require an ancestor package as a visible node. Redirecting into that package
+ * hides it again and causes an endless focus/redirect loop, repeatedly remounting the renderer.
+ */
 function resolveRedirectPackage(
   input: ProjectVisibleGraphInput,
   visible: ElementsDefinition
 ): string | null {
   const currentPackage = input.currentPackage.replaceAll('/', '.');
-  const revealParent = input.revealPackageId?.split('.').slice(0, -1).join('.') ?? null;
-  if (revealParent === currentPackage) return null;
+  if (input.preservePackageScope) return null;
 
   const nextPackage = filterEmptyPackages(currentPackage, visible);
   return nextPackage === currentPackage ? null : nextPackage;

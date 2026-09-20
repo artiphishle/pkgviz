@@ -9,14 +9,14 @@ import { projectVisibleGraph } from '@/features/graph-view/utils/projectVisibleG
  * @performance
  * Package/depth/vendor projection traverses nodes and aggregates edges. Keep it memoized on its
  * actual inputs so unrelated UI renders do not repeat that work or replace the visible graph data.
- * Preserve lifted-edge weights and reveal semantics when optimizing; projectVisibleGraph tests
+ * Preserve lifted-edge weights and explicit cycle scopes when optimizing; projectVisibleGraph tests
  * cover those behaviors. Do not add a second independently maintained projection state.
  */
 export function useGraphProjection(input: UseGraphProjectionInput): ElementsDefinition | null {
   const {
     currentPackage,
     elements,
-    revealPackageId,
+    preservePackageScope,
     setCurrentPackage,
     setMaxSubPackageDepth,
     showCompoundNodes,
@@ -30,7 +30,7 @@ export function useGraphProjection(input: UseGraphProjectionInput): ElementsDefi
         : projectVisibleGraph({
             currentPackage,
             elements,
-            revealPackageId,
+            preservePackageScope,
             showCompoundNodes,
             showVendorPackages,
             subPackageDepth,
@@ -38,7 +38,7 @@ export function useGraphProjection(input: UseGraphProjectionInput): ElementsDefi
     [
       currentPackage,
       elements,
-      revealPackageId,
+      preservePackageScope,
       showCompoundNodes,
       showVendorPackages,
       subPackageDepth,
@@ -57,7 +57,7 @@ export function useGraphProjection(input: UseGraphProjectionInput): ElementsDefi
 interface UseGraphProjectionInput {
   readonly currentPackage: string;
   readonly elements: ElementsDefinition | null;
-  readonly revealPackageId?: string;
+  readonly preservePackageScope?: boolean;
   readonly setCurrentPackage: (path: string) => void;
   readonly setMaxSubPackageDepth: (depth: number) => void;
   readonly showCompoundNodes: boolean;

@@ -6,6 +6,30 @@ import { createGraphViewModel } from '@/features/graph-view/adapters/inbound/rea
 import { getStyle } from '@/layouts/style';
 
 describe('[getStyle]', () => {
+  it('keeps nested compound fills transparent and reserves real node padding', () => {
+    const elements = {
+      nodes: [
+        { data: { id: 'p' } },
+        { data: { id: 'p.c', parent: 'p' } },
+        { data: { id: 'p.c.leaf', parent: 'p.c' } },
+      ],
+      edges: [],
+    };
+    const cy = cytoscape({
+      elements: toRenderableElements(elements),
+      headless: true,
+      styleEnabled: true,
+      style: getStyle(elements, 'light'),
+    });
+    try {
+      expect(cy.getElementById('p').style('background-opacity')).toBe('0');
+      expect(cy.getElementById('p.c').style('background-opacity')).toBe('0');
+      expect(cy.getElementById('p.c.leaf').style('padding')).toBe('12px');
+    } finally {
+      cy.destroy();
+    }
+  });
+
   it('keeps selection and hover paint changes out of layout geometry', () => {
     const elements = { nodes: [{ data: { id: 'a', label: 'package.a' } }], edges: [] };
     const cy = cytoscape({
