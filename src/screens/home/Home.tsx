@@ -13,6 +13,7 @@ import { findProjectTreeNodeByGraphPackage } from '@/features/project-tree/utils
 import { t } from '@/i18n/i18n';
 import { HomeGraph } from '@/screens/home/HomeGraph';
 import { HomeSidebar } from '@/screens/home/HomeSidebar';
+import { resolveThemeMode } from '@/screens/home/resolveThemeMode';
 import { getProjectName } from '@/shared/utils/getProjectName';
 import type { Audit } from '@/types/audit';
 import type { CycleInspection } from '@/types/auditVisualization';
@@ -37,8 +38,8 @@ export default function HomeScreen({ project }: HomeScreenProps) {
   const cycleSelection = useCycleSelection(auditEvaluation?.cyclicPackages ?? EMPTY_CYCLES);
   const [cycleInspection, setCycleInspection] = useState<CycleInspection | null>(null);
   const activeTheme = theme === 'system' ? resolvedTheme : theme;
-  const isDark = activeTheme === 'dark';
-  const mode = isDark ? 'dark' : 'light';
+  const mode = resolveThemeMode(themeMounted, activeTheme);
+  const isDark = mode === 'dark';
   const breadcrumbItems = createBreadcrumbItems(currentPackage);
 
   /*** Navigates graph scope and mirrors the matching package selection in the project tree. */
