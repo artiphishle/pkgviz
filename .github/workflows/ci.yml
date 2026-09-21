@@ -103,7 +103,9 @@ jobs:
           fi
 
       - name: Enforce PKGViz cyclic-dependencies rule
-        run: bun bin/pkgviz.ts --out pkgviz-audit.json --rule cyclic-dependencies=block
+        run: |
+          rm -rf .ankh
+          bun bin/pkgviz.ts --out pkgviz-audit.json --rule cyclic-dependencies=block
 
       - name: Upload PKGViz self-audit
         if: always()
