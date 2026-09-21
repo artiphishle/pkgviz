@@ -2,7 +2,6 @@
 
 import { GraphView, type GraphViewElementEvent, type GraphViewLayoutName } from '@zora/graph-view';
 import type { ElementsDefinition, LayoutOptions } from 'cytoscape';
-import { useTheme } from 'next-themes';
 import React, { useMemo } from 'react';
 
 import { useSettings } from '@/contexts/SettingsContext';
@@ -13,6 +12,7 @@ import { useGraphFocus } from '@/features/graph-view/adapters/inbound/react/useG
 import { useGraphInteractions } from '@/features/graph-view/adapters/inbound/react/useGraphInteractions';
 import { useGraphProjection } from '@/features/graph-view/adapters/inbound/react/useGraphProjection';
 import { useGraphViewport } from '@/features/graph-view/adapters/inbound/react/useGraphViewport';
+import { useThemeMode } from '@/features/theme/adapters/inbound/react/useThemeMode';
 import { LAYOUTS } from '@/layouts/constants';
 import { getCanvasBg } from '@/layouts/style';
 import type { CycleHighlight } from '@/types/auditVisualization';
@@ -20,8 +20,7 @@ import type { CycleHighlight } from '@/types/auditVisualization';
 /*** Renders PKGViz graph policy through the materialized ZORA GraphView runtime. */
 export function DependencyGraphView(props: DependencyGraphViewProps) {
   const settings = useSettings();
-  const { resolvedTheme } = useTheme();
-  const theme = resolvedTheme === 'dark' ? 'dark' : 'light';
+  const { mode: theme } = useThemeMode();
   const visibleElements = useGraphProjection({
     currentPackage: props.currentPackage,
     elements: props.packageGraph,
@@ -142,6 +141,7 @@ function DependencyGraphCanvas(props: DependencyGraphCanvasProps) {
         controller={viewport.controller}
         maxZoom={viewport.max}
         minZoom={viewport.min}
+
         zoom={viewport.zoom}
       />
     </div>

@@ -1,4 +1,5 @@
 import { describe, expect, it, render } from '@artiphishle/testosterone';
+import { ZoraProvider } from '@zora/ZoraProvider';
 import type {
   GraphViewController,
   GraphViewFitOptions,
@@ -55,7 +56,13 @@ describe('[graph viewport controls]', () => {
     };
     const slider = () => host.container.querySelector<HTMLInputElement>('input[type="range"]')!;
     try {
-      await act(async () => root.render(<Harness layout="grid" />));
+      await act(async () =>
+        root.render(
+          <ZoraProvider mode="light">
+            <Harness layout="grid" />
+          </ZoraProvider>
+        )
+      );
       await click('#ready');
       expect(slider().max).toBe('8');
       state.zoom = 5;
@@ -70,7 +77,13 @@ describe('[graph viewport controls]', () => {
       expect(fits).toEqual([]);
       await click('button[aria-label="Fit graph and optimize spacing for readability"]');
       expect(fits).toEqual([{ optimizeSpacing: true }]);
-      await act(async () => root.render(<Harness layout="circle" />));
+      await act(async () =>
+        root.render(
+          <ZoraProvider mode="light">
+            <Harness layout="circle" />
+          </ZoraProvider>
+        )
+      );
       await click('#settled');
       expect(fits).toEqual([{ optimizeSpacing: true }, undefined]);
     } finally {

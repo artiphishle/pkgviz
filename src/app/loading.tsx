@@ -1,8 +1,13 @@
+'use client';
+import { ActivityIndicator } from '@zora/activity-indicator';
+import { View } from '@zora/view';
 import React from 'react';
 
-import Loader from '@/components/Loader';
-
-/*** Keeps the centered loading indicator visible while the request-time project snapshot loads. */
+/*** Keeps the initial loading indicator compact while the project snapshot loads. */
 export default function Loading() {
-  return <Loader />;
+  return (
+    <View align="center" justify="center" p="l" style={{ alignSelf: 'center' }}>
+      <ActivityIndicator testID="loader" />
+    </View>
+  );
 }

@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "components": [
+    "activity-indicator",
+    "app-bar",
+    "badge",
+    "breadcrumbs",
+    "button",
+    "card",
+    "graph-view",
+    "icon",
+    "scroll-view",
+    "select",
+    "surface",
+    "switch",
+    "tabs",
+    "text",
+    "tree-view",
+    "view"
+  ]
+}

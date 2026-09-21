@@ -1,8 +1,9 @@
 'use client';
+import { ActivityIndicator } from '@zora/activity-indicator';
+import { View } from '@zora/view';
 import type { ElementsDefinition } from 'cytoscape';
 import React from 'react';
 
-import Loader from '@/components/Loader';
 import { CycleInspector } from '@/features/audit/adapters/inbound/react/CycleInspector';
 import { DependencyGraphView } from '@/features/graph-view/adapters/inbound/react/DependencyGraphView';
 import type { CycleHighlight, CycleInspection } from '@/types/auditVisualization';
@@ -16,7 +17,13 @@ export function HomeGraph({
   setCurrentPackage,
   onCloseInspection,
 }: HomeGraphProps) {
-  if (!packageGraph) return <Loader />;
+  if (!packageGraph) {
+    return (
+      <View align="center" flex={1} justify="center">
+        <ActivityIndicator testID="loader" />
+      </View>
+    );
+  }
 
   return (
     <DependencyGraphView

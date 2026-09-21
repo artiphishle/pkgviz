@@ -1,20 +1,22 @@
 'use client';
+import { ScrollView } from '@zora/scroll-view';
+import { Surface } from '@zora/surface';
+import { Tab, TabList, TabPanel, Tabs } from '@zora/tabs';
+import { View } from '@zora/view';
 import React from 'react';
 
-import { ExportPanel } from '@/components/ExportPanel';
-import { SettingsPanel } from '@/components/SettingsPanel';
-import { Sidebar } from '@/components/sidebar/Sidebar';
-import { SidebarTabs } from '@/components/sidebar/SidebarTabs';
+import { AuditExportPanel } from '@/features/audit/adapters/inbound/react/AuditExportPanel';
 import { AuditRulePanel } from '@/features/audit/adapters/inbound/react/AuditRulePanel';
 import { ProjectTreePanel } from '@/features/project-tree/adapters/inbound/react/ProjectTreePanel';
+import { SettingsPanel } from '@/features/settings/adapters/inbound/react/SettingsPanel';
 import { t } from '@/i18n/i18n';
 import type { Audit } from '@/types/audit';
 import type { CycleInspection, CycleSelection } from '@/types/auditVisualization';
 import type { ProjectTreeNode } from '@/types/projectTree';
 
-/*** Composes Tree, Rules, and Export above persistent graph settings. */
+/*** Composes project tools and persistent graph settings from generated ZORA elements. */
 export function HomeSidebar(props: HomeSidebarProps) {
-  const [activeTool, setActiveTool] = React.useState<string | null>('tree');
+  const [activeTool, setActiveTool] = React.useState('tree');
 
   /*** Closes the evidence panel without changing the user's cycle visualization choices. */
   const selectTool = (value: string) => {
@@ -25,26 +27,18 @@ export function HomeSidebar(props: HomeSidebarProps) {
   };
 
   return (
-    <Sidebar>
-      <SidebarToolTabs
-        activeTool={activeTool}
-        evaluation={props.evaluation}
-        cycleSelection={props.cycleSelection}
-        inspectedCycleId={props.inspectedCycleId}
-        onCycleInspectionChange={props.onCycleInspectionChange}
-        onProjectTreeSelect={props.onProjectTreeSelect}
-        onValueChange={selectTool}
-        projectTree={props.projectTree}
-        selectedTreeId={props.selectedTreeId}
-      />
-      <div className="shrink-0">
+    <aside className="flex min-h-0 w-[18rem] min-w-[18rem] max-w-[18rem] shrink-0 self-stretch flex-col overflow-hidden border-r border-r-neutral-200 bg-neutral-100 md:pt-14 dark:border-r-neutral-800 dark:bg-neutral-950">
+      <Surface style={{ height: '100%', overflow: 'hidden' }} variant="subtle">
+        <View flex={1} style={{ minHeight: 0, overflow: 'hidden' }}>
+          <SidebarToolTabs {...props} activeTool={activeTool} onValueChange={selectTool} />
+        </View>
         <SettingsPanel />
-      </div>
-    </Sidebar>
+      </Surface>
+    </aside>
   );
 }
 
-/*** Renders project-tree navigation together with secondary Rules and Export tools. */
+/*** Renders Tree, Rules, and Export through the generated ZORA Tabs family. */
 function SidebarToolTabs({
   activeTool,
   evaluation,
@@ -56,7 +50,6 @@ function SidebarToolTabs({
   projectTree,
   selectedTreeId,
 }: SidebarToolTabsProps) {
-  const violatedRuleCount = evaluation?.rules.filter(rule => rule.status === 'failed').length ?? 0;
   const findingCount =
     evaluation?.rules
       .filter(rule => rule.status === 'failed')
@@ -68,41 +61,45 @@ function SidebarToolTabs({
             : rule.details.length),
         0
       ) ?? 0;
+  const hasRuleFindings = findingCount > 0;
+  const rulesLabel = `${t('settings.rules')} · ${findingCount} ${t('audit.findings')}`;
 
   return (
-    <SidebarTabs
-      ariaLabel={t('sidebar.tools')}
-      value={activeTool}
-      onValueChange={onValueChange}
-      tabs={[
-        {
-          id: 'tree',
-          label: t('settings.tree'),
-          content: (
-            <ProjectTreePanel
-              nodes={projectTree}
-              selectedId={selectedTreeId}
-              onSelect={onProjectTreeSelect}
-            />
-          ),
-        },
-        {
-          id: 'rules',
-          label: `${t('settings.rules')} · ${findingCount} ${t('audit.findings')}`,
-          disabled: violatedRuleCount === 0,
-          content:
-            evaluation === null ? null : (
+    <Tabs flex={1} minHeight={0} overflow="hidden" value={activeTool} onValueChange={onValueChange}>
+      <TabList>
+        <Tab label={t('settings.tree')} value="tree" />
+        {hasRuleFindings ? <Tab label={rulesLabel} value="rules" /> : null}
+        <Tab label={t('settings.export')} value="export" />
+      </TabList>
+      <TabPanel flex={1} minHeight={0} value="tree">
+        <ScrollView flex={1} minHeight={0} testID="sidebar-tree-scroll">
+          <ProjectTreePanel
+            nodes={projectTree}
+            selectedId={selectedTreeId}
+            onSelect={onProjectTreeSelect}
+          />
+        </ScrollView>
+      </TabPanel>
+      {hasRuleFindings ? (
+        <TabPanel flex={1} minHeight={0} value="rules">
+          <ScrollView flex={1} minHeight={0} testID="sidebar-rules-scroll">
+            {evaluation === null ? null : (
               <AuditRulePanel
                 evaluation={evaluation}
                 cycleSelection={cycleSelection}
                 inspectedCycleId={inspectedCycleId}
                 onCycleInspectionChange={onCycleInspectionChange}
               />
-            ),
-        },
-        { id: 'export', label: t('settings.export'), content: <ExportPanel /> },
-      ]}
-    />
+            )}
+          </ScrollView>
+        </TabPanel>
+      ) : null}
+      <TabPanel flex={1} minHeight={0} value="export">
+        <ScrollView flex={1} minHeight={0} testID="sidebar-export-scroll">
+          <AuditExportPanel />
+        </ScrollView>
+      </TabPanel>
+    </Tabs>
   );
 }
 
@@ -116,14 +113,7 @@ interface HomeSidebarProps {
   readonly onCycleInspectionChange: (inspection: CycleInspection | null) => void;
 }
 
-interface SidebarToolTabsProps {
-  readonly inspectedCycleId: string | null;
-  readonly activeTool: string | null;
-  readonly evaluation: Audit['evaluation'] | null;
-  readonly cycleSelection: CycleSelection;
-  readonly onCycleInspectionChange: (inspection: CycleInspection | null) => void;
-  readonly onProjectTreeSelect: (node: ProjectTreeNode) => void;
+interface SidebarToolTabsProps extends HomeSidebarProps {
+  readonly activeTool: string;
   readonly onValueChange: (value: string) => void;
-  readonly projectTree: readonly ProjectTreeNode[];
-  readonly selectedTreeId: string | null;
 }

@@ -1,6 +1,7 @@
 'use client';
+import { Icon } from '@zora/icon';
 import { type TreeItemNode, TreeView } from '@zora/tree-view';
-import { FileCode2Icon, FolderIcon } from 'lucide-react';
+import { View } from '@zora/view';
 import React from 'react';
 
 import { useProjectTreeExpansion } from '@/features/project-tree/adapters/inbound/react/useProjectTreeExpansion';
@@ -9,11 +10,11 @@ import type { ProjectTreeNode } from '@/types/projectTree';
 
 /*** Adapts PKGViz's serializable project tree to the generated ZORA browser TreeView. */
 export function ProjectTreePanel({ nodes, onSelect, selectedId }: ProjectTreePanelProps) {
-  const treeNodes = React.useMemo(() => nodes.map(toTreeItemNode), [nodes]);
+  const treeNodes = React.useMemo(() => nodes.map(node => toTreeItemNode(node)), [nodes]);
   const expansion = useProjectTreeExpansion(nodes, selectedId);
 
   return (
-    <div className="px-2 pt-2 text-xs">
+    <View p="s">
       <TreeView
         ariaLabel="Project tree"
         expansionIndicator="folder"
@@ -26,7 +27,7 @@ export function ProjectTreePanel({ nodes, onSelect, selectedId }: ProjectTreePan
           if (node) onSelect(node);
         }}
       />
-    </div>
+    </View>
   );
 }
 
@@ -35,13 +36,13 @@ function toTreeItemNode(node: ProjectTreeNode): TreeItemNode {
   return {
     id: node.id,
     label: node.label,
-    icon:
-      node.kind === 'directory' ? (
-        <FolderIcon aria-hidden size={14} />
-      ) : (
-        <FileCode2Icon aria-hidden size={14} />
-      ),
-    ...(node.children ? { children: node.children.map(toTreeItemNode) } : {}),
+    icon: (
+      <Icon
+        name={node.kind === 'directory' ? 'folder-outline' : 'document-text-outline'}
+        size={14}
+      />
+    ),
+    ...(node.children ? { children: node.children.map(child => toTreeItemNode(child)) } : {}),
   };
 }
 

@@ -1,13 +1,13 @@
 'use client';
+import { Text } from '@zora/text';
+import { View } from '@zora/view';
 import React from 'react';
 
-import { SidebarRow } from '@/components/sidebar/SidebarRow';
-import { SidebarSection } from '@/components/sidebar/SidebarSection';
 import { CyclicDependenciesRuleDetails } from '@/features/audit/adapters/inbound/react/CyclicDependenciesRuleDetails';
 import type { Audit, AuditRuleResult } from '@/types/audit';
 import type { CycleInspection, CycleSelection } from '@/types/auditVisualization';
 
-/*** Renders only violated audit rules in the active Rules sidebar tab. */
+/*** Renders only violated audit rules using generated ZORA presentation elements. */
 export function AuditRuleList({
   evaluation,
   cycleSelection,
@@ -15,7 +15,7 @@ export function AuditRuleList({
   onCycleInspectionChange,
 }: AuditRuleListProps) {
   return (
-    <>
+    <View gap="l">
       {evaluation.rules
         .filter(rule => rule.status === 'failed')
         .map(rule => (
@@ -28,11 +28,11 @@ export function AuditRuleList({
             onCycleInspectionChange={onCycleInspectionChange}
           />
         ))}
-    </>
+    </View>
   );
 }
 
-/*** Dispatches one violated rule to its dedicated sidebar renderer. */
+/*** Dispatches one violated rule to its dedicated renderer or generic ZORA fallback. */
 function RuleDetails({
   evaluation,
   cycleSelection,
@@ -52,15 +52,16 @@ function RuleDetails({
   }
 
   return (
-    <SidebarSection title={rule.id}>
+    <View gap="xs" p="m">
+      <Text variant="label" weight="bold">
+        {rule.id}
+      </Text>
       {rule.details.map((detail, index) => (
-        <SidebarRow key={detail + ':' + index}>
-          <code className="block truncate text-[11px]" title={detail}>
-            {detail}
-          </code>
-        </SidebarRow>
+        <Text key={detail + ':' + index} numberOfLines={1} variant="code">
+          {detail}
+        </Text>
       ))}
-    </SidebarSection>
+    </View>
   );
 }
 

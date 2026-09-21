@@ -1,4 +1,5 @@
 import { describe, expect, it, render } from '@artiphishle/testosterone';
+import { ZoraProvider } from '@zora/ZoraProvider';
 import React from 'react';
 
 import { AuditRulePanel } from '@/features/audit/adapters/inbound/react/AuditRulePanel';
@@ -7,11 +8,13 @@ import type { Audit } from '@/types/audit';
 describe('[AuditRulePanel]', () => {
   it('renders violated rule content supplied by the composition root', () => {
     const { getByText } = render(
-      <AuditRulePanel
-        evaluation={evaluation}
-        cycleSelection={{ highlights: [], selectedIds: [], setSelected: () => undefined }}
-        onCycleInspectionChange={() => undefined}
-      />
+      <ZoraProvider mode="light">
+        <AuditRulePanel
+          evaluation={evaluation}
+          cycleSelection={{ highlights: [], selectedIds: [], setSelected: () => undefined }}
+          onCycleInspectionChange={() => undefined}
+        />
+      </ZoraProvider>
     );
 
     expect(getByText('Cyclic Dependencies')).toBeDefined();

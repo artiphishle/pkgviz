@@ -33,6 +33,20 @@ it('reports incomplete scans rather than treating partial evidence as complete',
   }
 });
 
+it('ignores the generated ZORA runtime directory during project inspection', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'pkgviz-detector-'));
+  try {
+    await writeFile(join(root, 'main.ts'), '');
+    await mkdir(join(root, '.ankh/zora'), { recursive: true });
+    await symlink(root, join(root, '.ankh/zora/web'));
+
+    const result = await inspectParserLanguageAsync(root);
+    assert.equal(result.language, Language.TypeScript);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 it('normalizes an unavailable inspection root to a project path error', async () => {
   const root = await mkdtemp(join(tmpdir(), 'pkgviz-missing-'));
   await rm(root, { recursive: true, force: true });

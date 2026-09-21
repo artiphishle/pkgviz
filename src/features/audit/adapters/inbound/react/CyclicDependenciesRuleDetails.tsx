@@ -1,9 +1,10 @@
 'use client';
+import { Badge } from '@zora/badge';
+import { Text } from '@zora/text';
+import { View } from '@zora/view';
 import React from 'react';
 
-import { SidebarRow } from '@/components/sidebar/SidebarRow';
-import { SidebarSection } from '@/components/sidebar/SidebarSection';
-import { ToggleSwitch } from '@/components/ToggleSwitch';
+import { CycleSwitch } from '@/features/audit/adapters/inbound/react/CycleSwitch';
 import {
   createCycleInspection,
   getCycleColor,
@@ -13,7 +14,7 @@ import { t } from '@/i18n/i18n';
 import type { PackageCycleDetail } from '@/types/audit';
 import type { CycleInspection, CycleSelection } from '@/types/auditVisualization';
 
-/*** Renders cycle findings with independent highlight switches and toggleable evidence selection. */
+/*** Renders cycle findings with ZORA presentation and persistent independent selection. */
 export function CyclicDependenciesRuleDetails({
   cycles,
   cycleSelection,
@@ -21,88 +22,93 @@ export function CyclicDependenciesRuleDetails({
   onCycleInspectionChange,
 }: CyclicDependenciesRuleDetailsProps) {
   return (
-    <SidebarSection
-      title={
-        <span className="flex items-center gap-2">
-          <span>{t('audit.rule.cyclicDependencies')}</span>
-          <span className="text-xs font-normal text-neutral-500 dark:text-neutral-400">
-            {cycles.length} {t('audit.cycles')}
-          </span>
-        </span>
-      }
-    >
-      {cycles.map((cycle, index) => (
-        <SidebarRow key={getCycleId(cycle)}>
+    <View gap="s" p="m">
+      <View align="center" direction="row" gap="s">
+        <Text variant="label" weight="bold">
+          {t('audit.rule.cyclicDependencies')}
+        </Text>
+        <Badge color="danger" size="s">
+          {cycles.length}
+        </Badge>
+        <Text emphasis="muted" variant="caption">
+          {t('audit.cycles')}
+        </Text>
+      </View>
+      {cycles.map((cycle, index) => {
+        const cycleId = getCycleId(cycle);
+        return (
           <CycleRow
             color={getCycleColor(index)}
             cycle={cycle}
             index={index}
-            inspected={inspectedCycleId === getCycleId(cycle)}
-            selected={cycleSelection.selectedIds.includes(getCycleId(cycle))}
+            inspected={inspectedCycleId === cycleId}
+            key={cycleId}
+            selected={cycleSelection.selectedIds.includes(cycleId)}
             onInspect={() =>
               onCycleInspectionChange(
-                inspectedCycleId === getCycleId(cycle)
+                inspectedCycleId === cycleId
                   ? null
                   : createCycleInspection(cycle, index, t('audit.cycle') + ' ' + (index + 1))
               )
             }
             onSelectedChange={selected => {
-              cycleSelection.setSelected(getCycleId(cycle), selected);
-              if (!selected && inspectedCycleId === getCycleId(cycle))
-                onCycleInspectionChange(null);
+              cycleSelection.setSelected(cycleId, selected);
+              if (!selected && inspectedCycleId === cycleId) onCycleInspectionChange(null);
             }}
           />
-        </SidebarRow>
-      ))}
-    </SidebarSection>
+        );
+      })}
+    </View>
   );
 }
 
-/*** Renders one compact cycle switch; full evidence stays in the graph inspector. */
-function CycleRow({
-  color,
-  cycle,
-  index,
-  inspected,
-  onInspect,
-  onSelectedChange,
-  selected,
-}: CycleRowProps) {
-  const route = cycle.packages.join(' → ');
-  const packageCount = new Set(cycle.packages).size;
-  const label = t('audit.cycle') + ' ' + (index + 1);
+/*** Renders one compact cycle switch while the graph owns detailed evidence presentation. */
+function CycleRow(props: CycleRowProps) {
+  const route = props.cycle.packages.join(' → ');
+  const packageCount = new Set(props.cycle.packages).size;
+  const label = t('audit.cycle') + ' ' + (props.index + 1);
 
   return (
-    <div
-      className="flex items-start gap-2 rounded px-1 py-1"
-      style={selected || inspected ? { backgroundColor: color + '1a' } : undefined}
+    <View
+      align="center"
+      direction="row"
+      gap="s"
+      style={
+        props.selected || props.inspected ? { backgroundColor: props.color + '1a' } : undefined
+      }
     >
       <button
         type="button"
-        onClick={onInspect}
-        aria-expanded={inspected}
+        aria-expanded={props.inspected}
         className="min-w-0 flex-1 cursor-pointer rounded text-left focus-visible:outline-2 focus-visible:outline-offset-2"
-        style={inspected ? { boxShadow: `inset 3px 0 ${color}`, paddingLeft: 6 } : undefined}
+        style={
+          props.inspected ? { boxShadow: `inset 3px 0 ${props.color}`, paddingLeft: 6 } : undefined
+        }
         title={route}
+        onClick={props.onInspect}
       >
-        <span className="flex items-center gap-1.5 text-xs font-medium">
-          <span>{label}</span>
-          <span className="ml-auto shrink-0 text-[10px] font-normal text-neutral-500 dark:text-neutral-400">
-            {packageCount} pkg
-          </span>
-        </span>
-        <code className="mt-1 block truncate text-[11px] text-neutral-500 dark:text-neutral-400">
-          {route}
-        </code>
+        <View gap="xs">
+          <View align="center" direction="row" gap="s">
+            <Text variant="label" weight="bold">
+              {label}
+            </Text>
+            <Badge color="neutral" size="s">
+              {packageCount} pkg
+            </Badge>
+          </View>
+          <Text emphasis="muted" numberOfLines={1} variant="code">
+            {route}
+          </Text>
+        </View>
       </button>
-      <ToggleSwitch
+      <CycleSwitch
         ariaLabel={label}
-        checkedColor={color}
-        id={'switch-audit-cycle-' + index}
-        onToggle={() => onSelectedChange(!selected)}
-        value={selected}
+        checkedColor={props.color}
+        id={'switch-audit-cycle-' + props.index}
+        onToggle={() => props.onSelectedChange(!props.selected)}
+        value={props.selected}
       />
-    </div>
+    </View>
   );
 }
 

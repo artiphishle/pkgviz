@@ -1,4 +1,5 @@
 import { describe, expect, it, render } from '@artiphishle/testosterone';
+import { ZoraProvider } from '@zora/ZoraProvider';
 import React from 'react';
 
 import { AuditRuleList } from '@/features/audit/adapters/inbound/react/AuditRuleList';
@@ -32,11 +33,13 @@ const cycles: readonly PackageCycleDetail[] = [
 describe('[AuditRuleList]', () => {
   it('shows violated cycles compactly with right-aligned disabled switches by default', () => {
     const { container, getByText } = render(
-      <AuditRuleList
-        evaluation={failedEvaluation}
-        cycleSelection={{ highlights: [], selectedIds: [], setSelected: () => undefined }}
-        onCycleInspectionChange={() => undefined}
-      />
+      <ZoraProvider mode="light">
+        <AuditRuleList
+          evaluation={failedEvaluation}
+          cycleSelection={{ highlights: [], selectedIds: [], setSelected: () => undefined }}
+          onCycleInspectionChange={() => undefined}
+        />
+      </ZoraProvider>
     );
 
     expect(getByText('Cyclic Dependencies')).toBeDefined();
@@ -49,12 +52,9 @@ describe('[AuditRuleList]', () => {
     );
     expect(switches.length).toBe(2);
     expect(switches.every(control => control.getAttribute('aria-checked') === 'false')).toBe(true);
-    expect(switches.every(control => control.className.includes('shrink-0'))).toBe(true);
     expect(
-      switches.every(control =>
-        control.parentElement
-          ?.querySelector('button:not([role="switch"])')
-          ?.className.includes('flex-1')
+      switches.every(
+        control => control.parentElement?.parentElement?.lastElementChild === control.parentElement
       )
     ).toBe(true);
     expect(container.textContent?.includes('src/a.ts')).toBe(false);
@@ -62,11 +62,13 @@ describe('[AuditRuleList]', () => {
 
   it('does not render satisfied rules in the Rules tab', () => {
     const { container } = render(
-      <AuditRuleList
-        evaluation={passedEvaluation}
-        cycleSelection={{ highlights: [], selectedIds: [], setSelected: () => undefined }}
-        onCycleInspectionChange={() => undefined}
-      />
+      <ZoraProvider mode="light">
+        <AuditRuleList
+          evaluation={passedEvaluation}
+          cycleSelection={{ highlights: [], selectedIds: [], setSelected: () => undefined }}
+          onCycleInspectionChange={() => undefined}
+        />
+      </ZoraProvider>
     );
 
     expect(container.textContent).toBe('');
