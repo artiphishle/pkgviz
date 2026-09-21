@@ -5,7 +5,7 @@
     "": {
       "name": "pkgviz",
       "dependencies": {
-        "@ankhorage/dependency-graph": "^0.6.0",
+        "@ankhorage/dependency-graph": "^0.6.1",
         "@ankhorage/graph": "^0.2.0",
         "@ankhorage/graph-cytoscape": "^0.1.1",
         "@ankhorage/project-detector": "^0.1.0",
@@ -44,7 +44,7 @@
 
     "@ankhorage/contracts": ["@ankhorage/contracts@22.2.0", "", { "dependencies": { "@ankhorage/color-theory": "^0.3.1", "@ankhorage/utility": "^1.4.0" } }, "sha512-iI98/LVo/HdCQtXuQsilcLX2yOWQAY40+Lbh0ClBCMHw7iFHmH5sod9RRyu09E/E9dxPJSmh8fH9hW5fd8kToA=="],
 
-    "@ankhorage/dependency-graph": ["@ankhorage/dependency-graph@0.6.0", "", { "dependencies": { "@ankhorage/graph": "^0.1.0", "@ankhorage/project-detector": "^0.1.0", "@ankhorage/utility": "^0.8.0" }, "peerDependencies": { "typescript": "~6.0.3" } }, "sha512-3C/psgcFeBH2bA9l+XS6tskBOKTUxOHTvKz2+mPhEGM20BeMfteldk61t4/NeqMNoSfVOIj9XNnE6dnmAyCEPw=="],
+    "@ankhorage/dependency-graph": ["@ankhorage/dependency-graph@0.6.1", "", { "dependencies": { "@ankhorage/graph": "^0.1.0", "@ankhorage/project-detector": "^0.1.0", "@ankhorage/utility": "^0.8.0" }, "peerDependencies": { "typescript": "~6.0.3" } }, "sha512-Kyz/jDrekHtMv6urGF2pKmeZC/rg4d786BTfp1rvxZmj/hGqi9FrTlzcH2Nw9qkXNpDiim/SkFeipa1xFvaIhg=="],
 
     "@ankhorage/devtools": ["@ankhorage/devtools@1.18.5", "", { "dependencies": { "@ankhorage/apm": "^0.6.0", "@ankhorage/contracts": "^22.1.1", "@ankhorage/project-detector": "^0.1.0", "@ankhorage/utility": "^0.5.1", "@changesets/cli": "^3.0.2", "@eslint/compat": "^2.1.1", "@eslint/js": "^10.0.1", "@next/eslint-plugin-next": "^16.3.5", "eslint": "^10.10.0", "eslint-config-prettier": "^10.1.8", "eslint-plugin-import": "^2.32.0", "eslint-plugin-prettier": "^5.5.6", "eslint-plugin-react": "^7.37.5", "eslint-plugin-react-hooks": "^7.0.0", "eslint-plugin-react-native": "^5.0.0", "eslint-plugin-security": "^4.0.1", "eslint-plugin-simple-import-sort": "^14.0.0", "eslint-plugin-unused-imports": "^4.4.1", "knip": "^6.34.0", "prettier": "^3.9.6", "typescript": "~6.0.3", "typescript-eslint": "^8.69.0" }, "bin": { "ankhorage-knip": "dist/cli/bin/knip.js", "ankhorage-eslint": "dist/cli/bin/eslint.js", "ankhorage-prettier": "dist/cli/bin/prettier.js", "ankhorage-changeset": "dist/cli/bin/changeset.js", "ankhorage-structure": "dist/cli/bin/structure.js", "ankhorage-apm-release": "dist/cli/bin/apm-release.js" } }, "sha512-ffPE9WaynIm5TO3nEt4SdruwuEV2ZEvhO+TxRrd1wfHQYYFReldV99xNA1heAkTg5R6RT06xNrlznv1IDgBPFA=="],
 
