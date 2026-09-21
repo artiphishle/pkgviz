@@ -13,26 +13,24 @@ import {
 import { t } from '@/i18n/i18n';
 import type { PackageCycleDetail } from '@/types/audit';
 import type { CycleInspection, CycleSelection } from '@/types/auditVisualization';
-import type { ZoraMode } from '@/types/zora';
 
 /*** Renders cycle findings with ZORA presentation and persistent independent selection. */
 export function CyclicDependenciesRuleDetails({
   cycles,
   cycleSelection,
   inspectedCycleId,
-  mode,
   onCycleInspectionChange,
 }: CyclicDependenciesRuleDetailsProps) {
   return (
-    <View mode={mode} gap="s" p="m">
-      <View mode={mode} align="center" direction="row" gap="s">
-        <Text mode={mode} variant="label" weight="bold">
+    <View gap="s" p="m">
+      <View align="center" direction="row" gap="s">
+        <Text variant="label" weight="bold">
           {t('audit.rule.cyclicDependencies')}
         </Text>
-        <Badge color="danger" mode={mode} size="s">
+        <Badge color="danger" size="s">
           {cycles.length}
         </Badge>
-        <Text mode={mode} emphasis="muted" variant="caption">
+        <Text emphasis="muted" variant="caption">
           {t('audit.cycles')}
         </Text>
       </View>
@@ -45,7 +43,6 @@ export function CyclicDependenciesRuleDetails({
             index={index}
             inspected={inspectedCycleId === cycleId}
             key={cycleId}
-            mode={mode}
             selected={cycleSelection.selectedIds.includes(cycleId)}
             onInspect={() =>
               onCycleInspectionChange(
@@ -73,7 +70,6 @@ function CycleRow(props: CycleRowProps) {
 
   return (
     <View
-      mode={props.mode}
       align="center"
       direction="row"
       gap="s"
@@ -91,16 +87,16 @@ function CycleRow(props: CycleRowProps) {
         title={route}
         onClick={props.onInspect}
       >
-        <View mode={props.mode} gap="xs">
-          <View mode={props.mode} align="center" direction="row" gap="s">
-            <Text mode={props.mode} variant="label" weight="bold">
+        <View gap="xs">
+          <View align="center" direction="row" gap="s">
+            <Text variant="label" weight="bold">
               {label}
             </Text>
-            <Badge color="neutral" mode={props.mode} size="s">
+            <Badge color="neutral" size="s">
               {packageCount} pkg
             </Badge>
           </View>
-          <Text mode={props.mode} emphasis="muted" numberOfLines={1} variant="code">
+          <Text emphasis="muted" numberOfLines={1} variant="code">
             {route}
           </Text>
         </View>
@@ -120,7 +116,6 @@ interface CyclicDependenciesRuleDetailsProps {
   readonly inspectedCycleId?: string | null;
   readonly cycles: readonly PackageCycleDetail[];
   readonly cycleSelection: CycleSelection;
-  readonly mode: ZoraMode;
   readonly onCycleInspectionChange: (inspection: CycleInspection | null) => void;
 }
 
@@ -129,7 +124,6 @@ interface CycleRowProps {
   readonly color: string;
   readonly cycle: PackageCycleDetail;
   readonly index: number;
-  readonly mode: ZoraMode;
   readonly onInspect: () => void;
   readonly onSelectedChange: (selected: boolean) => void;
   readonly selected: boolean;

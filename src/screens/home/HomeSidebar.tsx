@@ -8,7 +8,6 @@ import { AuditExportPanel } from '@/features/audit/adapters/inbound/react/AuditE
 import { AuditRulePanel } from '@/features/audit/adapters/inbound/react/AuditRulePanel';
 import { ProjectTreePanel } from '@/features/project-tree/adapters/inbound/react/ProjectTreePanel';
 import { SettingsPanel } from '@/features/settings/adapters/inbound/react/SettingsPanel';
-import { useThemeMode } from '@/features/theme/adapters/inbound/react/useThemeMode';
 import { t } from '@/i18n/i18n';
 import type { Audit } from '@/types/audit';
 import type { CycleInspection, CycleSelection } from '@/types/auditVisualization';
@@ -16,7 +15,6 @@ import type { ProjectTreeNode } from '@/types/projectTree';
 
 /*** Composes project tools and persistent graph settings from generated ZORA elements. */
 export function HomeSidebar(props: HomeSidebarProps) {
-  const { mode } = useThemeMode();
   const [activeTool, setActiveTool] = React.useState('tree');
 
   /*** Closes the evidence panel without changing the user's cycle visualization choices. */
@@ -29,16 +27,11 @@ export function HomeSidebar(props: HomeSidebarProps) {
 
   return (
     <aside className="flex min-h-0 w-[18rem] min-w-[18rem] max-w-[18rem] shrink-0 self-stretch flex-col overflow-hidden border-r border-r-neutral-200 bg-neutral-100 md:pt-14 dark:border-r-neutral-800 dark:bg-neutral-950">
-      <Surface mode={mode} style={{ height: '100%', overflow: 'hidden' }} variant="subtle">
-        <View mode={mode} flex={1} style={{ minHeight: 0, overflow: 'hidden' }}>
-          <SidebarToolTabs
-            {...props}
-            activeTool={activeTool}
-            mode={mode}
-            onValueChange={selectTool}
-          />
+      <Surface style={{ height: '100%', overflow: 'hidden' }} variant="subtle">
+        <View flex={1} style={{ minHeight: 0, overflow: 'hidden' }}>
+          <SidebarToolTabs {...props} activeTool={activeTool} onValueChange={selectTool} />
         </View>
-        <SettingsPanel mode={mode} />
+        <SettingsPanel />
       </Surface>
     </aside>
   );
@@ -50,7 +43,6 @@ function SidebarToolTabs({
   evaluation,
   cycleSelection,
   inspectedCycleId,
-  mode,
   onCycleInspectionChange,
   onProjectTreeSelect,
   onValueChange,
@@ -72,16 +64,15 @@ function SidebarToolTabs({
   const rulesLabel = `${t('settings.rules')} · ${findingCount} ${t('audit.findings')}`;
 
   return (
-    <Tabs mode={mode} value={activeTool} onValueChange={onValueChange}>
+    <Tabs value={activeTool} onValueChange={onValueChange}>
       <TabList>
         <Tab label={t('settings.tree')} value="tree" />
         {hasRuleFindings ? <Tab label={rulesLabel} value="rules" /> : null}
         <Tab label={t('settings.export')} value="export" />
       </TabList>
       <TabPanel value="tree">
-        <View mode={mode} style={{ maxHeight: '100%', overflow: 'auto' }}>
+        <View style={{ maxHeight: '100%', overflow: 'auto' }}>
           <ProjectTreePanel
-            mode={mode}
             nodes={projectTree}
             selectedId={selectedTreeId}
             onSelect={onProjectTreeSelect}
@@ -90,13 +81,12 @@ function SidebarToolTabs({
       </TabPanel>
       {hasRuleFindings ? (
         <TabPanel value="rules">
-          <View mode={mode} style={{ maxHeight: '100%', overflow: 'auto' }}>
+          <View style={{ maxHeight: '100%', overflow: 'auto' }}>
             {evaluation === null ? null : (
               <AuditRulePanel
                 evaluation={evaluation}
                 cycleSelection={cycleSelection}
                 inspectedCycleId={inspectedCycleId}
-                mode={mode}
                 onCycleInspectionChange={onCycleInspectionChange}
               />
             )}
@@ -104,7 +94,7 @@ function SidebarToolTabs({
         </TabPanel>
       ) : null}
       <TabPanel value="export">
-        <AuditExportPanel mode={mode} />
+        <AuditExportPanel />
       </TabPanel>
     </Tabs>
   );
@@ -122,6 +112,5 @@ interface HomeSidebarProps {
 
 interface SidebarToolTabsProps extends HomeSidebarProps {
   readonly activeTool: string;
-  readonly mode: 'dark' | 'light';
   readonly onValueChange: (value: string) => void;
 }

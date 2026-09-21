@@ -1,4 +1,5 @@
 import { describe, expect, it, render } from '@artiphishle/testosterone';
+import { ZoraProvider } from '@zora/ZoraProvider';
 import React from 'react';
 
 import { AuditRuleList } from '@/features/audit/adapters/inbound/react/AuditRuleList';
@@ -32,12 +33,13 @@ const cycles: readonly PackageCycleDetail[] = [
 describe('[AuditRuleList]', () => {
   it('shows violated cycles compactly with right-aligned disabled switches by default', () => {
     const { container, getByText } = render(
-      <AuditRuleList
-        evaluation={failedEvaluation}
-        cycleSelection={{ highlights: [], selectedIds: [], setSelected: () => undefined }}
-        mode="light"
-        onCycleInspectionChange={() => undefined}
-      />
+      <ZoraProvider mode="light">
+        <AuditRuleList
+          evaluation={failedEvaluation}
+          cycleSelection={{ highlights: [], selectedIds: [], setSelected: () => undefined }}
+          onCycleInspectionChange={() => undefined}
+        />
+      </ZoraProvider>
     );
 
     expect(getByText('Cyclic Dependencies')).toBeDefined();
@@ -60,12 +62,13 @@ describe('[AuditRuleList]', () => {
 
   it('does not render satisfied rules in the Rules tab', () => {
     const { container } = render(
-      <AuditRuleList
-        evaluation={passedEvaluation}
-        cycleSelection={{ highlights: [], selectedIds: [], setSelected: () => undefined }}
-        mode="light"
-        onCycleInspectionChange={() => undefined}
-      />
+      <ZoraProvider mode="light">
+        <AuditRuleList
+          evaluation={passedEvaluation}
+          cycleSelection={{ highlights: [], selectedIds: [], setSelected: () => undefined }}
+          onCycleInspectionChange={() => undefined}
+        />
+      </ZoraProvider>
     );
 
     expect(container.textContent).toBe('');

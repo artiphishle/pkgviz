@@ -1,4 +1,5 @@
 import { describe, expect, it, render } from '@artiphishle/testosterone';
+import { ZoraProvider } from '@zora/ZoraProvider';
 import React, { act, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 
@@ -21,7 +22,6 @@ function Harness() {
           selectedIds: selected ? [getCycleId(cycle)] : [],
           setSelected: (_, value) => setSelected(value),
         }}
-        mode="light"
         onCycleInspectionChange={setInspection}
       />
       <output>{inspection?.label ?? 'closed'}</output>
@@ -39,7 +39,13 @@ describe('[cycle interaction]', () => {
     });
     const root = createRoot(host.container);
     try {
-      await act(async () => root.render(<Harness />));
+      await act(async () =>
+        root.render(
+          <ZoraProvider mode="light">
+            <Harness />
+          </ZoraProvider>
+        )
+      );
       const row = host.container.querySelector<HTMLButtonElement>('button[aria-expanded]')!;
       const toggle = host.container.querySelector<HTMLButtonElement>('button[role="switch"]')!;
       expect(row.className.includes('cursor-pointer')).toBe(true);

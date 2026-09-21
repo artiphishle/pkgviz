@@ -9,7 +9,7 @@ const PROJECT_PATH_ERROR_CODES: ReadonlySet<string> = new Set(['EACCES', 'ENOENT
 export async function inspectParserLanguageAsync(projectPath: string): Promise<ParserSelection> {
   try {
     const inspection = await inspectProjectAsync(projectPath, {
-      excludeDirectories: ['@types', '.github', 'examples', 'test'],
+      excludeDirectories: ['@types', '.ankh', '.github', 'examples', 'test'],
     });
     if (!inspection.complete) {
       throw new Error(

@@ -141,7 +141,7 @@ function DependencyGraphCanvas(props: DependencyGraphCanvasProps) {
         controller={viewport.controller}
         maxZoom={viewport.max}
         minZoom={viewport.min}
-        mode={props.theme}
+
         zoom={viewport.zoom}
       />
     </div>

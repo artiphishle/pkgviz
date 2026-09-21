@@ -6,18 +6,16 @@ import React from 'react';
 import { CyclicDependenciesRuleDetails } from '@/features/audit/adapters/inbound/react/CyclicDependenciesRuleDetails';
 import type { Audit, AuditRuleResult } from '@/types/audit';
 import type { CycleInspection, CycleSelection } from '@/types/auditVisualization';
-import type { ZoraMode } from '@/types/zora';
 
 /*** Renders only violated audit rules using generated ZORA presentation elements. */
 export function AuditRuleList({
   evaluation,
   cycleSelection,
   inspectedCycleId,
-  mode,
   onCycleInspectionChange,
 }: AuditRuleListProps) {
   return (
-    <View mode={mode} gap="l">
+    <View gap="l">
       {evaluation.rules
         .filter(rule => rule.status === 'failed')
         .map(rule => (
@@ -27,7 +25,6 @@ export function AuditRuleList({
             rule={rule}
             cycleSelection={cycleSelection}
             inspectedCycleId={inspectedCycleId}
-            mode={mode}
             onCycleInspectionChange={onCycleInspectionChange}
           />
         ))}
@@ -40,7 +37,6 @@ function RuleDetails({
   evaluation,
   cycleSelection,
   inspectedCycleId,
-  mode,
   onCycleInspectionChange,
   rule,
 }: RuleDetailsProps) {
@@ -50,19 +46,18 @@ function RuleDetails({
         cycles={evaluation.cyclicPackages}
         cycleSelection={cycleSelection}
         inspectedCycleId={inspectedCycleId}
-        mode={mode}
         onCycleInspectionChange={onCycleInspectionChange}
       />
     );
   }
 
   return (
-    <View mode={mode} gap="xs" p="m">
-      <Text mode={mode} variant="label" weight="bold">
+    <View gap="xs" p="m">
+      <Text variant="label" weight="bold">
         {rule.id}
       </Text>
       {rule.details.map((detail, index) => (
-        <Text key={detail + ':' + index} mode={mode} numberOfLines={1} variant="code">
+        <Text key={detail + ':' + index} numberOfLines={1} variant="code">
           {detail}
         </Text>
       ))}
@@ -74,7 +69,6 @@ interface AuditRuleListProps {
   readonly inspectedCycleId?: string | null;
   readonly evaluation: Audit['evaluation'];
   readonly cycleSelection: CycleSelection;
-  readonly mode: ZoraMode;
   readonly onCycleInspectionChange: (inspection: CycleInspection | null) => void;
 }
 

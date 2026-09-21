@@ -9,7 +9,6 @@ import React from 'react';
 
 import { useSettings } from '@/contexts/SettingsContext';
 import { t } from '@/i18n/i18n';
-import type { ZoraMode } from '@/types/zora';
 
 const LAYOUT_OPTIONS: readonly LayoutOptions['name'][] = [
   'breadthfirst',
@@ -20,19 +19,19 @@ const LAYOUT_OPTIONS: readonly LayoutOptions['name'][] = [
 ];
 
 /*** Renders persistent graph controls from generated ZORA form and layout elements. */
-export function SettingsPanel({ mode }: SettingsPanelProps) {
+export function SettingsPanel() {
   return (
-    <View mode={mode} gap="l" p="m">
-      <FilterSettings mode={mode} />
-      <SubPackageDepthSettings mode={mode} />
-      <LayoutSettings mode={mode} />
-      <LayoutSpacingSettings mode={mode} />
+    <View gap="l" p="m">
+      <FilterSettings />
+      <SubPackageDepthSettings />
+      <LayoutSettings />
+      <LayoutSpacingSettings />
     </View>
   );
 }
 
 /*** Renders package-visibility settings through ZORA switches. */
-function FilterSettings({ mode }: SettingsPanelProps) {
+function FilterSettings() {
   const {
     showCompoundNodes,
     showVendorPackages,
@@ -41,10 +40,9 @@ function FilterSettings({ mode }: SettingsPanelProps) {
   } = useSettings();
 
   return (
-    <SettingsSection mode={mode} title={t('settings.filter')}>
+    <SettingsSection title={t('settings.filter')}>
       <Switch
         checked={showVendorPackages}
-        mode={mode}
         onCheckedChange={(checked: boolean) => {
           if (checked !== showVendorPackages) toggleShowVendorPackages();
         }}
@@ -54,7 +52,6 @@ function FilterSettings({ mode }: SettingsPanelProps) {
       </Switch>
       <Switch
         checked={showCompoundNodes}
-        mode={mode}
         onCheckedChange={(checked: boolean) => {
           if (checked !== showCompoundNodes) toggleShowCompoundNodes();
         }}
@@ -67,11 +64,11 @@ function FilterSettings({ mode }: SettingsPanelProps) {
 }
 
 /*** Renders the visible subpackage-depth control. */
-function SubPackageDepthSettings({ mode }: SettingsPanelProps) {
+function SubPackageDepthSettings() {
   const { maxSubPackageDepth, setSubPackageDepth, subPackageDepth } = useSettings();
 
   return (
-    <SettingsSection mode={mode} title={t('settings.subPackageDepth') + ': ' + subPackageDepth}>
+    <SettingsSection title={t('settings.subPackageDepth') + ': ' + subPackageDepth}>
       <SettingsSlider
         ariaLabel={t('settings.subPackageDepth')}
         max={maxSubPackageDepth}
@@ -85,7 +82,7 @@ function SubPackageDepthSettings({ mode }: SettingsPanelProps) {
 }
 
 /*** Renders the active graph layout selector through ZORA Select. */
-function LayoutSettings({ mode }: SettingsPanelProps) {
+function LayoutSettings() {
   const { cytoscapeLayout, setCytoscapeLayout } = useSettings();
 
   /*** Lets the Select close immediately before starting a potentially expensive graph layout. */
@@ -94,9 +91,8 @@ function LayoutSettings({ mode }: SettingsPanelProps) {
   };
 
   return (
-    <SettingsSection mode={mode} title={t('settings.layout')}>
+    <SettingsSection title={t('settings.layout')}>
       <Select
-        mode={mode}
         value={cytoscapeLayout}
         options={LAYOUT_OPTIONS.map(value => ({ label: t(value), value }))}
         onValueChange={selectLayout}
@@ -107,14 +103,11 @@ function LayoutSettings({ mode }: SettingsPanelProps) {
 }
 
 /*** Renders the active layout-spacing control. */
-function LayoutSpacingSettings({ mode }: SettingsPanelProps) {
+function LayoutSpacingSettings() {
   const { cytoscapeLayoutSpacing, setCytoscapeLayoutSpacing } = useSettings();
 
   return (
-    <SettingsSection
-      mode={mode}
-      title={t('settings.layoutSpacing') + ': ' + cytoscapeLayoutSpacing.toFixed(2)}
-    >
+    <SettingsSection title={t('settings.layoutSpacing') + ': ' + cytoscapeLayoutSpacing.toFixed(2)}>
       <SettingsSlider
         ariaLabel={t('settings.layoutSpacing')}
         max={1}
@@ -128,10 +121,10 @@ function LayoutSpacingSettings({ mode }: SettingsPanelProps) {
 }
 
 /*** Composes one settings group from ZORA layout and typography primitives. */
-function SettingsSection({ children, mode, title }: SettingsSectionProps) {
+function SettingsSection({ children, title }: SettingsSectionProps) {
   return (
-    <View mode={mode} gap="s">
-      <Text mode={mode} variant="label" weight="bold">
+    <View gap="s">
+      <Text variant="label" weight="bold">
         {title}
       </Text>
       {children}
@@ -159,11 +152,7 @@ function SettingsSlider({ ariaLabel, max, min, onValueChange, step, value }: Set
   );
 }
 
-interface SettingsPanelProps {
-  readonly mode: ZoraMode;
-}
-
-interface SettingsSectionProps extends SettingsPanelProps {
+interface SettingsSectionProps {
   readonly children: React.ReactNode;
   readonly title: React.ReactNode;
 }

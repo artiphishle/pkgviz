@@ -7,18 +7,14 @@ import React from 'react';
 import { useProjectTreeExpansion } from '@/features/project-tree/adapters/inbound/react/useProjectTreeExpansion';
 import { findProjectTreeNode } from '@/features/project-tree/utils/findProjectTreeNode';
 import type { ProjectTreeNode } from '@/types/projectTree';
-import type { ZoraMode } from '@/types/zora';
 
 /*** Adapts PKGViz's serializable project tree to the generated ZORA browser TreeView. */
-export function ProjectTreePanel({ mode, nodes, onSelect, selectedId }: ProjectTreePanelProps) {
-  const treeNodes = React.useMemo(
-    () => nodes.map(node => toTreeItemNode(node, mode)),
-    [mode, nodes]
-  );
+export function ProjectTreePanel({ nodes, onSelect, selectedId }: ProjectTreePanelProps) {
+  const treeNodes = React.useMemo(() => nodes.map(node => toTreeItemNode(node)), [nodes]);
   const expansion = useProjectTreeExpansion(nodes, selectedId);
 
   return (
-    <View mode={mode} p="s">
+    <View p="s">
       <TreeView
         ariaLabel="Project tree"
         expansionIndicator="folder"
@@ -36,23 +32,21 @@ export function ProjectTreePanel({ mode, nodes, onSelect, selectedId }: ProjectT
 }
 
 /*** Maps a portable project-tree node into the ZORA TreeView presentation contract. */
-function toTreeItemNode(node: ProjectTreeNode, mode: ZoraMode): TreeItemNode {
+function toTreeItemNode(node: ProjectTreeNode): TreeItemNode {
   return {
     id: node.id,
     label: node.label,
     icon: (
       <Icon
-        mode={mode}
         name={node.kind === 'directory' ? 'folder-outline' : 'document-text-outline'}
         size={14}
       />
     ),
-    ...(node.children ? { children: node.children.map(child => toTreeItemNode(child, mode)) } : {}),
+    ...(node.children ? { children: node.children.map(child => toTreeItemNode(child)) } : {}),
   };
 }
 
 interface ProjectTreePanelProps {
-  readonly mode: ZoraMode;
   readonly nodes: readonly ProjectTreeNode[];
   readonly onSelect: (node: ProjectTreeNode) => void;
   readonly selectedId: string | null;

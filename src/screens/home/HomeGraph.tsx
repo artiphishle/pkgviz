@@ -6,7 +6,6 @@ import React from 'react';
 
 import { CycleInspector } from '@/features/audit/adapters/inbound/react/CycleInspector';
 import { DependencyGraphView } from '@/features/graph-view/adapters/inbound/react/DependencyGraphView';
-import { useThemeMode } from '@/features/theme/adapters/inbound/react/useThemeMode';
 import type { CycleHighlight, CycleInspection } from '@/types/auditVisualization';
 
 /*** Renders the graph surface together with its optional cycle inspector overlay. */
@@ -18,12 +17,10 @@ export function HomeGraph({
   setCurrentPackage,
   onCloseInspection,
 }: HomeGraphProps) {
-  const { mode } = useThemeMode();
-
   if (!packageGraph) {
     return (
-      <View mode={mode} align="center" flex={1} justify="center">
-        <ActivityIndicator mode={mode} testID="loader" />
+      <View align="center" flex={1} justify="center">
+        <ActivityIndicator testID="loader" />
       </View>
     );
   }
@@ -36,7 +33,7 @@ export function HomeGraph({
       cycleHighlights={cycleHighlights}
       overlay={
         cycleInspection === null ? null : (
-          <CycleInspector inspection={cycleInspection} mode={mode} onClose={onCloseInspection} />
+          <CycleInspector inspection={cycleInspection} onClose={onCloseInspection} />
         )
       }
     />

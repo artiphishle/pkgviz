@@ -5,24 +5,15 @@ import { Text } from '@zora/text';
 import { View } from '@zora/view';
 import React, { type ChangeEvent } from 'react';
 
-import type { ZoraMode } from '@/types/zora';
-
 interface GraphZoomControlsProps {
   readonly controller: GraphViewController | null;
   readonly maxZoom: number;
   readonly minZoom: number;
-  readonly mode: ZoraMode;
   readonly zoom: number;
 }
 
 /*** Renders graph zoom controls through ZORA except for the retained range slider. */
-export function GraphZoomControls({
-  controller,
-  maxZoom,
-  minZoom,
-  mode,
-  zoom,
-}: GraphZoomControlsProps) {
+export function GraphZoomControls({ controller, maxZoom, minZoom, zoom }: GraphZoomControlsProps) {
   /*** Applies one slider zoom value through the GraphView controller. */
   const handleSliderChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (controller === null) return;
@@ -31,15 +22,12 @@ export function GraphZoomControls({
   };
 
   return (
-    <View mode={mode} align="center" direction="row" gap="s" justify="center" p="m">
-      <Text mode={mode} variant="bodySmall">
-        Zoom:
-      </Text>
+    <View align="center" direction="row" gap="s" justify="center" p="m">
+      <Text variant="bodySmall">Zoom:</Text>
       <IconButton
         color="neutral"
         icon={{ name: 'scan-outline' }}
         label="Fit graph and optimize spacing for readability"
-        mode={mode}
         size="s"
         variant="ghost"
         onPress={() => controller?.fit({ optimizeSpacing: true })}
@@ -55,9 +43,7 @@ export function GraphZoomControls({
         className="w-64"
         aria-label="Zoom"
       />
-      <Text mode={mode} variant="caption">
-        {(zoom * 100).toFixed(0)}%
-      </Text>
+      <Text variant="caption">{(zoom * 100).toFixed(0)}%</Text>
     </View>
   );
 }

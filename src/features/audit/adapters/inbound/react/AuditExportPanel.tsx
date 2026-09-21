@@ -3,35 +3,23 @@ import { Button } from '@zora/button';
 import { View } from '@zora/view';
 
 import { downloadAuditJsonAction, downloadAuditXmlAction } from '@/app/actions/audit.actions';
-import type { ZoraMode } from '@/types/zora';
 
 /*** Renders audit-export actions with generated ZORA buttons. */
-export function AuditExportPanel({ mode }: AuditExportPanelProps) {
+export function AuditExportPanel() {
   return (
-    <View mode={mode} gap="s" p="m">
-      <ExportButton
-        format="JSON"
-        mimeType="application/json"
-        mode={mode}
-        onExport={downloadAuditJsonAction}
-      />
-      <ExportButton
-        format="XML"
-        mimeType="application/xml"
-        mode={mode}
-        onExport={downloadAuditXmlAction}
-      />
+    <View gap="s" p="m">
+      <ExportButton format="JSON" mimeType="application/json" onExport={downloadAuditJsonAction} />
+      <ExportButton format="XML" mimeType="application/xml" onExport={downloadAuditXmlAction} />
     </View>
   );
 }
 
 /*** Downloads one serialized audit format from a ZORA action button. */
-function ExportButton({ format, mimeType, mode, onExport }: ExportButtonProps) {
+function ExportButton({ format, mimeType, onExport }: ExportButtonProps) {
   return (
     <Button
       fullWidth
       leadingIcon={{ name: 'download-outline' }}
-      mode={mode}
       size="s"
       variant="ghost"
       onPress={async () => {
@@ -50,11 +38,7 @@ function ExportButton({ format, mimeType, mode, onExport }: ExportButtonProps) {
   );
 }
 
-interface AuditExportPanelProps {
-  readonly mode: ZoraMode;
-}
-
-interface ExportButtonProps extends AuditExportPanelProps {
+interface ExportButtonProps {
   readonly format: string;
   readonly mimeType: string;
   readonly onExport: () => Promise<{ data: string; filename: string }>;

@@ -218,10 +218,10 @@ measurements. Timings vary; there is no timing threshold in the regression suite
 when owner fixes are released/integrated or measurements change. Further optimization candidates
 must be reported before implementation. E2E and smoke tests are currently excluded by agreement.
 
-The materialization command uses a project-local Ankh provider cache under `.generated/ankh`.
-This isolates the project from the global cache, but a local catalog can also retain an older release. The generated
-`zora-artifact.json` records the actual published version used; generated artifacts and caches are
-not committed. The CLI still follows its published provider catalog and cache refresh policy.
+The committed `zora.web.json` declares the ZORA components used by PKGViz. Run
+`bun run zora:materialize` to reconcile them through the published ZORA provider. Ankh keeps its
+provider cache under `~/.ankh`; the shared generated runtime and components live under the ignored
+`.ankh/zora/web` directory. Deleting `.ankh/` and running the command recreates the materialization.
 
 ## Documentation
 

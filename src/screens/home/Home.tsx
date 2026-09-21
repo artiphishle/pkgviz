@@ -63,7 +63,6 @@ export default function HomeScreen({ project }: HomeScreenProps) {
           themeMounted ? (
             <Button
               leadingIcon={{ name: isDark ? 'sunny-outline' : 'moon-outline' }}
-              mode={mode}
               size="s"
               variant="outline"
               onPress={() => setTheme(isDark ? 'light' : 'dark')}
@@ -72,13 +71,11 @@ export default function HomeScreen({ project }: HomeScreenProps) {
             </Button>
           ) : null
         }
-        mode={mode}
         safeAreaTop={false}
       >
         <Breadcrumbs
           compact
           items={breadcrumbItems}
-          mode={mode}
           onItemPress={({ id }: { readonly id: string }) => navigateToPackage(id)}
         />
       </AppBar>
@@ -101,7 +98,6 @@ export default function HomeScreen({ project }: HomeScreenProps) {
               <Card
                 compact
                 description={projectError}
-                mode={mode}
                 title="Unable to load project"
                 tone="outline"
               />
