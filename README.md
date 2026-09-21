@@ -199,13 +199,6 @@ and reloads. This affects visualization only, not audit detection or blocking ru
 
 </details>
 
-## ZORA web materialization
-
-The committed `zora.web.json` declares the ZORA components used by PKGViz. Run
-`bun run zora:materialize` to reconcile them through the published ZORA provider. Ankh keeps its
-provider cache under `~/.ankh`; the shared generated runtime and components live under the ignored
-`.ankh/zora/web` directory. Deleting `.ankh/` and running the command recreates the materialization.
-
 ## Documentation
 
 🔗 [artiphishle.github.io/pkgviz-docs](https://artiphishle.github.io/pkgviz-docs/)
