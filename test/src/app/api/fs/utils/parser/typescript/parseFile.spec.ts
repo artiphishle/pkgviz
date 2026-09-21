@@ -13,7 +13,6 @@ describe('[TypeScript: parseFile]', () => {
 
     expect(parsedFile.className).toBe('page.tsx');
     expect(parsedFile.imports).toEqual(imports);
-    expect(parsedFile.methods.length).toBe(0);
     expect(parsedFile.package).toBe('src.app');
     expect(parsedFile.path).toBe('src/app/page.tsx');
   });

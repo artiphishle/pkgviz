@@ -17,7 +17,6 @@ describe('[parseJavaFile]', () => {
 
     expect(parsedJavaFile.className).toBe('App');
     expect(parsedJavaFile.imports.length).toBe(1);
-    expect(parsedJavaFile.methods.length).toBe(1);
     expect(parsedJavaFile.package).toBe('com.example.myapp');
     expect(parsedJavaFile.path).toBe('src/main/java/com/example/myapp/App.java');
   });

@@ -2,15 +2,15 @@ import { describe, expect, it, resolve } from '@artiphishle/testosterone';
 
 import { buildGraph } from '@/app/utils/buildGraph';
 import { getParsedFileStructure } from '@/app/utils/getParsedFileStructure';
-import { getCyclicPackageSet, getPackageCyclesWithMembers } from '@/app/utils/markCyclicPackages';
+import { getPackageCyclesWithMembers } from '@/app/utils/markCyclicPackages';
 
 describe('[package cycles]', () => {
   it('detects the A-B-A package cycle', async () => {
     process.env.NEXT_PUBLIC_PROJECT_PATH = resolve(process.cwd(), 'examples/java/my-app');
 
     const files = await getParsedFileStructure();
-    const result = getCyclicPackageSet(files, buildGraph(files));
-    const cyclic = Array.from(result);
+    const result = getPackageCyclesWithMembers(files, buildGraph(files));
+    const cyclic = Array.from(result.packageSet);
 
     expect(cyclic.length).toBe(2);
     expect(cyclic.sort()).toEqual(['com.example.myapp.a', 'com.example.myapp.b']);

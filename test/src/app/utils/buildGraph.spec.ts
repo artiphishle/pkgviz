@@ -76,10 +76,8 @@ function createParsedFile(
   imports: ParsedFile['imports']
 ): ParsedFile {
   return {
-    calls: [],
     className: path.split('/').at(-1) ?? path,
     imports,
-    methods: [],
     package: packageName,
     path,
   };
