@@ -14,3 +14,9 @@ export interface CycleFocus {
   readonly currentPackage: string;
   readonly packageDepth: number;
 }
+
+export interface CycleSelection {
+  readonly highlights: readonly CycleHighlight[];
+  readonly selectedIds: readonly string[];
+  readonly setSelected: (id: string, selected: boolean) => void;
+}

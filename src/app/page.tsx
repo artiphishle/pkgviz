@@ -1,6 +1,19 @@
-import HomeScreen from '@/screens/home/Home';
+import { connection } from 'next/server';
 
-/*** Renders the application home page. */
-export default function Home() {
-  return <HomeScreen />;
+import { loadProjectOverviewAsync } from '@/features/project-analysis/composition/loadProjectOverviewAsync';
+import HomeScreen from '@/screens/home/Home';
+import { parseProjectPath } from '@/shared/utils/parseProjectPath';
+import { runProjectAnalysisActionAsync } from '@/utils/runProjectAnalysisActionAsync';
+
+/***
+ * Loads one overview per page request rather than starting analysis from client mount effects.
+ * @performance Keep this request-time read dynamic: build-time or persistent caching would hide
+ * source edits. Client Strict Mode rendering must not trigger another filesystem analysis.
+ */
+export default async function Home() {
+  await connection();
+  const project = await runProjectAnalysisActionAsync(() =>
+    loadProjectOverviewAsync(parseProjectPath())
+  );
+  return <HomeScreen project={project} />;
 }

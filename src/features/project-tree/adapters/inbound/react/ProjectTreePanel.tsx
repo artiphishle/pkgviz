@@ -4,34 +4,28 @@ import { type TreeItemNode, TreeView } from '@zora/tree-view';
 import { View } from '@zora/view';
 import React from 'react';
 
+import { useProjectTreeExpansion } from '@/features/project-tree/adapters/inbound/react/useProjectTreeExpansion';
 import { findProjectTreeNode } from '@/features/project-tree/utils/findProjectTreeNode';
-import { getProjectTreeAncestorIds } from '@/features/project-tree/utils/getProjectTreeAncestorIds';
 import type { ProjectTreeNode } from '@/types/projectTree';
 import type { ZoraMode } from '@/types/zora';
 
 /*** Adapts PKGViz's serializable project tree to the generated ZORA browser TreeView. */
 export function ProjectTreePanel({ mode, nodes, onSelect, selectedId }: ProjectTreePanelProps) {
-  const treeNodes = React.useMemo(() => nodes.map(node => toTreeItemNode(node, mode)), [mode, nodes]);
-  const [expandedIds, setExpandedIds] = React.useState<readonly string[]>([]);
-
-  React.useEffect(() => {
-    setExpandedIds(nodes.filter(node => node.kind === 'directory').map(node => node.id));
-  }, [nodes]);
-
-  React.useEffect(() => {
-    if (selectedId === null) return;
-    const ancestorIds = getProjectTreeAncestorIds(nodes, selectedId);
-    setExpandedIds(currentIds => [...new Set([...currentIds, ...ancestorIds])]);
-  }, [nodes, selectedId]);
+  const treeNodes = React.useMemo(
+    () => nodes.map(node => toTreeItemNode(node, mode)),
+    [mode, nodes]
+  );
+  const expansion = useProjectTreeExpansion(nodes, selectedId);
 
   return (
     <View mode={mode} p="s">
       <TreeView
         ariaLabel="Project tree"
-        expandedIds={expandedIds}
+        expansionIndicator="folder"
+        expandedIds={expansion.expandedIds}
         nodes={treeNodes}
         selectedId={selectedId ?? undefined}
-        onExpandedChange={setExpandedIds}
+        onExpandedChange={expansion.onExpandedChange}
         onSelect={id => {
           const node = findProjectTreeNode(nodes, id);
           if (node) onSelect(node);

@@ -11,7 +11,7 @@ import { ProjectTreePanel } from '@/features/project-tree/adapters/inbound/react
 import { SettingsPanel } from '@/features/settings/adapters/inbound/react/SettingsPanel';
 import { t } from '@/i18n/i18n';
 import type { Audit } from '@/types/audit';
-import type { CycleHighlight, CycleInspection } from '@/types/auditVisualization';
+import type { CycleInspection, CycleSelection } from '@/types/auditVisualization';
 import type { ProjectTreeNode } from '@/types/projectTree';
 
 /*** Composes project tools and persistent graph settings from generated ZORA elements. */
@@ -20,19 +20,25 @@ export function HomeSidebar(props: HomeSidebarProps) {
   const mode = resolvedTheme === 'dark' ? 'dark' : 'light';
   const [activeTool, setActiveTool] = React.useState('tree');
 
-  /*** Exits diagnostics cleanly when switching away from Rules. */
+  /*** Closes the evidence panel without changing the user's cycle visualization choices. */
   const selectTool = (value: string) => {
     if (activeTool === 'rules' && value !== 'rules') {
-      props.onCycleHighlightsChange([]);
       props.onCycleInspectionChange(null);
     }
     setActiveTool(value);
   };
 
   return (
-    <aside className="flex min-h-0 w-[18rem] min-w-[18rem] max-w-[18rem] shrink-0 self-stretch flex-col overflow-y-auto border-r border-r-neutral-200 md:pt-14 dark:border-r-neutral-800">
-      <Surface mode={mode} variant="subtle">
-        <SidebarToolTabs {...props} activeTool={activeTool} mode={mode} onValueChange={selectTool} />
+    <aside className="flex min-h-0 w-[18rem] min-w-[18rem] max-w-[18rem] shrink-0 self-stretch flex-col overflow-hidden border-r border-r-neutral-200 bg-neutral-100 md:pt-14 dark:border-r-neutral-800 dark:bg-neutral-950">
+      <Surface mode={mode} style={{ height: '100%', overflow: 'hidden' }} variant="subtle">
+        <View mode={mode} flex={1} style={{ minHeight: 0, overflow: 'hidden' }}>
+          <SidebarToolTabs
+            {...props}
+            activeTool={activeTool}
+            mode={mode}
+            onValueChange={selectTool}
+          />
+        </View>
         <SettingsPanel mode={mode} />
       </Surface>
     </aside>
@@ -43,8 +49,9 @@ export function HomeSidebar(props: HomeSidebarProps) {
 function SidebarToolTabs({
   activeTool,
   evaluation,
+  cycleSelection,
+  inspectedCycleId,
   mode,
-  onCycleHighlightsChange,
   onCycleInspectionChange,
   onProjectTreeSelect,
   onValueChange,
@@ -52,8 +59,18 @@ function SidebarToolTabs({
   selectedTreeId,
 }: SidebarToolTabsProps) {
   const violatedRuleCount = evaluation?.rules.filter(rule => rule.status === 'failed').length ?? 0;
-  const rulesLabel =
-    violatedRuleCount === 0 ? t('settings.rules') : `${t('settings.rules')} (${violatedRuleCount})`;
+  const findingCount =
+    evaluation?.rules
+      .filter(rule => rule.status === 'failed')
+      .reduce(
+        (count, rule) =>
+          count +
+          (rule.id === 'cyclic-dependencies'
+            ? evaluation.cyclicPackages.length
+            : rule.details.length),
+        0
+      ) ?? 0;
+  const rulesLabel = `${t('settings.rules')} · ${findingCount} ${t('audit.findings')}`;
 
   return (
     <Tabs mode={mode} value={activeTool} onValueChange={onValueChange}>
@@ -63,7 +80,7 @@ function SidebarToolTabs({
         <Tab label={t('settings.export')} value="export" />
       </TabList>
       <TabPanel value="tree">
-        <View mode={mode} style={{ maxHeight: 224, overflow: 'scroll' }}>
+        <View mode={mode} style={{ maxHeight: '100%', overflow: 'auto' }}>
           <ProjectTreePanel
             mode={mode}
             nodes={projectTree}
@@ -73,12 +90,13 @@ function SidebarToolTabs({
         </View>
       </TabPanel>
       <TabPanel value="rules">
-        <View mode={mode} style={{ maxHeight: 224, overflow: 'scroll' }}>
+        <View mode={mode} style={{ maxHeight: '100%', overflow: 'auto' }}>
           {evaluation === null ? null : (
             <AuditRulePanel
               evaluation={evaluation}
+              cycleSelection={cycleSelection}
+              inspectedCycleId={inspectedCycleId}
               mode={mode}
-              onCycleHighlightsChange={onCycleHighlightsChange}
               onCycleInspectionChange={onCycleInspectionChange}
             />
           )}
@@ -92,11 +110,12 @@ function SidebarToolTabs({
 }
 
 interface HomeSidebarProps {
+  readonly inspectedCycleId: string | null;
   readonly evaluation: Audit['evaluation'] | null;
   readonly projectTree: readonly ProjectTreeNode[];
   readonly selectedTreeId: string | null;
   readonly onProjectTreeSelect: (node: ProjectTreeNode) => void;
-  readonly onCycleHighlightsChange: (highlights: readonly CycleHighlight[]) => void;
+  readonly cycleSelection: CycleSelection;
   readonly onCycleInspectionChange: (inspection: CycleInspection | null) => void;
 }
 

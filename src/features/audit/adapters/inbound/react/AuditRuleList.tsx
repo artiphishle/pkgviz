@@ -1,18 +1,19 @@
 'use client';
-import React from 'react';
 import { Text } from '@zora/text';
 import { View } from '@zora/view';
+import React from 'react';
 
 import { CyclicDependenciesRuleDetails } from '@/features/audit/adapters/inbound/react/CyclicDependenciesRuleDetails';
 import type { Audit, AuditRuleResult } from '@/types/audit';
-import type { CycleHighlight, CycleInspection } from '@/types/auditVisualization';
+import type { CycleInspection, CycleSelection } from '@/types/auditVisualization';
 import type { ZoraMode } from '@/types/zora';
 
 /*** Renders only violated audit rules using generated ZORA presentation elements. */
 export function AuditRuleList({
   evaluation,
+  cycleSelection,
+  inspectedCycleId,
   mode,
-  onCycleHighlightsChange,
   onCycleInspectionChange,
 }: AuditRuleListProps) {
   return (
@@ -23,9 +24,10 @@ export function AuditRuleList({
           <RuleDetails
             key={rule.id}
             evaluation={evaluation}
-            mode={mode}
             rule={rule}
-            onCycleHighlightsChange={onCycleHighlightsChange}
+            cycleSelection={cycleSelection}
+            inspectedCycleId={inspectedCycleId}
+            mode={mode}
             onCycleInspectionChange={onCycleInspectionChange}
           />
         ))}
@@ -36,8 +38,9 @@ export function AuditRuleList({
 /*** Dispatches one violated rule to its dedicated renderer or generic ZORA fallback. */
 function RuleDetails({
   evaluation,
+  cycleSelection,
+  inspectedCycleId,
   mode,
-  onCycleHighlightsChange,
   onCycleInspectionChange,
   rule,
 }: RuleDetailsProps) {
@@ -45,8 +48,9 @@ function RuleDetails({
     return (
       <CyclicDependenciesRuleDetails
         cycles={evaluation.cyclicPackages}
+        cycleSelection={cycleSelection}
+        inspectedCycleId={inspectedCycleId}
         mode={mode}
-        onCycleHighlightsChange={onCycleHighlightsChange}
         onCycleInspectionChange={onCycleInspectionChange}
       />
     );
@@ -67,9 +71,10 @@ function RuleDetails({
 }
 
 interface AuditRuleListProps {
+  readonly inspectedCycleId?: string | null;
   readonly evaluation: Audit['evaluation'];
+  readonly cycleSelection: CycleSelection;
   readonly mode: ZoraMode;
-  readonly onCycleHighlightsChange: (highlights: readonly CycleHighlight[]) => void;
   readonly onCycleInspectionChange: (inspection: CycleInspection | null) => void;
 }
 

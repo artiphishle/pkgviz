@@ -1,9 +1,9 @@
 'use client';
 import { IconButton } from '@zora/button';
+import type { GraphViewController } from '@zora/graph-view';
 import { Text } from '@zora/text';
 import { View } from '@zora/view';
-import type { GraphViewController } from '@zora/graph-view';
-import type { ChangeEvent } from 'react';
+import React, { type ChangeEvent } from 'react';
 
 import type { ZoraMode } from '@/types/zora';
 
@@ -38,18 +38,18 @@ export function GraphZoomControls({
       <IconButton
         color="neutral"
         icon={{ name: 'scan-outline' }}
-        label="Zoom to fit"
+        label="Fit graph and optimize spacing for readability"
         mode={mode}
         size="s"
         variant="ghost"
-        onPress={() => controller?.fit()}
+        onPress={() => controller?.fit({ optimizeSpacing: true })}
       />
       <input
         id="zoom"
         type="range"
         min={minZoom}
         max={maxZoom}
-        step="0.05"
+        step="any"
         value={zoom}
         onChange={handleSliderChange}
         className="w-64"

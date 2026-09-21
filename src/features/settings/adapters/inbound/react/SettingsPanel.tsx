@@ -71,10 +71,7 @@ function SubPackageDepthSettings({ mode }: SettingsPanelProps) {
   const { maxSubPackageDepth, setSubPackageDepth, subPackageDepth } = useSettings();
 
   return (
-    <SettingsSection
-      mode={mode}
-      title={t('settings.subPackageDepth') + ': ' + subPackageDepth}
-    >
+    <SettingsSection mode={mode} title={t('settings.subPackageDepth') + ': ' + subPackageDepth}>
       <SettingsSlider
         ariaLabel={t('settings.subPackageDepth')}
         max={maxSubPackageDepth}
@@ -116,13 +113,13 @@ function LayoutSpacingSettings({ mode }: SettingsPanelProps) {
   return (
     <SettingsSection
       mode={mode}
-      title={t('settings.layoutSpacing') + ': ' + cytoscapeLayoutSpacing}
+      title={t('settings.layoutSpacing') + ': ' + cytoscapeLayoutSpacing.toFixed(2)}
     >
       <SettingsSlider
         ariaLabel={t('settings.layoutSpacing')}
         max={1}
         min={0.1}
-        step={0.1}
+        step={0.01}
         value={cytoscapeLayoutSpacing}
         onValueChange={setCytoscapeLayoutSpacing}
       />
@@ -150,7 +147,7 @@ function SettingsSlider({ ariaLabel, max, min, onValueChange, step, value }: Set
       max={max}
       step={step}
       value={[value]}
-      onValueChange={([nextValue]) => onValueChange(Number(nextValue.toFixed(1)))}
+      onValueChange={([nextValue]) => onValueChange(nextValue)}
       aria-label={ariaLabel}
       className="relative flex h-5 w-full touch-none select-none items-center"
     >

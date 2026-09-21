@@ -4,10 +4,14 @@
     "pkgviz": "bin/pkgviz.ts"
   },
   "files": [
-    "/bin",
-    "/src",
+    "bin",
+    "src",
     "tsconfig.json",
-    ".next"
+    ".next/BUILD_ID",
+    ".next/*.js",
+    ".next/*.json",
+    ".next/server",
+    ".next/static"
   ],
   "type": "module",
   "engines": {
@@ -15,7 +19,7 @@
     "bun": ">=1.2.18",
     "npm": ">=10.9.2"
   },
-  "version": "0.7.7",
+  "version": "0.8.0",
   "description": "Analyze and visualize codebases, dependencies, architecture rules, and audit evidence.",
   "keywords": [
     "code-analysis",
@@ -46,7 +50,7 @@
     "changeset:status": "ankhorage-changeset status --since=origin/main",
     "version-packages": "ankhorage-changeset version",
     "test:maven": "mvn -B -f maven-plugin/pom.xml test",
-    "zora:materialize": "bunx @ankhorage/ankh@0.10.4 zora create activity-indicator --web --out .generated/zora/activity-indicator && bunx @ankhorage/ankh@0.10.4 zora create app-bar --web --out .generated/zora/app-bar && bunx @ankhorage/ankh@0.10.4 zora create badge --web --out .generated/zora/badge && bunx @ankhorage/ankh@0.10.4 zora create breadcrumbs --web --out .generated/zora/breadcrumbs && bunx @ankhorage/ankh@0.10.4 zora create button --web --out .generated/zora/button && bunx @ankhorage/ankh@0.10.4 zora create card --web --out .generated/zora/card && bunx @ankhorage/ankh@0.10.4 zora create select --web --out .generated/zora/select && bunx @ankhorage/ankh@0.10.4 zora create surface --web --out .generated/zora/surface && bunx @ankhorage/ankh@0.10.4 zora create switch --web --out .generated/zora/switch && bunx @ankhorage/ankh@0.10.4 zora create tabs --web --out .generated/zora/tabs && bunx @ankhorage/ankh@0.10.4 zora create text --web --out .generated/zora/text && bunx @ankhorage/ankh@0.10.4 zora create view --web --out .generated/zora/view && bunx @ankhorage/ankh@0.10.4 zora create tree-view --web --out .generated/zora/tree-view && bunx @ankhorage/ankh@0.10.4 zora create icon --web --out .generated/zora/icon && bunx @ankhorage/ankh@0.10.4 zora create graph-view --web --out .generated/zora/graph-view"
+    "zora:materialize": "ANKH_CACHE_DIR=.generated/ankh bunx @ankhorage/ankh@0.10.4 zora create activity-indicator --web --out .generated/zora/activity-indicator && ANKH_CACHE_DIR=.generated/ankh bunx @ankhorage/ankh@0.10.4 zora create app-bar --web --out .generated/zora/app-bar && ANKH_CACHE_DIR=.generated/ankh bunx @ankhorage/ankh@0.10.4 zora create badge --web --out .generated/zora/badge && ANKH_CACHE_DIR=.generated/ankh bunx @ankhorage/ankh@0.10.4 zora create breadcrumbs --web --out .generated/zora/breadcrumbs && ANKH_CACHE_DIR=.generated/ankh bunx @ankhorage/ankh@0.10.4 zora create button --web --out .generated/zora/button && ANKH_CACHE_DIR=.generated/ankh bunx @ankhorage/ankh@0.10.4 zora create card --web --out .generated/zora/card && ANKH_CACHE_DIR=.generated/ankh bunx @ankhorage/ankh@0.10.4 zora create select --web --out .generated/zora/select && ANKH_CACHE_DIR=.generated/ankh bunx @ankhorage/ankh@0.10.4 zora create surface --web --out .generated/zora/surface && ANKH_CACHE_DIR=.generated/ankh bunx @ankhorage/ankh@0.10.4 zora create switch --web --out .generated/zora/switch && ANKH_CACHE_DIR=.generated/ankh bunx @ankhorage/ankh@0.10.4 zora create tabs --web --out .generated/zora/tabs && ANKH_CACHE_DIR=.generated/ankh bunx @ankhorage/ankh@0.10.4 zora create text --web --out .generated/zora/text && ANKH_CACHE_DIR=.generated/ankh bunx @ankhorage/ankh@0.10.4 zora create view --web --out .generated/zora/view && ANKH_CACHE_DIR=.generated/ankh bunx @ankhorage/ankh@0.10.4 zora create tree-view --web --out .generated/zora/tree-view && ANKH_CACHE_DIR=.generated/ankh bunx @ankhorage/ankh@0.10.4 zora create icon --web --out .generated/zora/icon && ANKH_CACHE_DIR=.generated/ankh bunx @ankhorage/ankh@0.10.4 zora create graph-view --web --out .generated/zora/graph-view"
   },
   "dependencies": {
     "@ankhorage/dependency-graph": "^0.6.0",
@@ -57,7 +61,6 @@
     "@artiphishle/testosterone": "^0.3.9",
     "ankh-hooks": "^1.5.2",
     "cytoscape": "^3.34.3",
-    "cytoscape-elk": "^2.3.0",
     "next": "16.3.5",
     "next-themes": "^0.4.6",
     "radix-ui": "^1.4.3",

@@ -1,107 +1,65 @@
 'use client';
-import { toErrorMessage } from '@ankhorage/utility/error';
 import { AppBar } from '@zora/app-bar';
 import { Breadcrumbs } from '@zora/breadcrumbs';
 import { Button } from '@zora/button';
 import { Card } from '@zora/card';
-import type { ElementsDefinition } from 'cytoscape';
 import { useTheme } from 'next-themes';
-import { useCallback, useEffect, useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 
-import { getAuditEvaluationAction } from '@/app/actions/audit.actions';
-import { getProjectVisualizationAction } from '@/app/actions/project.actions';
 import { SettingsProvider } from '@/contexts/SettingsContext';
+import { useCycleSelection } from '@/features/audit/adapters/inbound/react/useCycleSelection';
+import { resolveProjectTreeNavigation } from '@/features/project-tree/application/use-cases/resolveProjectTreeNavigation';
 import { findProjectTreeNodeByGraphPackage } from '@/features/project-tree/utils/findProjectTreeNodeByGraphPackage';
 import { t } from '@/i18n/i18n';
 import { HomeGraph } from '@/screens/home/HomeGraph';
 import { HomeSidebar } from '@/screens/home/HomeSidebar';
 import { getProjectName } from '@/shared/utils/getProjectName';
 import type { Audit } from '@/types/audit';
-import type { CycleHighlight, CycleInspection } from '@/types/auditVisualization';
-import type { GraphRevealRequest, ProjectTreeNode } from '@/types/projectTree';
+import type { CycleInspection } from '@/types/auditVisualization';
+import type { ProjectOverview } from '@/types/projectAnalysis';
+import type { ProjectAnalysisActionResult } from '@/types/projectAnalysisActionResult';
+import type { ProjectTreeNode } from '@/types/projectTree';
 
-/*** Renders the PKGViz home screen and composes navigation, diagnostics, and graph state. */
-export default function HomeScreen() {
+/*** Renders the PKGViz home screen and composes project navigation, diagnostics, and the graph. */
+export default function HomeScreen({ project }: HomeScreenProps) {
   const { resolvedTheme, setTheme, theme } = useTheme();
-  const [themeMounted, setThemeMounted] = useState(false);
+  const themeMounted = useSyncExternalStore(
+    subscribeToThemeMount,
+    readThemeMounted,
+    readServerThemeMounted
+  );
   const [currentPackage, setCurrentPackage] = useState<string>('');
-  const [packageGraph, setPackageGraph] = useState<ElementsDefinition | null>(null);
-  const [projectTree, setProjectTree] = useState<readonly ProjectTreeNode[]>([]);
+  const packageGraph = project.ok ? project.value.graph : null;
+  const projectTree = project.ok ? project.value.tree : [];
   const [selectedTreeId, setSelectedTreeId] = useState<string | null>(null);
-  const [graphRevealRequest, setGraphRevealRequest] = useState<GraphRevealRequest | null>(null);
-  const [auditEvaluation, setAuditEvaluation] = useState<Audit['evaluation'] | null>(null);
-  const [projectError, setProjectError] = useState<string | null>(null);
-  const [cycleHighlights, setCycleHighlights] = useState<readonly CycleHighlight[]>([]);
+  const auditEvaluation = project.ok ? project.value.evaluation : null;
+  const projectError = project.ok ? null : project.error;
+  const cycleSelection = useCycleSelection(auditEvaluation?.cyclicPackages ?? EMPTY_CYCLES);
   const [cycleInspection, setCycleInspection] = useState<CycleInspection | null>(null);
   const activeTheme = theme === 'system' ? resolvedTheme : theme;
   const isDark = activeTheme === 'dark';
   const mode = isDark ? 'dark' : 'light';
   const breadcrumbItems = createBreadcrumbItems(currentPackage);
 
-  useEffect(() => setThemeMounted(true), []);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    void getProjectVisualizationAction()
-      .then(result => {
-        if (cancelled) return;
-        if (result.ok) {
-          setPackageGraph(result.value.graph);
-          setProjectTree(result.value.tree);
-        } else {
-          setProjectError(result.error);
-        }
-      })
-      .catch(error => {
-        if (!cancelled) setProjectError(toErrorMessage(error, 'Unable to load project graph.'));
-      });
-
-    void getAuditEvaluationAction()
-      .then(result => {
-        if (cancelled) return;
-        if (result.ok) {
-          setAuditEvaluation(result.value);
-        } else {
-          setProjectError(result.error);
-        }
-      })
-      .catch(error => {
-        if (!cancelled) setProjectError(toErrorMessage(error, 'Unable to load project audit.'));
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
   /*** Navigates graph scope and mirrors the matching package selection in the project tree. */
   const navigateToPackage = (path: string) => {
     const packageName = normalizeGraphPackage(path);
     const matchingTreeNode = findProjectTreeNodeByGraphPackage(projectTree, packageName);
-    setGraphRevealRequest(null);
     setCurrentPackage(packageName);
     setSelectedTreeId(matchingTreeNode?.id ?? null);
   };
 
-  /*** Selects a project-tree node and navigates the graph to the same package scope. */
+  /*** Navigates only into packages with graph descendants; selecting a leaf keeps the current view. */
   const selectProjectTreeNode = (node: ProjectTreeNode) => {
     setSelectedTreeId(node.id);
-    if (!node.graphPackage) return;
-
-    const packageName = normalizeGraphPackage(node.graphPackage);
-    setCurrentPackage(packageName);
-    setGraphRevealRequest({
-      packageId: packageName,
-      treeNodeId: node.id,
-    });
+    setCurrentPackage(
+      resolveProjectTreeNavigation(
+        node,
+        packageGraph?.nodes.map(candidate => String(candidate.data.id ?? '')) ?? [],
+        currentPackage
+      )
+    );
   };
-
-  /*** Activates cycle diagnostics without retaining stale tree-driven viewport focus. */
-  const updateCycleHighlights = useCallback((highlights: readonly CycleHighlight[]) => {
-    if (highlights.length > 0) setGraphRevealRequest(null);
-    setCycleHighlights(highlights);
-  }, []);
 
   return (
     <>
@@ -139,11 +97,12 @@ export default function HomeScreen() {
             projectTree={projectTree}
             selectedTreeId={selectedTreeId}
             onProjectTreeSelect={selectProjectTreeNode}
-            onCycleHighlightsChange={updateCycleHighlights}
+            cycleSelection={cycleSelection}
+            inspectedCycleId={cycleInspection?.id ?? null}
             onCycleInspectionChange={setCycleInspection}
           />
           {projectError ? (
-            <div className="flex flex-1 items-center justify-center p-6">
+            <div role="alert" className="flex flex-1 items-center justify-center p-6">
               <Card
                 compact
                 description={projectError}
@@ -155,9 +114,8 @@ export default function HomeScreen() {
           ) : (
             <HomeGraph
               currentPackage={currentPackage}
-              cycleHighlights={cycleHighlights}
+              cycleHighlights={cycleSelection.highlights}
               cycleInspection={cycleInspection}
-              graphRevealRequest={graphRevealRequest}
               packageGraph={packageGraph}
               setCurrentPackage={navigateToPackage}
               onCloseInspection={() => setCycleInspection(null)}
@@ -192,9 +150,15 @@ function createBreadcrumbItems(currentPackage: string): readonly BreadcrumbItem[
   ];
 }
 
+const EMPTY_CYCLES: NonNullable<Audit['evaluation']>['cyclicPackages'] = [];
+
+interface HomeScreenProps {
+  readonly project: ProjectAnalysisActionResult<ProjectOverview>;
+}
+
 /*** Normalizes graph navigation paths to the package-id representation used by Cytoscape. */
 function normalizeGraphPackage(path: string): string {
-  return path.replaceAll('/', '.').split('.').filter(Boolean).join('.');
+  return path.replaceAll('/', '.').replace(/^\.+|\.+$/g, '');
 }
 
 interface BreadcrumbItem {
@@ -202,4 +166,19 @@ interface BreadcrumbItem {
   readonly label: string;
   readonly disabled?: boolean;
   readonly icon?: { readonly name: string };
+}
+
+/*** Supplies a stable no-op subscription for client hydration state. */
+function subscribeToThemeMount(): () => void {
+  return () => undefined;
+}
+
+/*** Reports that the client theme runtime is available. */
+function readThemeMounted(): boolean {
+  return true;
+}
+
+/*** Keeps theme-dependent controls out of the server-rendered header. */
+function readServerThemeMounted(): boolean {
+  return false;
 }

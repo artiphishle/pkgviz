@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": false,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
@@ -23,57 +19,23 @@
       }
     ],
     "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "app/*": [
-        "./app/*"
-      ],
-      "@zora/tree-view": [
-        "./.generated/zora/tree-view/TreeView"
-      ],
-      "@zora/graph-view": [
-        "./.generated/zora/graph-view/GraphView"
-      ],
-      "@zora/activity-indicator": [
-        "./.generated/zora/activity-indicator/ActivityIndicator"
-      ],
-      "@zora/app-bar": [
-        "./.generated/zora/app-bar/AppBar"
-      ],
-      "@zora/badge": [
-        "./.generated/zora/badge/Badge"
-      ],
-      "@zora/breadcrumbs": [
-        "./.generated/zora/breadcrumbs/Breadcrumbs"
-      ],
-      "@zora/button": [
-        "./.generated/zora/button/Button"
-      ],
-      "@zora/card": [
-        "./.generated/zora/card/Card"
-      ],
-      "@zora/select": [
-        "./.generated/zora/select/Select"
-      ],
-      "@zora/surface": [
-        "./.generated/zora/surface/Surface"
-      ],
-      "@zora/switch": [
-        "./.generated/zora/switch/Switch"
-      ],
-      "@zora/tabs": [
-        "./.generated/zora/tabs/Tabs"
-      ],
-      "@zora/text": [
-        "./.generated/zora/text/Text"
-      ],
-      "@zora/view": [
-        "./.generated/zora/view/View"
-      ],
-      "@zora/icon": [
-        "./.generated/zora/icon/Icon"
-      ]
+      "@/*": ["./src/*"],
+      "app/*": ["./app/*"],
+      "@zora/tree-view": ["./.generated/zora/tree-view/TreeView"],
+      "@zora/graph-view": ["./.generated/zora/graph-view/GraphView"],
+      "@zora/activity-indicator": ["./.generated/zora/activity-indicator/ActivityIndicator"],
+      "@zora/app-bar": ["./.generated/zora/app-bar/AppBar"],
+      "@zora/badge": ["./.generated/zora/badge/Badge"],
+      "@zora/breadcrumbs": ["./.generated/zora/breadcrumbs/Breadcrumbs"],
+      "@zora/button": ["./.generated/zora/button/Button"],
+      "@zora/card": ["./.generated/zora/card/Card"],
+      "@zora/select": ["./.generated/zora/select/Select"],
+      "@zora/surface": ["./.generated/zora/surface/Surface"],
+      "@zora/switch": ["./.generated/zora/switch/Switch"],
+      "@zora/tabs": ["./.generated/zora/tabs/Tabs"],
+      "@zora/text": ["./.generated/zora/text/Text"],
+      "@zora/view": ["./.generated/zora/view/View"],
+      "@zora/icon": ["./.generated/zora/icon/Icon"]
     },
     "incremental": true
   },
@@ -84,8 +46,5 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "examples"
-  ]
+  "exclude": ["node_modules", "examples"]
 }

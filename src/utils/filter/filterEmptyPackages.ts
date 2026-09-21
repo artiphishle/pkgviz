@@ -1,36 +1,35 @@
 import type { ElementsDefinition } from 'cytoscape';
 
-/***
- * Returns root package if only one inside, or '' (root folder)
- */
-function getRootPackage(elements: ElementsDefinition) {
-  const rootPackages = elements.nodes.filter(n => {
-    return !n.data.id?.includes('.');
-  });
-  return rootPackages.length > 1 ? '' : rootPackages[0].data.id!;
-}
+import { isIntrinsicGraphNode } from '@/utils/filter/isIntrinsicGraphNode';
 
 /***
- * Filter empty packages from graph (skip to next interesting package)
+ * Skips a unique chain of structural project packages, stopping before real dependency endpoints.
+ * @performance Use full-graph indexes: navigation must not depend on depth projection or vendors.
+ * Preserve real isolated leaves and branching packages rather than silently filtering them away.
  */
 export function filterEmptyPackages(currentPackage: string, elements: ElementsDefinition): string {
-  const nodes = elements.nodes.map(n => n.data.id!); // Non-null assertion
-
-  if (!currentPackage) return getRootPackage(elements);
-
-  while (true) {
-    const childPackages = nodes.filter(
-      id =>
-        id.startsWith(currentPackage + '.') &&
-        id.split('.').length === currentPackage.split('.').length + 1
-    );
-
-    if (childPackages.length === 1) {
-      currentPackage = childPackages[0];
-    } else {
-      break;
-    }
+  const children = new Map<string, string[]>();
+  for (const node of elements.nodes.filter(isIntrinsicGraphNode)) {
+    const id = String(node.data.id ?? '');
+    if (!id) continue;
+    const boundary = id.lastIndexOf('.');
+    const parent = boundary < 0 ? '' : id.slice(0, boundary);
+    const siblings = children.get(parent) ?? [];
+    siblings.push(id);
+    children.set(parent, siblings);
   }
+  const connected = new Set(elements.edges.flatMap(edge => [edge.data.source, edge.data.target]));
+  return descend(currentPackage, children, connected);
+}
 
-  return currentPackage;
+/*** Descends only when the next package is a relationship-free structural container. */
+function descend(
+  scope: string,
+  children: ReadonlyMap<string, readonly string[]>,
+  connected: ReadonlySet<string>
+): string {
+  const candidates = children.get(scope) ?? [];
+  const next = candidates[0];
+  if (candidates.length !== 1 || !next || connected.has(next) || !children.has(next)) return scope;
+  return descend(next, children, connected);
 }

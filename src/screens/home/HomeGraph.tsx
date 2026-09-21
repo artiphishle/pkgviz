@@ -8,14 +8,12 @@ import React from 'react';
 import { CycleInspector } from '@/features/audit/adapters/inbound/react/CycleInspector';
 import { DependencyGraphView } from '@/features/graph-view/adapters/inbound/react/DependencyGraphView';
 import type { CycleHighlight, CycleInspection } from '@/types/auditVisualization';
-import type { GraphRevealRequest } from '@/types/projectTree';
 
 /*** Renders the graph surface together with its optional cycle inspector overlay. */
 export function HomeGraph({
   currentPackage,
   cycleHighlights,
   cycleInspection,
-  graphRevealRequest,
   packageGraph,
   setCurrentPackage,
   onCloseInspection,
@@ -37,7 +35,6 @@ export function HomeGraph({
       setCurrentPackage={setCurrentPackage}
       packageGraph={packageGraph}
       cycleHighlights={cycleHighlights}
-      graphRevealRequest={graphRevealRequest}
       overlay={
         cycleInspection === null ? null : (
           <CycleInspector inspection={cycleInspection} mode={mode} onClose={onCloseInspection} />
@@ -51,7 +48,6 @@ interface HomeGraphProps {
   readonly currentPackage: string;
   readonly cycleHighlights: readonly CycleHighlight[];
   readonly cycleInspection: CycleInspection | null;
-  readonly graphRevealRequest: GraphRevealRequest | null;
   readonly packageGraph: ElementsDefinition | null;
   readonly setCurrentPackage: (path: string) => void;
   readonly onCloseInspection: () => void;

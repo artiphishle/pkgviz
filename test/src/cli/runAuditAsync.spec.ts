@@ -105,6 +105,22 @@ describe('[runAuditAsync]', () => {
     expect(result.exitCode).toBe(0);
     expect(JSON.parse(await readFile(result.artifactPath, 'utf8'))).toBeDefined();
   });
+
+  it('retains Java cycle evidence when the project root is a symbolic link', async () => {
+    const projectPath = await copyFixtureAsync('examples/java/my-app');
+    const aliasPath = `${projectPath}-alias`;
+    temporaryDirectories.push(aliasPath);
+    await symlink(projectPath, aliasPath, 'dir');
+
+    const result = await runAuditAsync({
+      projectPath: aliasPath,
+      outputPath: 'audit.json',
+      pretty: false,
+    });
+
+    expect(result.exitCode).toBe(2);
+    expect(result.audit.evaluation.cyclicPackages.length).toBe(1);
+  });
 });
 
 /*** Copies a repository fixture into an isolated temporary project root. */

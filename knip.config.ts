@@ -8,6 +8,7 @@ export default createKnipConfig({
     'eslint.local.config.mjs',
     'prettier.local.config.js',
     'test/**/*.spec.{ts,tsx}',
+    'test/benchmarks/*.ts',
   ],
   ignoreFiles: ['examples/**'],
   ignoreBinaries: ['mvn'],

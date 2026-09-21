@@ -1,4 +1,4 @@
-import { describe, expect, it, resolve } from '@artiphishle/testosterone';
+import { assert, describe, expect, it, resolve } from '@artiphishle/testosterone';
 
 import { buildGraph } from '@/app/utils/buildGraph';
 import { getParsedFileStructure } from '@/app/utils/getParsedFileStructure';
@@ -6,6 +6,16 @@ import { analyzeDependencyImportsAsync } from '@/features/dependency-analysis/ad
 import { Language } from '@/shared/types';
 
 describe('[Java dependency graph migration]', () => {
+  it('rejects an analysis root outside the selected project', async () => {
+    await assert.rejects(
+      analyzeDependencyImportsAsync(
+        resolve(process.cwd(), 'examples/java/my-app'),
+        resolve(process.cwd(), 'examples/typescript/my-app')
+      ),
+      /Path escaped the allowed root/
+    );
+  });
+
   it('uses canonical Java import evidence at the Java source-root boundary', async () => {
     const projectRoot = resolve(process.cwd(), 'examples/java/my-app');
     const analysisRoot = resolve(projectRoot, 'src/main/java');

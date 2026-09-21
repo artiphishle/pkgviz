@@ -1,6 +1,6 @@
 import { resolveFileSystemPathWithinRoot, writeFileWithinRoot } from '@ankhorage/utility/node/fs';
 
-import { createAuditAsync } from '@/features/audit/application/use-cases/createAuditAsync';
+import { createAuditAsync } from '@/features/audit/composition/createAuditAsync';
 import { hasBlockingAuditRuleFailure } from '@/features/audit/domain/hasBlockingAuditRuleFailure';
 import type { Audit, ResolveAuditConfigurationInput } from '@/types/audit';
 

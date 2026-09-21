@@ -1,6 +1,8 @@
 import type { ElementsDefinition } from 'cytoscape';
 
+import { removeEmptyStructuralNodes } from '@/features/graph-view/utils/removeEmptyStructuralNodes';
 import { filterByPackagePrefix } from '@/utils/filter/filterByPackagePrefix';
+import { filterEmptyPackages } from '@/utils/filter/filterEmptyPackages';
 import { filterSubPackagesByDepth, getMaxDepth } from '@/utils/filter/filterSubPackagesFromDepth';
 import { filterVendorPackages } from '@/utils/filter/filterVendorPackages';
 import { toggleCompoundNodes } from '@/utils/filter/toggleCompoundNodes';
@@ -20,14 +22,24 @@ export function projectVisibleGraph(input: ProjectVisibleGraphInput): ProjectVis
   const visible = input.showVendorPackages ? depthFiltered : filterVendorPackages(depthFiltered);
 
   return {
-    elements: labelVisibleNodes(visible, input.currentPackage),
-    maxSubPackageDepth: getMaxDepth(input.elements),
+    elements: labelVisibleNodes(
+      input.showCompoundNodes ? visible : removeEmptyStructuralNodes(visible),
+      input.currentPackage
+    ),
+    maxSubPackageDepth: Math.max(
+      1,
+      getMaxDepth(
+        input.showVendorPackages ? packageFiltered : filterVendorPackages(packageFiltered)
+      )
+    ),
+    redirectPackage: resolveRedirectPackage(input),
   };
 }
 
 interface ProjectVisibleGraphInput {
   readonly currentPackage: string;
   readonly elements: ElementsDefinition;
+  readonly preservePackageScope?: boolean;
   readonly showCompoundNodes: boolean;
   readonly showVendorPackages: boolean;
   readonly subPackageDepth: number;
@@ -36,6 +48,21 @@ interface ProjectVisibleGraphInput {
 interface ProjectVisibleGraphResult {
   readonly elements: ElementsDefinition;
   readonly maxSubPackageDepth: number;
+  readonly redirectPackage: string | null;
+}
+
+/***
+ * Skips empty package levels only when no explicit cycle scope owns the projection.
+ * @performance
+ * An active cycle can require an ancestor package as a visible node. Redirecting into that package
+ * hides it again and causes an endless focus/redirect loop, repeatedly remounting the renderer.
+ */
+function resolveRedirectPackage(input: ProjectVisibleGraphInput): string | null {
+  const currentPackage = input.currentPackage.replaceAll('/', '.');
+  if (input.preservePackageScope) return null;
+
+  const nextPackage = filterEmptyPackages(currentPackage, input.elements);
+  return nextPackage === currentPackage ? null : nextPackage;
 }
 
 /*** Adds package-relative display labels without changing graph ids. */

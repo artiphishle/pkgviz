@@ -11,6 +11,8 @@ NEXT_PUBLIC_PROJECT_PATH=
 
 # boolean @default true
 NEXT_PUBLIC_SETTINGS_SHOW_COMPOUNDNODES=true
+# Browser cycle highlights: persisted per-project choices override this default.
+NEXT_PUBLIC_SETTINGS_SHOW_CYCLES=false
 
 # boolean @default false
 NEXT_PUBLIC_SETTINGS_SHOW_VENDORPACKAGES=false
@@ -23,4 +25,3 @@ NEXT_PUBLIC_SETTINGS_LAYOUT_SPACING=1
 
 # number @default 1
 NEXT_PUBLIC_SETTINGS_SUBPACKAGE_DEPTH=1
-

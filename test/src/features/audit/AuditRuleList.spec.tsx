@@ -34,8 +34,8 @@ describe('[AuditRuleList]', () => {
     const { container, getByText } = render(
       <AuditRuleList
         evaluation={failedEvaluation}
+        cycleSelection={{ highlights: [], selectedIds: [], setSelected: () => undefined }}
         mode="light"
-        onCycleHighlightsChange={() => undefined}
         onCycleInspectionChange={() => undefined}
       />
     );
@@ -50,9 +50,11 @@ describe('[AuditRuleList]', () => {
     );
     expect(switches.length).toBe(2);
     expect(switches.every(control => control.getAttribute('aria-checked') === 'false')).toBe(true);
-    expect(switches.every(control => control.parentElement?.lastElementChild === control)).toBe(
-      true
-    );
+    expect(
+      switches.every(
+        control => control.parentElement?.parentElement?.lastElementChild === control.parentElement
+      )
+    ).toBe(true);
     expect(container.textContent?.includes('src/a.ts')).toBe(false);
   });
 
@@ -60,8 +62,8 @@ describe('[AuditRuleList]', () => {
     const { container } = render(
       <AuditRuleList
         evaluation={passedEvaluation}
+        cycleSelection={{ highlights: [], selectedIds: [], setSelected: () => undefined }}
         mode="light"
-        onCycleHighlightsChange={() => undefined}
         onCycleInspectionChange={() => undefined}
       />
     );

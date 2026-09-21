@@ -5,7 +5,7 @@ import { findProjectTreeNodeByGraphPackage } from '@/features/project-tree/utils
 import type { ParsedDirectory } from '@/shared/types';
 
 describe('[project tree]', () => {
-  it('builds directories before files and derives directory graph packages from descendants', () => {
+  it('derives directory graph packages from descendants', () => {
     const parsed = {
       src: {
         'index.ts': parsedFile('src/index.ts', 'src'),
@@ -32,10 +32,7 @@ describe('[project tree]', () => {
           java: {
             io: {
               reflectoring: {
-                'App.java': parsedFile(
-                  'src/main/java/io/reflectoring/App.java',
-                  'io.reflectoring'
-                ),
+                'App.java': parsedFile('src/main/java/io/reflectoring/App.java', 'io.reflectoring'),
               },
             },
           },

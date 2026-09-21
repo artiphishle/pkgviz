@@ -41,13 +41,15 @@ function compareEntries(
 
 /*** Derives the graph package represented by a filesystem directory from its descendants. */
 function getCommonGraphPackage(children: readonly ProjectTreeNode[]): string {
-  const packages = children.map(child => child.graphPackage).filter(packageName => packageName.length);
+  const packages = children
+    .map(child => child.graphPackage)
+    .filter(packageName => packageName.length);
   const [firstPackage, ...remainingPackages] = packages;
   if (!firstPackage) return '';
 
   const firstSegments = firstPackage.split('.');
   const mismatchIndex = firstSegments.findIndex((segment, index) =>
-    remainingPackages.some(packageName => packageName.split('.')[index] !== segment)
+    remainingPackages.some(packageName => packageName.split('.').at(index) !== segment)
   );
   const commonLength = mismatchIndex === -1 ? firstSegments.length : mismatchIndex;
   return firstSegments.slice(0, commonLength).join('.');
