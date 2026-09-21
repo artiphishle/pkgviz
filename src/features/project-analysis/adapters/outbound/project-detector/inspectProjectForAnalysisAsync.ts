@@ -1,0 +1,41 @@
+import { inspectProjectAsync } from '@ankhorage/project-detector/node';
+import type { ProjectInspection } from '@ankhorage/project-detector/types';
+
+const PROJECT_PATH_ERROR_CODES: ReadonlySet<string> = new Set(['EACCES', 'ENOENT', 'ENOTDIR']);
+
+/*** Inspect one project through the canonical bounded filesystem owner. */
+export async function inspectProjectForAnalysisAsync(
+  projectPath: string
+): Promise<ProjectInspection> {
+  try {
+    const inspection = await inspectProjectAsync(projectPath, {
+      excludeDirectories: ['@types', '.github', 'examples', 'test'],
+    });
+    if (!inspection.complete) {
+      throw new Error(
+        `Project inspection is incomplete: ${inspection.diagnostics
+          .map(diagnostic => diagnostic.message)
+          .join('; ')}`
+      );
+    }
+    return inspection;
+  } catch (error) {
+    if (!isProjectPathUnavailableError(error)) throw error;
+
+    const projectPathError = new Error(`Invalid or unavailable project path: ${projectPath}`, {
+      cause: error,
+    });
+    projectPathError.name = 'ProjectPathUnavailableError';
+    throw projectPathError;
+  }
+}
+
+/*** Identify filesystem errors that mean the configured inspection root cannot be used. */
+function isProjectPathUnavailableError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    'code' in error &&
+    typeof error.code === 'string' &&
+    PROJECT_PATH_ERROR_CODES.has(error.code)
+  );
+}
