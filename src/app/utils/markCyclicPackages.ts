@@ -121,15 +121,4 @@ export function getPackageCyclesWithMembers(
   return { cycles, packageSet, graph };
 }
 
-/***
- * Convenience that only returns the set of cyclic packages (no evidence)
- */
-export function getCyclicPackageSet(
-  dir: ParsedDirectory,
-  graph: ElementsDefinition
-): Set<TUniquePackageName> {
-  const { packageSet } = getPackageCyclesWithMembers(dir, graph);
-  return packageSet;
-}
-
 type TUniquePackageName = string;

@@ -65,10 +65,8 @@ describe('[project tree]', () => {
 /*** Creates minimal parsed-file fixture data for project-tree tests. */
 function parsedFile(path: string, packageName: string) {
   return {
-    calls: [],
     className: path,
     imports: [],
-    methods: [],
     package: packageName,
     path,
   };
