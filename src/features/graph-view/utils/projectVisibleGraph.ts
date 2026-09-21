@@ -1,4 +1,4 @@
-import type { ElementsDefinition } from 'cytoscape';
+import type { ElementsDefinition, NodeDefinition } from 'cytoscape';
 
 import { removeEmptyStructuralNodes } from '@/features/graph-view/utils/removeEmptyStructuralNodes';
 import { filterByPackagePrefix } from '@/utils/filter/filterByPackagePrefix';
@@ -71,6 +71,7 @@ function labelVisibleNodes(
   currentPackage: string
 ): ElementsDefinition {
   const normalizedPackage = currentPackage.replaceAll('/', '.');
+  const visibleNodeIds = new Set(elements.nodes.map(node => String(node.data.id ?? '')));
 
   return {
     nodes: elements.nodes.map(node => ({
@@ -78,11 +79,25 @@ function labelVisibleNodes(
       classes: node.classes ?? '',
       data: {
         ...node.data,
-        label: getRelativeNodeLabel(String(node.data.id ?? ''), normalizedPackage),
+        label: getVisibleNodeLabel(node, normalizedPackage, visibleNodeIds),
       },
     })),
     edges: elements.edges,
   };
+}
+
+/*** Resolves a node label from its visible compound context or the active package scope. */
+function getVisibleNodeLabel(
+  node: NodeDefinition,
+  currentPackage: string,
+  visibleNodeIds: ReadonlySet<string>
+): string {
+  const id = String(node.data.id ?? '');
+  const parent = typeof node.data.parent === 'string' ? node.data.parent : '';
+
+  return parent && visibleNodeIds.has(parent) && id.startsWith(`${parent}.`)
+    ? id.slice(parent.length + 1)
+    : getRelativeNodeLabel(id, currentPackage);
 }
 
 /*** Resolves a readable label for the active package itself and for its descendants. */

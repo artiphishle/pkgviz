@@ -102,6 +102,64 @@ describe('[graph view projection]', () => {
     expect(child?.data.parentInactive).toBe('src');
     expect(result.elements.nodes.some(node => node.data.id === 'src')).toBe(false);
   });
+
+  it('uses immediate labels for descendants of visible compound nodes', () => {
+    const result = projectVisibleGraph({
+      currentPackage: 'coderadar.core',
+      elements: {
+        nodes: [
+          { data: { id: 'coderadar.core.projectadministration', parent: 'coderadar.core' } },
+          {
+            data: {
+              id: 'coderadar.core.projectadministration.services',
+              parent: 'coderadar.core.projectadministration',
+            },
+          },
+          {
+            data: {
+              id: 'coderadar.core.projectadministration.services.filepattern',
+              parent: 'coderadar.core.projectadministration.services',
+            },
+          },
+          {
+            data: {
+              id: 'coderadar.core.projectadministration.services.branch',
+              parent: 'coderadar.core.projectadministration.services',
+            },
+          },
+        ],
+        edges: [],
+      },
+      showCompoundNodes: true,
+      showVendorPackages: true,
+      subPackageDepth: 3,
+    });
+
+    expect(result.elements.nodes.map(node => node.data.label)).toEqual([
+      'projectadministration',
+      'services',
+      'filepattern',
+      'branch',
+    ]);
+  });
+
+  it('retains package-relative labels when compound nodes are hidden', () => {
+    const result = projectVisibleGraph({
+      currentPackage: 'coderadar.core',
+      elements: {
+        nodes: [
+          { data: { id: 'coderadar.core.services' } },
+          { data: { id: 'coderadar.core.services.filepattern' } },
+        ],
+        edges: [],
+      },
+      showCompoundNodes: false,
+      showVendorPackages: true,
+      subPackageDepth: 2,
+    });
+
+    expect(result.elements.nodes.map(node => node.data.label)).toEqual(['services.filepattern']);
+  });
 });
 
 describe('[package scope with external dependencies]', () => {
