@@ -57,7 +57,6 @@ function SidebarToolTabs({
   projectTree,
   selectedTreeId,
 }: SidebarToolTabsProps) {
-  const violatedRuleCount = evaluation?.rules.filter(rule => rule.status === 'failed').length ?? 0;
   const findingCount =
     evaluation?.rules
       .filter(rule => rule.status === 'failed')
@@ -69,13 +68,14 @@ function SidebarToolTabs({
             : rule.details.length),
         0
       ) ?? 0;
+  const hasRuleFindings = findingCount > 0;
   const rulesLabel = `${t('settings.rules')} · ${findingCount} ${t('audit.findings')}`;
 
   return (
     <Tabs mode={mode} value={activeTool} onValueChange={onValueChange}>
       <TabList>
         <Tab label={t('settings.tree')} value="tree" />
-        <Tab disabled={violatedRuleCount === 0} label={rulesLabel} value="rules" />
+        {hasRuleFindings ? <Tab label={rulesLabel} value="rules" /> : null}
         <Tab label={t('settings.export')} value="export" />
       </TabList>
       <TabPanel value="tree">
@@ -88,19 +88,21 @@ function SidebarToolTabs({
           />
         </View>
       </TabPanel>
-      <TabPanel value="rules">
-        <View mode={mode} style={{ maxHeight: '100%', overflow: 'auto' }}>
-          {evaluation === null ? null : (
-            <AuditRulePanel
-              evaluation={evaluation}
-              cycleSelection={cycleSelection}
-              inspectedCycleId={inspectedCycleId}
-              mode={mode}
-              onCycleInspectionChange={onCycleInspectionChange}
-            />
-          )}
-        </View>
-      </TabPanel>
+      {hasRuleFindings ? (
+        <TabPanel value="rules">
+          <View mode={mode} style={{ maxHeight: '100%', overflow: 'auto' }}>
+            {evaluation === null ? null : (
+              <AuditRulePanel
+                evaluation={evaluation}
+                cycleSelection={cycleSelection}
+                inspectedCycleId={inspectedCycleId}
+                mode={mode}
+                onCycleInspectionChange={onCycleInspectionChange}
+              />
+            )}
+          </View>
+        </TabPanel>
+      ) : null}
       <TabPanel value="export">
         <AuditExportPanel mode={mode} />
       </TabPanel>

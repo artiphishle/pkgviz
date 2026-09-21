@@ -5,12 +5,12 @@ import React from 'react';
 
 import { useThemeMode } from '@/features/theme/adapters/inbound/react/useThemeMode';
 
-/*** Keeps the centered ZORA loading indicator visible while the project snapshot loads. */
+/*** Keeps the initial loading indicator compact while the project snapshot loads. */
 export default function Loading() {
   const { mode } = useThemeMode();
 
   return (
-    <View mode={mode} align="center" flex={1} justify="center">
+    <View mode={mode} align="center" justify="center" p="l" style={{ alignSelf: 'center' }}>
       <ActivityIndicator mode={mode} testID="loader" />
     </View>
   );
