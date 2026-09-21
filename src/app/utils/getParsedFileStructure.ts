@@ -1,8 +1,8 @@
 'use server';
 
-import { parseProjectInspectionAsync } from '@/features/project-analysis/adapters/outbound/project-detector/parseProjectInspectionAsync';
 import { inspectProjectForAnalysisAsync } from '@/features/project-analysis/adapters/outbound/project-detector/inspectProjectForAnalysisAsync';
-import { Language } from '@/shared/types';
+import { parseProjectInspectionAsync } from '@/features/project-analysis/adapters/outbound/project-detector/parseProjectInspectionAsync';
+import type { Language } from '@/shared/types';
 import { parseProjectPath } from '@/shared/utils/parseProjectPath';
 
 import { selectParserLanguage } from './selectParserLanguage';

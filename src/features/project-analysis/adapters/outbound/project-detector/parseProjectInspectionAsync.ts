@@ -10,7 +10,12 @@ import { parseKotlinFile } from '@/app/utils/parser/kotlin/parseFile';
 import { parsePythonFile } from '@/app/utils/parser/python/parseFile';
 import { parseFile as parseTypeScriptFile } from '@/app/utils/parser/typescript/parseFile';
 import { analyzeDependencyImportsAsync } from '@/features/dependency-analysis/adapters/outbound/dependency-graph/analyzeDependencyImportsAsync';
-import { type ImportDefinition, Language, type ParsedDirectory, type ParsedFile } from '@/shared/types';
+import {
+  type ImportDefinition,
+  Language,
+  type ParsedDirectory,
+  type ParsedFile,
+} from '@/shared/types';
 
 interface ParseSourceInput {
   readonly analysisRootPath: string;
@@ -69,8 +74,8 @@ export async function parseProjectInspectionAsync(
 function analysisRootFor(inspection: ProjectInspection, language: Language): string {
   if (language === Language.TypeScript) return '.';
   return (
-    inspection.detection.languages.find(candidate => candidate.id === String(language))?.sourceRoots[0] ??
-    '.'
+    inspection.detection.languages.find(candidate => candidate.id === String(language))
+      ?.sourceRoots[0] ?? '.'
   );
 }
 
@@ -92,8 +97,7 @@ function ensureDirectory(
 
   const separator = relativeDirectory.lastIndexOf('/');
   const parentPath = separator < 0 ? '' : relativeDirectory.slice(0, separator);
-  const directoryName =
-    separator < 0 ? relativeDirectory : relativeDirectory.slice(separator + 1);
+  const directoryName = separator < 0 ? relativeDirectory : relativeDirectory.slice(separator + 1);
   const parent = ensureDirectory(directories, parentPath);
   const directory = createParsedDirectory();
 
@@ -151,7 +155,12 @@ async function importsForLanguageAsync(
         'kotlin-standard-library'
       );
     case Language.Python:
-      return analyzeDependencyImportsAsync(projectPath, analysisRootPath, 'specifier', 'python-legacy');
+      return analyzeDependencyImportsAsync(
+        projectPath,
+        analysisRootPath,
+        'specifier',
+        'python-legacy'
+      );
     case Language.Delphi:
       return analyzeDependencyImportsAsync(
         projectPath,
