@@ -17,7 +17,6 @@ interface ParseSourceInput {
   readonly imports: readonly ImportDefinition[];
   readonly language: Language;
   readonly projectPath: string;
-  readonly relativeFile: string;
   readonly sourceFile: string;
 }
 
@@ -34,12 +33,13 @@ export async function parseProjectInspectionAsync(
     allowRoot: true,
   });
   const importsByFile = await importsForLanguageAsync(language, projectPath, analysisRootPath);
-  const result: ParsedDirectory = Object.create(null);
+  const result = createParsedDirectory();
+  const directories = new Map<string, ParsedDirectory>([['', result]]);
 
   for (const directory of inspection.directories) {
     const relativeDirectory = relativeToAnalysisRoot(directory, analysisRoot);
     if (relativeDirectory === undefined || relativeDirectory === '') continue;
-    ensureDirectory(result, relativeDirectory);
+    ensureDirectory(directories, relativeDirectory);
   }
 
   for (const sourceFile of inspection.files) {
@@ -57,10 +57,9 @@ export async function parseProjectInspectionAsync(
       imports: importsByFile.get(relativeFile) ?? [],
       language,
       projectPath,
-      relativeFile,
       sourceFile,
     });
-    insertFile(result, relativeFile, parsedFile);
+    insertFile(directories, relativeFile, parsedFile);
   }
 
   return result;
@@ -70,7 +69,7 @@ export async function parseProjectInspectionAsync(
 function analysisRootFor(inspection: ProjectInspection, language: Language): string {
   if (language === Language.TypeScript) return '.';
   return (
-    inspection.detection.languages.find(candidate => candidate.id === language)?.sourceRoots[0] ??
+    inspection.detection.languages.find(candidate => candidate.id === String(language))?.sourceRoots[0] ??
     '.'
   );
 }
@@ -83,29 +82,53 @@ function relativeToAnalysisRoot(inventoryPath: string, analysisRoot: string): st
   return inventoryPath.startsWith(prefix) ? inventoryPath.slice(prefix.length) : undefined;
 }
 
-/*** Create every directory segment with null prototypes so arbitrary project names remain data. */
-function ensureDirectory(root: ParsedDirectory, relativeDirectory: string): ParsedDirectory {
-  let current = root;
-  for (const segment of relativeDirectory.split('/').filter(Boolean)) {
-    const existing = current[segment];
-    if (existing === undefined) {
-      const directory: ParsedDirectory = Object.create(null);
-      current[segment] = directory;
-      current = directory;
-    } else {
-      current = existing as ParsedDirectory;
-    }
-  }
-  return current;
+/*** Create one null-prototype directory and index it by its relative path. */
+function ensureDirectory(
+  directories: Map<string, ParsedDirectory>,
+  relativeDirectory: string
+): ParsedDirectory {
+  const existing = directories.get(relativeDirectory);
+  if (existing !== undefined) return existing;
+
+  const separator = relativeDirectory.lastIndexOf('/');
+  const parentPath = separator < 0 ? '' : relativeDirectory.slice(0, separator);
+  const directoryName =
+    separator < 0 ? relativeDirectory : relativeDirectory.slice(separator + 1);
+  const parent = ensureDirectory(directories, parentPath);
+  const directory = createParsedDirectory();
+
+  Object.defineProperty(parent, directoryName, {
+    configurable: true,
+    enumerable: true,
+    value: directory,
+    writable: true,
+  });
+  directories.set(relativeDirectory, directory);
+  return directory;
 }
 
-/*** Insert one parsed file beneath its already inventoried relative parent directory. */
-function insertFile(root: ParsedDirectory, relativeFile: string, parsedFile: ParsedFile): void {
-  const segments = relativeFile.split('/');
-  const fileName = segments.pop();
-  if (fileName === undefined) return;
-  const parent = ensureDirectory(root, segments.join('/'));
-  parent[fileName] = parsedFile;
+/*** Insert one parsed file beneath its inventoried relative parent directory. */
+function insertFile(
+  directories: Map<string, ParsedDirectory>,
+  relativeFile: string,
+  parsedFile: ParsedFile
+): void {
+  const separator = relativeFile.lastIndexOf('/');
+  const parentPath = separator < 0 ? '' : relativeFile.slice(0, separator);
+  const fileName = separator < 0 ? relativeFile : relativeFile.slice(separator + 1);
+  const parent = ensureDirectory(directories, parentPath);
+
+  Object.defineProperty(parent, fileName, {
+    configurable: true,
+    enumerable: true,
+    value: parsedFile,
+    writable: true,
+  });
+}
+
+/*** Create a dictionary-shaped directory node without Object prototype keys. */
+function createParsedDirectory(): ParsedDirectory {
+  return Object.setPrototypeOf({}, null) as ParsedDirectory;
 }
 
 /*** Return import evidence using the existing PKGViz presentation semantics per parser. */
