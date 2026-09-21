@@ -2,13 +2,13 @@
 import { Surface } from '@zora/surface';
 import { Tab, TabList, TabPanel, Tabs } from '@zora/tabs';
 import { View } from '@zora/view';
-import { useTheme } from 'next-themes';
 import React from 'react';
 
 import { AuditExportPanel } from '@/features/audit/adapters/inbound/react/AuditExportPanel';
 import { AuditRulePanel } from '@/features/audit/adapters/inbound/react/AuditRulePanel';
 import { ProjectTreePanel } from '@/features/project-tree/adapters/inbound/react/ProjectTreePanel';
 import { SettingsPanel } from '@/features/settings/adapters/inbound/react/SettingsPanel';
+import { useThemeMode } from '@/features/theme/adapters/inbound/react/useThemeMode';
 import { t } from '@/i18n/i18n';
 import type { Audit } from '@/types/audit';
 import type { CycleInspection, CycleSelection } from '@/types/auditVisualization';
@@ -16,8 +16,7 @@ import type { ProjectTreeNode } from '@/types/projectTree';
 
 /*** Composes project tools and persistent graph settings from generated ZORA elements. */
 export function HomeSidebar(props: HomeSidebarProps) {
-  const { resolvedTheme } = useTheme();
-  const mode = resolvedTheme === 'dark' ? 'dark' : 'light';
+  const { mode } = useThemeMode();
   const [activeTool, setActiveTool] = React.useState('tree');
 
   /*** Closes the evidence panel without changing the user's cycle visualization choices. */

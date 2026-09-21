@@ -1,8 +1,8 @@
 import { describe, expect, it } from '@artiphishle/testosterone';
 
-import { resolveThemeMode } from '@/screens/home/resolveThemeMode';
+import { resolveThemeMode } from '@/features/theme/utils/resolveThemeMode';
 
-describe('[home theme mode]', () => {
+describe('[theme mode]', () => {
   it('keeps server and initial client markup light before the theme runtime mounts', () => {
     expect(resolveThemeMode(false, undefined)).toBe('light');
     expect(resolveThemeMode(false, 'dark')).toBe('light');

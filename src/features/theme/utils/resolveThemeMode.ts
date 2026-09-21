@@ -1,4 +1,4 @@
-/*** Keeps theme-sensitive screen markup stable until the client has hydrated. */
+/*** Keeps theme-sensitive markup stable until the client can use its selected theme. */
 export function resolveThemeMode(
   themeMounted: boolean,
   activeTheme: string | undefined

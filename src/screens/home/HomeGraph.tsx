@@ -2,11 +2,11 @@
 import { ActivityIndicator } from '@zora/activity-indicator';
 import { View } from '@zora/view';
 import type { ElementsDefinition } from 'cytoscape';
-import { useTheme } from 'next-themes';
 import React from 'react';
 
 import { CycleInspector } from '@/features/audit/adapters/inbound/react/CycleInspector';
 import { DependencyGraphView } from '@/features/graph-view/adapters/inbound/react/DependencyGraphView';
+import { useThemeMode } from '@/features/theme/adapters/inbound/react/useThemeMode';
 import type { CycleHighlight, CycleInspection } from '@/types/auditVisualization';
 
 /*** Renders the graph surface together with its optional cycle inspector overlay. */
@@ -18,8 +18,7 @@ export function HomeGraph({
   setCurrentPackage,
   onCloseInspection,
 }: HomeGraphProps) {
-  const { resolvedTheme } = useTheme();
-  const mode = resolvedTheme === 'dark' ? 'dark' : 'light';
+  const { mode } = useThemeMode();
 
   if (!packageGraph) {
     return (

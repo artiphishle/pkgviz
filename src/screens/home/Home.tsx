@@ -4,16 +4,16 @@ import { Breadcrumbs } from '@zora/breadcrumbs';
 import { Button } from '@zora/button';
 import { Card } from '@zora/card';
 import { useTheme } from 'next-themes';
-import { useState, useSyncExternalStore } from 'react';
+import { useState } from 'react';
 
 import { SettingsProvider } from '@/contexts/SettingsContext';
 import { useCycleSelection } from '@/features/audit/adapters/inbound/react/useCycleSelection';
 import { resolveProjectTreeNavigation } from '@/features/project-tree/application/use-cases/resolveProjectTreeNavigation';
 import { findProjectTreeNodeByGraphPackage } from '@/features/project-tree/utils/findProjectTreeNodeByGraphPackage';
+import { useThemeMode } from '@/features/theme/adapters/inbound/react/useThemeMode';
 import { t } from '@/i18n/i18n';
 import { HomeGraph } from '@/screens/home/HomeGraph';
 import { HomeSidebar } from '@/screens/home/HomeSidebar';
-import { resolveThemeMode } from '@/screens/home/resolveThemeMode';
 import { getProjectName } from '@/shared/utils/getProjectName';
 import type { Audit } from '@/types/audit';
 import type { CycleInspection } from '@/types/auditVisualization';
@@ -23,12 +23,8 @@ import type { ProjectTreeNode } from '@/types/projectTree';
 
 /*** Renders the PKGViz home screen and composes project navigation, diagnostics, and the graph. */
 export default function HomeScreen({ project }: HomeScreenProps) {
-  const { resolvedTheme, setTheme, theme } = useTheme();
-  const themeMounted = useSyncExternalStore(
-    subscribeToThemeMount,
-    readThemeMounted,
-    readServerThemeMounted
-  );
+  const { setTheme } = useTheme();
+  const { mode, mounted: themeMounted } = useThemeMode();
   const [currentPackage, setCurrentPackage] = useState<string>('');
   const packageGraph = project.ok ? project.value.graph : null;
   const projectTree = project.ok ? project.value.tree : [];
@@ -37,8 +33,6 @@ export default function HomeScreen({ project }: HomeScreenProps) {
   const projectError = project.ok ? null : project.error;
   const cycleSelection = useCycleSelection(auditEvaluation?.cyclicPackages ?? EMPTY_CYCLES);
   const [cycleInspection, setCycleInspection] = useState<CycleInspection | null>(null);
-  const activeTheme = theme === 'system' ? resolvedTheme : theme;
-  const mode = resolveThemeMode(themeMounted, activeTheme);
   const isDark = mode === 'dark';
   const breadcrumbItems = createBreadcrumbItems(currentPackage);
 
@@ -167,19 +161,4 @@ interface BreadcrumbItem {
   readonly label: string;
   readonly disabled?: boolean;
   readonly icon?: { readonly name: string };
-}
-
-/*** Supplies a stable no-op subscription for client hydration state. */
-function subscribeToThemeMount(): () => void {
-  return () => undefined;
-}
-
-/*** Reports that the client theme runtime is available. */
-function readThemeMounted(): boolean {
-  return true;
-}
-
-/*** Keeps theme-dependent controls out of the server-rendered header. */
-function readServerThemeMounted(): boolean {
-  return false;
 }
