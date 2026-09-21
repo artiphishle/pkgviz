@@ -1,4 +1,5 @@
 'use client';
+import { ScrollView } from '@zora/scroll-view';
 import { Surface } from '@zora/surface';
 import { Tab, TabList, TabPanel, Tabs } from '@zora/tabs';
 import { View } from '@zora/view';
@@ -64,24 +65,24 @@ function SidebarToolTabs({
   const rulesLabel = `${t('settings.rules')} · ${findingCount} ${t('audit.findings')}`;
 
   return (
-    <Tabs value={activeTool} onValueChange={onValueChange}>
+    <Tabs flex={1} minHeight={0} overflow="hidden" value={activeTool} onValueChange={onValueChange}>
       <TabList>
         <Tab label={t('settings.tree')} value="tree" />
         {hasRuleFindings ? <Tab label={rulesLabel} value="rules" /> : null}
         <Tab label={t('settings.export')} value="export" />
       </TabList>
-      <TabPanel value="tree">
-        <View style={{ maxHeight: '100%', overflow: 'auto' }}>
+      <TabPanel flex={1} minHeight={0} value="tree">
+        <ScrollView flex={1} minHeight={0} testID="sidebar-tree-scroll">
           <ProjectTreePanel
             nodes={projectTree}
             selectedId={selectedTreeId}
             onSelect={onProjectTreeSelect}
           />
-        </View>
+        </ScrollView>
       </TabPanel>
       {hasRuleFindings ? (
-        <TabPanel value="rules">
-          <View style={{ maxHeight: '100%', overflow: 'auto' }}>
+        <TabPanel flex={1} minHeight={0} value="rules">
+          <ScrollView flex={1} minHeight={0} testID="sidebar-rules-scroll">
             {evaluation === null ? null : (
               <AuditRulePanel
                 evaluation={evaluation}
@@ -90,11 +91,13 @@ function SidebarToolTabs({
                 onCycleInspectionChange={onCycleInspectionChange}
               />
             )}
-          </View>
+          </ScrollView>
         </TabPanel>
       ) : null}
-      <TabPanel value="export">
-        <AuditExportPanel />
+      <TabPanel flex={1} minHeight={0} value="export">
+        <ScrollView flex={1} minHeight={0} testID="sidebar-export-scroll">
+          <AuditExportPanel />
+        </ScrollView>
       </TabPanel>
     </Tabs>
   );
