@@ -2,4 +2,4 @@
 'pkgviz': patch
 ---
 
-Group sibling canonical scoped vendor packages under presentation-only organization compounds while preserving package identities, dependency edges, weights, and flat singleton vendors.
+Preserve canonical dependency classification in graph projection and group sibling scoped vendor packages under presentation-only organization compounds without grouping unresolved scoped aliases.
