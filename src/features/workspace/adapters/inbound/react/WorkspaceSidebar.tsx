@@ -3,6 +3,7 @@ import { ScrollView } from '@zora/scroll-view';
 import { Surface } from '@zora/surface';
 import { Tab, TabList, TabPanel, Tabs } from '@zora/tabs';
 import { View } from '@zora/view';
+import { useZoraTheme } from '@zora/ZoraProvider';
 import React from 'react';
 
 import { AuditExportPanel } from '@/features/audit/adapters/inbound/react/AuditExportPanel';
@@ -16,6 +17,7 @@ import type { ProjectTreeNode } from '@/types/projectTree';
 
 /*** Composes workspace tools and persistent graph settings from generated ZORA elements. */
 export function WorkspaceSidebar(props: WorkspaceSidebarProps) {
+  const { theme } = useZoraTheme();
   const [activeTool, setActiveTool] = React.useState('tree');
 
   /*** Closes cycle evidence when leaving the Rules tool and updates the active tab. */
@@ -25,7 +27,20 @@ export function WorkspaceSidebar(props: WorkspaceSidebarProps) {
   };
 
   return (
-    <aside className="flex min-h-0 w-[18rem] min-w-[18rem] max-w-[18rem] shrink-0 self-stretch flex-col overflow-hidden border-r border-r-neutral-200 bg-neutral-100 md:pt-14 dark:border-r-neutral-800 dark:bg-neutral-950">
+    <aside
+      style={{
+        alignSelf: 'stretch',
+        borderRight: `1px solid ${theme.semantics.border.subtle}`,
+        display: 'flex',
+        flexDirection: 'column',
+        flexShrink: 0,
+        maxWidth: 288,
+        minHeight: 0,
+        minWidth: 288,
+        overflow: 'hidden',
+        width: 288,
+      }}
+    >
       <Surface style={{ height: '100%', overflow: 'hidden' }} variant="subtle">
         <View flex={1} style={{ minHeight: 0, overflow: 'hidden' }}>
           <WorkspaceToolTabs {...props} activeTool={activeTool} onValueChange={selectTool} />
