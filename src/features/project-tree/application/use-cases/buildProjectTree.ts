@@ -1,16 +1,16 @@
-import type { ProjectFileMetadata, ProjectFileTree } from '@/types/projectFiles';
+import type { ParsedDirectory, ParsedFile } from '@/shared/types';
 import type { ProjectTreeNode } from '@/types/projectTree';
 
-/*** Converts project file metadata into the serializable hierarchy consumed by the sidebar. */
+/*** Converts parsed-project data into the serializable hierarchy consumed by the sidebar. */
 export function buildProjectTree(
-  directory: ProjectFileTree,
+  directory: ParsedDirectory,
   parentPath = ''
 ): readonly ProjectTreeNode[] {
   return Object.entries(directory)
     .sort(compareEntries)
     .map(([name, value]) => {
       const itemPath = parentPath ? `${parentPath}/${name}` : name;
-      if (isProjectFileMetadata(value)) {
+      if (isParsedFile(value)) {
         return {
           graphPackage: value.package,
           id: `file:${itemPath}`,
@@ -32,10 +32,10 @@ export function buildProjectTree(
 
 /*** Sorts folders before files while keeping each group alphabetic. */
 function compareEntries(
-  [leftName, left]: [string, ProjectFileTree | ProjectFileMetadata],
-  [rightName, right]: [string, ProjectFileTree | ProjectFileMetadata]
+  [leftName, left]: [string, ParsedDirectory | ParsedFile],
+  [rightName, right]: [string, ParsedDirectory | ParsedFile]
 ) {
-  const kindDelta = Number(isProjectFileMetadata(left)) - Number(isProjectFileMetadata(right));
+  const kindDelta = Number(isParsedFile(left)) - Number(isParsedFile(right));
   return kindDelta || leftName.localeCompare(rightName);
 }
 
@@ -55,9 +55,7 @@ function getCommonGraphPackage(children: readonly ProjectTreeNode[]): string {
   return firstSegments.slice(0, commonLength).join('.');
 }
 
-/*** Distinguishes project file metadata from recursive directory records without relying on class names. */
-function isProjectFileMetadata(
-  value: ProjectFileTree | ProjectFileMetadata
-): value is ProjectFileMetadata {
+/*** Distinguishes parsed files from recursive directory records without relying on class names. */
+function isParsedFile(value: ParsedDirectory | ParsedFile): value is ParsedFile {
   return 'path' in value && typeof value.path === 'string' && 'package' in value;
 }

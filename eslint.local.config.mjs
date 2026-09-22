@@ -32,7 +32,7 @@ const legacyUiRules = {
 
 export default [
   {
-    files: ['src/utils/**/*.{ts,tsx}'],
+    files: ['src/app/utils/**/*.{ts,tsx}', 'src/utils/**/*.{ts,tsx}'],
     rules: legacyAnalysisRules,
   },
   {
@@ -47,6 +47,13 @@ export default [
     files: ['src/app/actions/audit.actions.ts'],
     rules: {
       '@typescript-eslint/no-non-null-assertion': 'off',
+    },
+  },
+  {
+    files: ['src/shared/utils/**/*.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/prefer-nullish-coalescing': 'off',
     },
   },
   {

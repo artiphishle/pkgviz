@@ -1,1 +1,0 @@
-{"version":3,"names":["isFabricInstalled","global","nativeFabricUIManager"],"sourceRoot":"../../../src","sources":["utilities/isFabricInstalled.ts"],"mappings":";;;;;;AAAA;AACA;AACA;AACA;AACA;AACO,SAASA,iBAAiBA,CAAA,EAAG;EAClC;EACA,OAAOC,MAAM,EAAEC,qBAAqB,IAAI,IAAI;AAC9C","ignoreList":[]}

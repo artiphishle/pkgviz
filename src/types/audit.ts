@@ -1,5 +1,5 @@
+import type { ParsedDirectory } from '@/shared/types';
 import type { ParserSelection } from '@/types/parserSelection';
-import type { ProjectFileTree } from '@/types/projectFiles';
 
 type AuditRuleMode = 'audit' | 'block' | 'off';
 type AuditRulePolicy = 'advisory' | 'blocking';
@@ -67,7 +67,7 @@ export interface Audit {
   readonly configuration: AuditConfiguration;
   readonly evaluation: AuditEvaluation;
   readonly meta: AuditMeta;
-  readonly files: ProjectFileTree;
+  readonly files: ParsedDirectory;
 }
 
 export interface EvaluateAuditRulesInput {

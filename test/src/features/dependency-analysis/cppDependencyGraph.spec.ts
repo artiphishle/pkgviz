@@ -1,7 +1,7 @@
 import { createDependencyGraphAsync } from '@ankhorage/dependency-graph';
 import { describe, expect, it, resolve } from '@artiphishle/testosterone';
 
-import { readCppProjectFileMetadata } from '@/features/project-analysis/adapters/outbound/source-metadata/readCppProjectFileMetadata';
+import { parseCppFile } from '@/app/utils/parser/cpp/parseCppFile';
 import { projectDependencyImportsAsync } from '@/features/dependency-analysis/adapters/outbound/dependency-graph/projectDependencyImportsAsync';
 
 describe('[C++ dependency graph migration]', () => {
@@ -18,7 +18,7 @@ describe('[C++ dependency graph migration]', () => {
       projectRoot,
       'specifier'
     );
-    const parsed = readCppProjectFileMetadata(
+    const parsed = await parseCppFile(
       file,
       projectRoot,
       importsByFile.get('services/UserService.cpp') ?? []
