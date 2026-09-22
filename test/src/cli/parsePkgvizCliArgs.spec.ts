@@ -64,17 +64,13 @@ describe('[parsePkgvizCliArgs]', () => {
   });
 
   it('rejects malformed or unknown audit rule overrides', () => {
-    assert.throws(
-      () => parsePkgvizCliArgs(['bun', 'pkgviz', '--rule', 'cyclic-dependencies=warn']),
-      /Invalid mode/
-    );
-    assert.throws(
-      () => parsePkgvizCliArgs(['bun', 'pkgviz', '--rule', 'unknown=block']),
-      /Unknown audit rule/
-    );
-    assert.throws(
-      () => parsePkgvizCliArgs(['bun', 'pkgviz', '--rule']),
-      /--rule requires a value/
-    );
+    const invalidMode = () =>
+      parsePkgvizCliArgs(['bun', 'pkgviz', '--rule', 'cyclic-dependencies=warn']);
+    const unknownRule = () => parsePkgvizCliArgs(['bun', 'pkgviz', '--rule', 'unknown=block']);
+    const missingRule = () => parsePkgvizCliArgs(['bun', 'pkgviz', '--rule']);
+
+    assert.throws(invalidMode, /Invalid mode/);
+    assert.throws(unknownRule, /Unknown audit rule/);
+    assert.throws(missingRule, /--rule requires a value/);
   });
 });
