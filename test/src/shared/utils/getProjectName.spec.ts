@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@artiphishle/testosterone';
-import { getProjectName } from '@/shared/utils/getProjectName';
+import { getProjectName } from '@/utils/getProjectName';
 
 describe('[getProjectName]', () => {
   it('should get the project name from projectPath', () => {
