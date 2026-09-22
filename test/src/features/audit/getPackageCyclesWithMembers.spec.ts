@@ -1,7 +1,7 @@
 import { describe, expect, it, resolve } from '@artiphishle/testosterone';
 
 import { getPackageCyclesWithMembers } from '@/features/audit/application/use-cases/getPackageCyclesWithMembers';
-import { readProjectSnapshotAsync } from '@/features/project-analysis/adapters/outbound/filesystem/readProjectSnapshotAsync';
+import { readProjectSnapshotAsync } from '@/features/project-analysis/composition/readProjectSnapshotAsync';
 
 describe('[package cycles]', () => {
   it('detects the A-B-A package cycle on the canonical package graph', async () => {
