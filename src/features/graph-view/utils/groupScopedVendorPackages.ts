@@ -1,7 +1,5 @@
 import type { ElementsDefinition, NodeDefinition } from 'cytoscape';
 
-import { isIntrinsicGraphNode } from '@/features/graph-view/utils/isIntrinsicGraphNode';
-
 const VENDOR_SCOPE_NODE_PREFIX = 'vendor-scope:';
 
 /***
@@ -29,7 +27,7 @@ interface ScopedVendorPackage {
   readonly scope: string;
 }
 
-/*** Indexes exact scoped package roots while ignoring intrinsic nodes and vendor subpaths. */
+/*** Indexes exact canonical vendor roots while ignoring unknown references and vendor subpaths. */
 function indexScopedVendorPackages(
   nodes: readonly NodeDefinition[]
 ): ReadonlyMap<string, readonly ScopedVendorPackage[]> {
@@ -67,7 +65,7 @@ function groupScopedVendorNode(
 
 /*** Reads one canonical npm scoped package root without inferring identity from vendor subpaths. */
 function readScopedVendorPackage(node: NodeDefinition): ScopedVendorPackage | null {
-  if (isIntrinsicGraphNode(node)) return null;
+  if (node.data.classification !== 'vendor') return null;
   const id = typeof node.data.id === 'string' ? node.data.id : '';
   const match = /^(@[^/]+)\/([^/]+)$/.exec(id);
   if (match === null) return null;
@@ -85,6 +83,7 @@ function createVendorScopeNode(scope: string): NodeDefinition {
     classes: 'isVendor',
     data: {
       id: vendorScopeNodeId(scope),
+      classification: 'vendor',
       isIntrinsic: false,
       label: scope,
       name: scope,
