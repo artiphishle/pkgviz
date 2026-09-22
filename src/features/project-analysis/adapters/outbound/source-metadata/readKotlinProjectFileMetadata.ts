@@ -1,4 +1,3 @@
-'use server';
 import path from 'node:path';
 
 import { readTextFileWithinRoot } from '@ankhorage/utility/node/fs';
