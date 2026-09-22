@@ -2,8 +2,8 @@
 import { js2xml } from 'xml-js';
 
 import { createAuditAsync } from '@/features/audit/composition/createAuditAsync';
+import { parseProjectPath } from '@/shared/utils/parseProjectPath';
 import type { Audit } from '@/types/audit';
-import { parseProjectPath } from '@/utils/parseProjectPath';
 
 /*** Builds the audit payload for the configured project. */
 export async function getAuditAction(): Promise<Audit> {

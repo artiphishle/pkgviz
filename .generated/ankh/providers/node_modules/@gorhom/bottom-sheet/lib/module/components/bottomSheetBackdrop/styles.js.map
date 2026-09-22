@@ -1,1 +1,0 @@
-{"version":3,"names":["StyleSheet","styles","create","backdrop","backgroundColor"],"sourceRoot":"../../../../src","sources":["components/bottomSheetBackdrop/styles.ts"],"mappings":";;AAAA,SAASA,UAAU,QAAQ,cAAc;AAEzC,OAAO,MAAMC,MAAM,GAAGD,UAAU,CAACE,MAAM,CAAC;EACtCC,QAAQ,EAAE;IACRC,eAAe,EAAE;EACnB;AACF,CAAC,CAAC","ignoreList":[]}

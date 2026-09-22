@@ -1,10 +1,10 @@
 import { createDependencyGraphFromInspectionsAsync } from '@ankhorage/dependency-graph';
 import { toCytoscapeElements } from '@ankhorage/graph-cytoscape';
 
+import { selectParserLanguage } from '@/app/utils/selectParserLanguage';
 import { projectDependencyGraph } from '@/features/dependency-analysis/application/use-cases/projectDependencyGraph';
 import { inspectProjectForAnalysisAsync } from '@/features/project-analysis/adapters/outbound/project-detector/inspectProjectForAnalysisAsync';
-import { selectParserLanguage } from '@/features/project-analysis/application/use-cases/selectParserLanguage';
-import { createProjectFileTreeAsync } from '@/features/project-analysis/composition/createProjectFileTreeAsync';
+import { parseProjectInspectionAsync } from '@/features/project-analysis/adapters/outbound/project-detector/parseProjectInspectionAsync';
 import type { ProjectSnapshot } from '@/types/projectAnalysis';
 
 /*** Read one project inspection and derive Tree, canonical package graph and Cytoscape projection. */
@@ -15,7 +15,7 @@ export async function readProjectSnapshotAsync(projectPath: string): Promise<Pro
     projects: [{ id: 'current', inspection }],
   });
   const language = selectParserLanguage(inspection.detection);
-  const files = await createProjectFileTreeAsync(
+  const files = await parseProjectInspectionAsync(
     inspection,
     dependencyGraph,
     language.language,
