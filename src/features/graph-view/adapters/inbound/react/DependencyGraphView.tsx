@@ -110,7 +110,7 @@ function useGraphViewPresentation(input: GraphViewPresentationInput) {
 
 /*** Owns GraphView controller callbacks and renders the viewport plus zoom controls. */
 function DependencyGraphCanvas(props: DependencyGraphCanvasProps) {
-  const viewport = useGraphViewport(props.layout);
+  const viewport = useGraphViewport();
   const interactions = useGraphInteractions(props.model.nodes, props.model.edges);
 
   /*** Handles structural graph navigation without touching the rendering engine. */
@@ -161,7 +161,7 @@ function DependencyGraphCanvas(props: DependencyGraphCanvasProps) {
         controller={viewport.controller}
         maxZoom={viewport.max}
         minZoom={viewport.min}
-
+        onFit={viewport.fitGraph}
         zoom={viewport.zoom}
       />
     </div>
