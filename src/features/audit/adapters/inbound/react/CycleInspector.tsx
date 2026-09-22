@@ -1,4 +1,5 @@
 'use client';
+import { Accordion, AccordionItem } from '@zora/accordion';
 import { IconButton } from '@zora/button';
 import { Card } from '@zora/card';
 import { Text } from '@zora/text';
@@ -28,22 +29,15 @@ export function CycleInspector({ inspection, onClose }: CycleInspectorProps) {
           />
         }
         description={`${packageCount} ${t('audit.packages')} · ${inspection.cycle.edges.length} ${t(
-          'audit.dependencyEdges'
+          'audit.dependencyEdges',
         )}`}
         title={inspection.label}
         tone="outline"
       >
         <View gap="m">
-          <View align="center" direction="row" gap="s">
-            <span
-              aria-hidden="true"
-              className="h-2.5 w-2.5 shrink-0 rounded-full"
-              style={{ backgroundColor: inspection.color }}
-            />
-            <Text variant="label" weight="bold">
-              {t('audit.cyclePath')}
-            </Text>
-          </View>
+          <Text variant="label" weight="bold">
+            {t('audit.cyclePath')}
+          </Text>
           <Text selectable variant="code">
             {inspection.cycle.packages.join(' → ')}
           </Text>
@@ -54,16 +48,18 @@ export function CycleInspector({ inspection, onClose }: CycleInspectorProps) {
   );
 }
 
-/*** Renders collapsible evidence for every directed edge in the cycle. */
+/*** Renders dependency evidence with canonical ZORA disclosure semantics. */
 function CycleEvidence({ edges }: CycleEvidenceProps) {
   return (
     <View gap="s">
       <Text variant="label" weight="bold">
         {t('audit.dependencyEvidence')}
       </Text>
-      {edges.map((edge, index) => (
-        <EvidenceEdge edge={edge} index={index} key={edge.from + '→' + edge.to + ':' + index} />
-      ))}
+      <Accordion type="multiple">
+        {edges.map((edge, index) => (
+          <EvidenceEdge edge={edge} index={index} key={edge.from + '→' + edge.to + ':' + index} />
+        ))}
+      </Accordion>
     </View>
   );
 }
@@ -71,11 +67,11 @@ function CycleEvidence({ edges }: CycleEvidenceProps) {
 /*** Renders one directed dependency edge and its source/import evidence. */
 function EvidenceEdge({ edge, index }: EvidenceEdgeProps) {
   return (
-    <details className="rounded border border-neutral-200 px-3 py-2 text-xs dark:border-neutral-800">
-      <summary className="cursor-pointer font-medium">
-        {index + 1}. {edge.from} → {edge.to}
-      </summary>
-      <View gap="xs" pt="s">
+    <AccordionItem
+      title={`${index + 1}. ${edge.from} → ${edge.to}`}
+      value={`edge-${index}-${edge.from}-${edge.to}`}
+    >
+      <View gap="xs">
         {edge.via.length === 0 ? (
           <Text emphasis="muted" variant="caption">
             {t('audit.noEvidence')}
@@ -100,7 +96,7 @@ function EvidenceEdge({ edge, index }: EvidenceEdgeProps) {
           ))
         )}
       </View>
-    </details>
+    </AccordionItem>
   );
 }
 
