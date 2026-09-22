@@ -2,7 +2,14 @@ import { inspectProjectAsync } from '@ankhorage/project-detector/node';
 import type { ProjectInspection } from '@ankhorage/project-detector/types';
 
 const PROJECT_PATH_ERROR_CODES: ReadonlySet<string> = new Set(['EACCES', 'ENOENT', 'ENOTDIR']);
-const EXCLUDED_ANALYSIS_DIRECTORIES = ['@types', '.github', 'examples', 'test', 'tests', '__tests__'];
+const EXCLUDED_ANALYSIS_DIRECTORIES = [
+  '@types',
+  '.github',
+  'examples',
+  'test',
+  'tests',
+  '__tests__',
+];
 const EXCLUDED_ANALYSIS_FILES = [
   '**/*.test.*',
   '**/*.spec.*',
