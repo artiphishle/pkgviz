@@ -47,6 +47,9 @@ target/
 # vercel
 .vercel
 
+# AI
+.kilo/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
