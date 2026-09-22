@@ -67,9 +67,8 @@ function visibleAncestorForDepth(
   const rootDepth = root.split('.').length;
   const packageParts = packageId.split('.');
   const desiredDepth = Math.min(rootDepth + maxDepth - 1, packageParts.length);
-  const candidates = Array.from(
-    { length: desiredDepth - rootDepth + 1 },
-    (_, index) => packageParts.slice(0, desiredDepth - index).join('.')
+  const candidates = Array.from({ length: desiredDepth - rootDepth + 1 }, (_, index) =>
+    packageParts.slice(0, desiredDepth - index).join('.')
   );
   return candidates.find(candidate => existing.has(candidate)) ?? root;
 }

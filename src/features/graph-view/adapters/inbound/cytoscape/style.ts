@@ -8,7 +8,6 @@ import {
 import { getWeightBuckets } from '@/features/graph-view/adapters/inbound/cytoscape/getWeightBuckets';
 import { createCompoundOpacityIndex } from '@/features/graph-view/utils/createCompoundOpacityIndex';
 
-
 /*** Builds the shared Cytoscape styles for the active theme. */
 export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey): StylesheetJson {
   const colors = getGraphPalette(theme);
