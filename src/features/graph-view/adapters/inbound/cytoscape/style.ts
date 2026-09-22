@@ -9,7 +9,10 @@ import { getWeightBuckets } from '@/features/graph-view/adapters/inbound/cytosca
 import { createCompoundOpacityIndex } from '@/features/graph-view/utils/createCompoundOpacityIndex';
 
 /*** Builds the shared Cytoscape styles for the active theme. */
-export function getStyle(filteredElements: ElementsDefinition, theme: ZoraRuntimeTheme): StylesheetJson {
+export function getStyle(
+  filteredElements: ElementsDefinition,
+  theme: ZoraRuntimeTheme
+): StylesheetJson {
   const colors = getGraphPalette(theme);
   const { thresholds } = getWeightBuckets(3, 'linear', filteredElements);
 
