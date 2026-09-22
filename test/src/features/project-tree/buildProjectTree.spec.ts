@@ -2,7 +2,7 @@ import { describe, expect, it } from '@artiphishle/testosterone';
 
 import { buildProjectTree } from '@/features/project-tree/application/use-cases/buildProjectTree';
 import { findProjectTreeNodeByGraphPackage } from '@/features/project-tree/utils/findProjectTreeNodeByGraphPackage';
-import type { ParsedDirectory } from '@/shared/types';
+import type { ProjectFileTree } from '@/types/projectFiles';
 
 describe('[project tree]', () => {
   it('derives directory graph packages from descendants', () => {
@@ -14,7 +14,7 @@ describe('[project tree]', () => {
         },
       },
       'root.ts': parsedFile('root.ts', ''),
-    } satisfies ParsedDirectory;
+    } satisfies ProjectFileTree;
 
     const tree = buildProjectTree(parsed);
 
@@ -38,7 +38,7 @@ describe('[project tree]', () => {
           },
         },
       },
-    } satisfies ParsedDirectory;
+    } satisfies ProjectFileTree;
 
     const tree = buildProjectTree(parsed);
 
@@ -53,7 +53,7 @@ describe('[project tree]', () => {
           'Button.tsx': parsedFile('src/components/Button.tsx', 'src.components'),
         },
       },
-    } satisfies ParsedDirectory;
+    } satisfies ProjectFileTree;
 
     const match = findProjectTreeNodeByGraphPackage(buildProjectTree(parsed), 'src.components');
 
