@@ -1,4 +1,4 @@
-import { getPackageCyclesWithMembers } from '@/app/utils/markCyclicPackages';
+import { getPackageCyclesWithMembers } from '@/features/audit/application/use-cases/getPackageCyclesWithMembers';
 import { evaluateAuditRules } from '@/features/audit/domain/evaluateAuditRules';
 import { resolveAuditConfiguration } from '@/features/audit/domain/resolveAuditConfiguration';
 import { getProjectName } from '@/shared/utils/getProjectName';
