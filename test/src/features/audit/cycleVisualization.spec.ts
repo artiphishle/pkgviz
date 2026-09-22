@@ -6,8 +6,9 @@ import { createCycleFocus, getCycleColor } from '@/features/audit/utils/cycleVis
 import type { PackageCycleDetail } from '@/types/audit';
 
 describe('[getCycleColor]', () => {
-  it('returns visually separated Cytoscape-compatible error-red cycle colors', () => {
-    const color = getCycleColor(1);
+  it('uses the supplied ZORA-derived cycle palette deterministically', () => {
+    const colors = ['#dc2626', '#7f1d1d', '#fb7185'];
+    const color = getCycleColor(colors, 1);
     const cy = cytoscape({
       elements: [{ data: { id: 'cycle' } }],
       headless: true,
@@ -21,9 +22,10 @@ describe('[getCycleColor]', () => {
     });
 
     try {
-      expect(getCycleColor(0)).toBe('#dc2626');
+      expect(getCycleColor(colors, 0)).toBe('#dc2626');
       expect(color).toBe('#7f1d1d');
-      expect(getCycleColor(2)).toBe('#fb7185');
+      expect(getCycleColor(colors, 2)).toBe('#fb7185');
+      expect(getCycleColor(colors, 4)).toBe('#7f1d1d');
       expect(cy.getElementById('cycle').numericStyle('background-color')).toEqual([127, 29, 29]);
     } finally {
       cy.destroy();

@@ -1,9 +1,11 @@
 'use client';
 import { isRecord } from '@ankhorage/utility/object';
+import { useZoraTheme } from '@zora/ZoraProvider';
 import { useLocalStorage } from 'ankh-hooks/store';
 import { useCallback, useMemo } from 'react';
 
 import { resolveSelectedCycleIds } from '@/features/audit/application/use-cases/resolveSelectedCycleIds';
+import { createCycleThemeColors } from '@/features/audit/utils/createCycleThemeColors';
 import { createCycleHighlights } from '@/features/audit/utils/cycleVisualization';
 import { readSettingsEnvironment } from '@/features/settings/utils/readSettingsEnvironment';
 import type { PackageCycleDetail } from '@/types/audit';
@@ -11,6 +13,7 @@ import type { CycleSelection } from '@/types/auditVisualization';
 
 /*** Owns persisted cycle choices independently of sidebar mounting and navigation. */
 export function useCycleSelection(cycles: readonly PackageCycleDetail[]): CycleSelection {
+  const { theme } = useZoraTheme();
   const project = process.env.NEXT_PUBLIC_PROJECT_PATH ?? 'default';
   const [stored, setStored] = useLocalStorage<string>('pkgviz:cycles:v1:' + project, '{}');
   const choices = useMemo(() => readChoices(stored), [stored]);
@@ -19,9 +22,10 @@ export function useCycleSelection(cycles: readonly PackageCycleDetail[]): CycleS
     () => resolveSelectedCycleIds(cycles, choices, enabledByDefault),
     [cycles, choices, enabledByDefault]
   );
+  const cycleColors = useMemo(() => createCycleThemeColors(theme), [theme]);
   const highlights = useMemo(
-    () => createCycleHighlights(cycles, selectedIds),
-    [cycles, selectedIds]
+    () => createCycleHighlights(cycles, selectedIds, cycleColors),
+    [cycleColors, cycles, selectedIds]
   );
   const setSelected = useCallback(
     (id: string, selected: boolean) => {

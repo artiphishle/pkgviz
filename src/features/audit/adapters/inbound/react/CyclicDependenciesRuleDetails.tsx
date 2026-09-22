@@ -4,8 +4,10 @@ import { ListItem } from '@zora/list';
 import { Switch } from '@zora/switch';
 import { Text } from '@zora/text';
 import { View } from '@zora/view';
+import { useZoraTheme } from '@zora/ZoraProvider';
 import React from 'react';
 
+import { createCycleThemeColors } from '@/features/audit/utils/createCycleThemeColors';
 import { createCycleInspection, getCycleId } from '@/features/audit/utils/cycleVisualization';
 import { t } from '@/i18n/i18n';
 import type { PackageCycleDetail } from '@/types/audit';
@@ -13,20 +15,30 @@ import type { CycleInspection, CycleSelection } from '@/types/auditVisualization
 
 /*** Renders cycle findings with compact ZORA rows and persistent independent selection. */
 export function CyclicDependenciesRuleDetails(props: CyclicDependenciesRuleDetailsProps) {
+  const { theme } = useZoraTheme();
+  const cycleColors = createCycleThemeColors(theme);
+
   return (
     <View gap="s" p="m">
-      <View align="center" direction="row" gap="s">
-        <Text variant="label" weight="bold">
-          {t('audit.rule.cyclicDependencies')}
-        </Text>
-        <Badge color="danger" size="s">
-          {props.cycles.length}
-        </Badge>
-        <Text emphasis="muted" variant="caption">
-          {t('audit.cycles')}
-        </Text>
-      </View>
-      <CycleRows {...props} />
+      <CycleRuleHeader count={props.cycles.length} />
+      <CycleRows {...props} cycleColors={cycleColors} />
+    </View>
+  );
+}
+
+/*** Renders the compact heading for the cyclic-dependencies rule. */
+function CycleRuleHeader({ count }: { readonly count: number }) {
+  return (
+    <View align="center" direction="row" gap="s">
+      <Text variant="label" weight="bold">
+        {t('audit.rule.cyclicDependencies')}
+      </Text>
+      <Badge color="danger" size="s">
+        {count}
+      </Badge>
+      <Text emphasis="muted" variant="caption">
+        {t('audit.cycles')}
+      </Text>
     </View>
   );
 }
@@ -34,10 +46,11 @@ export function CyclicDependenciesRuleDetails(props: CyclicDependenciesRuleDetai
 /*** Maps cycle findings to compact list rows while preserving inspection and selection state. */
 function CycleRows({
   cycles,
+  cycleColors,
   cycleSelection,
   inspectedCycleId,
   onCycleInspectionChange,
-}: CyclicDependenciesRuleDetailsProps) {
+}: CycleRowsProps) {
   return (
     <View gap="none">
       {cycles.map((cycle, index) => {
@@ -53,7 +66,12 @@ function CycleRows({
               onCycleInspectionChange(
                 inspectedCycleId === cycleId
                   ? null
-                  : createCycleInspection(cycle, index, t('audit.cycle') + ' ' + (index + 1))
+                  : createCycleInspection(
+                      cycle,
+                      index,
+                      t('audit.cycle') + ' ' + (index + 1),
+                      cycleColors
+                    )
               )
             }
             onSelectedChange={selected => {
@@ -98,6 +116,10 @@ interface CyclicDependenciesRuleDetailsProps {
   readonly cycles: readonly PackageCycleDetail[];
   readonly cycleSelection: CycleSelection;
   readonly onCycleInspectionChange: (inspection: CycleInspection | null) => void;
+}
+
+interface CycleRowsProps extends CyclicDependenciesRuleDetailsProps {
+  readonly cycleColors: readonly string[];
 }
 
 interface CycleRowProps {

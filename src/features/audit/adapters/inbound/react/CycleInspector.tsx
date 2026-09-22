@@ -10,12 +10,21 @@ import { t } from '@/i18n/i18n';
 import type { CycleEdgeEvidence } from '@/types/audit';
 import type { CycleInspection } from '@/types/auditVisualization';
 
+const INSPECTOR_STYLE = {
+  maxWidth: 'calc(100% - 2rem)',
+  position: 'absolute',
+  right: 16,
+  top: 16,
+  width: 384,
+  zIndex: 20,
+} as const;
+
 /*** Renders detailed cycle evidence in a ZORA card outside the constrained settings sidebar. */
 export function CycleInspector({ inspection, onClose }: CycleInspectorProps) {
   const packageCount = new Set(inspection.cycle.packages).size;
 
   return (
-    <aside className="absolute top-4 right-4 z-20 w-[24rem] max-w-[calc(100%-2rem)]">
+    <aside style={INSPECTOR_STYLE}>
       <Card
         compact
         actions={

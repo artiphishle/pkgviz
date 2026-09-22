@@ -2,11 +2,19 @@
 
 import { ZoraProvider } from '@zora/ZoraProvider';
 
-import { useThemeMode } from '@/features/theme/adapters/inbound/react/useThemeMode';
+const PKGVIZ_THEME = {
+  id: 'pkgviz',
+  name: 'PKGViz',
+  appCategory: 'developer_tools',
+  primaryColor: '#043c8c',
+  harmony: 'analogous',
+} as const;
 
-/*** Connects the application theme to the single generated ZORA runtime. */
+/*** Installs the single ZORA theme runtime for the PKGViz application. */
 export function ZoraRuntimeProvider({ children }: { readonly children: React.ReactNode }) {
-  const { mode } = useThemeMode();
-
-  return <ZoraProvider mode={mode}>{children}</ZoraProvider>;
+  return (
+    <ZoraProvider initialMode="light" theme={PKGVIZ_THEME}>
+      {children}
+    </ZoraProvider>
+  );
 }

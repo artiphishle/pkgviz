@@ -3,14 +3,13 @@ import { AppBar } from '@zora/app-bar';
 import { Breadcrumbs } from '@zora/breadcrumbs';
 import { Button } from '@zora/button';
 import { Card } from '@zora/card';
-import { useTheme } from 'next-themes';
+import { useZoraTheme } from '@zora/ZoraProvider';
 import { useState } from 'react';
 
 import { useCycleSelection } from '@/features/audit/adapters/inbound/react/useCycleSelection';
 import { resolveProjectTreeNavigation } from '@/features/project-tree/application/use-cases/resolveProjectTreeNavigation';
 import { findProjectTreeNodeByGraphPackage } from '@/features/project-tree/utils/findProjectTreeNodeByGraphPackage';
 import { SettingsProvider } from '@/features/settings/adapters/inbound/react/SettingsProvider';
-import { useThemeMode } from '@/features/theme/adapters/inbound/react/useThemeMode';
 import { WorkspaceGraph } from '@/features/workspace/adapters/inbound/react/WorkspaceGraph';
 import { WorkspaceSidebar } from '@/features/workspace/adapters/inbound/react/WorkspaceSidebar';
 import { t } from '@/i18n/i18n';
@@ -77,23 +76,20 @@ function useWorkspaceNavigation(workspace: WorkspaceLoadResult): WorkspaceNaviga
 
 /*** Renders workspace breadcrumbs and the theme action. */
 function WorkspaceHeader(props: WorkspaceHeaderProps) {
-  const { setTheme } = useTheme();
-  const { mode, mounted } = useThemeMode();
+  const { mode, setMode } = useZoraTheme();
   const isDark = mode === 'dark';
 
   return (
     <AppBar
       actions={
-        mounted ? (
-          <Button
-            leadingIcon={{ name: isDark ? 'sunny-outline' : 'moon-outline' }}
-            size="s"
-            variant="outline"
-            onPress={() => setTheme(isDark ? 'light' : 'dark')}
-          >
-            {isDark ? 'Light' : 'Dark'}
-          </Button>
-        ) : null
+        <Button
+          leadingIcon={{ name: isDark ? 'sunny-outline' : 'moon-outline' }}
+          size="s"
+          variant="outline"
+          onPress={() => setMode(isDark ? 'light' : 'dark')}
+        >
+          {isDark ? 'Light' : 'Dark'}
+        </Button>
       }
       safeAreaTop={false}
     >
@@ -108,6 +104,7 @@ function WorkspaceHeader(props: WorkspaceHeaderProps) {
 
 /*** Renders workspace tools, graph content, cycle inspection, and persistent load errors. */
 function WorkspaceBody({ workspace, navigation }: WorkspaceBodyProps) {
+  const { theme } = useZoraTheme();
   const auditEvaluation = workspace.ok ? workspace.value.evaluation : null;
   const projectError = workspace.ok ? null : workspace.error;
   const cycleSelection = useCycleSelection(auditEvaluation?.cyclicPackages ?? EMPTY_CYCLES);
@@ -116,7 +113,15 @@ function WorkspaceBody({ workspace, navigation }: WorkspaceBodyProps) {
   return (
     <main
       data-testid="main"
-      className="flex min-h-0 min-w-0 flex-1 flex-row overflow-hidden dark:bg-[#171717]"
+      style={{
+        backgroundColor: theme.semantics.surface.default,
+        display: 'flex',
+        flex: 1,
+        flexDirection: 'row',
+        minHeight: 0,
+        minWidth: 0,
+        overflow: 'hidden',
+      }}
     >
       <WorkspaceSidebar
         evaluation={auditEvaluation}
@@ -146,7 +151,16 @@ function WorkspaceBody({ workspace, navigation }: WorkspaceBodyProps) {
 /*** Renders the persistent project-load failure state. */
 function WorkspaceError({ message }: { readonly message: string }) {
   return (
-    <div role="alert" className="flex flex-1 items-center justify-center p-6">
+    <div
+      role="alert"
+      style={{
+        alignItems: 'center',
+        display: 'flex',
+        flex: 1,
+        justifyContent: 'center',
+        padding: 24,
+      }}
+    >
       <Card compact description={message} title="Unable to load project" tone="outline" />
     </div>
   );

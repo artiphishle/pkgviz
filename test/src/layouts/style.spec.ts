@@ -1,5 +1,6 @@
 import { describe, expect, it } from '@artiphishle/testosterone';
 
+import type { ZoraRuntimeTheme } from '@zora/ZoraProvider';
 import cytoscape, { type ElementsDefinition } from 'cytoscape';
 
 import { createGraphViewModel } from '@/features/graph-view/adapters/inbound/react/createGraphViewModel';
@@ -14,7 +15,7 @@ describe('[getStyle]', () => {
       ],
       edges: [],
     };
-    for (const theme of ['light', 'dark'] as const) {
+    for (const theme of [createTheme('light'), createTheme('dark')]) {
       const cy = cytoscape({
         elements: toRenderableElements(elements),
         headless: true,
@@ -47,7 +48,7 @@ describe('[getStyle]', () => {
       elements: toRenderableElements(elements),
       headless: true,
       styleEnabled: true,
-      style: getStyle(elements, 'light'),
+      style: getStyle(elements, createTheme('light')),
     });
     try {
       const outer = Number(cy.getElementById('p').style('background-opacity'));
@@ -67,13 +68,13 @@ describe('[getStyle]', () => {
       elements: toRenderableElements(elements),
       headless: true,
       styleEnabled: true,
-      style: getStyle(elements, 'light'),
+      style: getStyle(elements, createTheme('light')),
     });
     try {
       const node = cy.getElementById('a');
       const before = node.layoutDimensions({ nodeDimensionsIncludeLabels: true });
       node.addClass('highlight');
-      expect(node.style('background-color')).toBe('rgb(11,95,255)');
+      expect(node.style('background-color')).toBe('rgb(45,85,125)');
       expect(node.layoutDimensions({ nodeDimensionsIncludeLabels: true })).toEqual(before);
       node.select();
       expect(node.style('outline-width')).toBe('2px');
@@ -94,12 +95,12 @@ describe('[getStyle]', () => {
       elements: toRenderableElements(elements),
       headless: true,
       styleEnabled: true,
-      style: getStyle(elements, 'light'),
+      style: getStyle(elements, createTheme('light')),
     });
     try {
       const before = cy.getElementById('a').height();
-      cy.style(getStyle(elements, 'dark')).update();
-      cy.style(getStyle(elements, 'light')).update();
+      cy.style(getStyle(elements, createTheme('dark'))).update();
+      cy.style(getStyle(elements, createTheme('light'))).update();
       expect(cy.getElementById('a').height()).toBe(before);
       expect(cy.getElementById('a').width()).toBe(24);
       expect(cy.getElementById('a').style('label')).toBe('package.a');
@@ -128,7 +129,7 @@ describe('[getStyle]', () => {
     const cy = cytoscape({
       elements: toRenderableElements(elements),
       headless: true,
-      style: getStyle(elements, 'light'),
+      style: getStyle(elements, createTheme('light')),
       styleEnabled: true,
     });
 
@@ -166,7 +167,7 @@ describe('[getStyle]', () => {
     const cy = cytoscape({
       elements: toRenderableElements(elements),
       headless: true,
-      style: getStyle(elements, 'light'),
+      style: getStyle(elements, createTheme('light')),
       styleEnabled: true,
     });
 
@@ -180,6 +181,78 @@ describe('[getStyle]', () => {
     }
   });
 });
+
+/*** Creates a complete portable ZORA runtime theme for graph presentation tests. */
+function createTheme(mode: 'dark' | 'light'): ZoraRuntimeTheme {
+  const surface = mode === 'dark' ? '#101820' : '#f7f9fc';
+  const content = mode === 'dark' ? '#edf4fb' : '#15202b';
+  const role = {
+    base: '#245b92',
+    hover: '#1d4d7d',
+    strong: '#173f68',
+    softBg: '#dceafb',
+    softHover: '#c8ddf5',
+    softActive: '#b3cff0',
+    outline: '#537fad',
+    onSurfaceText: content,
+    onSolidText: '#ffffff',
+    onHoverText: '#ffffff',
+    onStrongText: '#ffffff',
+    onSoftText: '#173f68',
+    onSoftHoverText: '#173f68',
+    onSoftActiveText: '#173f68',
+    disabledBg: '#d4d9df',
+    onDisabledText: '#727b84',
+  };
+
+  return {
+    colors: { primary: role.base },
+    spacing: { s: 8, m: 16 },
+    radii: { s: 6, m: 10 },
+    semantics: {
+      brand: role,
+      secondary: { ...role, softBg: '#ece4fb', outline: '#8069aa', onSoftText: '#402b68' },
+      accent: role,
+      highlight: role,
+      danger: role,
+      success: role,
+      warning: role,
+      error: role,
+      info: role,
+      surface: {
+        default: surface,
+        subtle: mode === 'dark' ? '#18232d' : '#eef3f8',
+        raised: surface,
+        sunken: surface,
+        overlay: surface,
+        disabled: surface,
+        inverse: content,
+      },
+      content: {
+        default: content,
+        muted: mode === 'dark' ? '#9bacbd' : '#586879',
+        subtle: mode === 'dark' ? '#788999' : '#768493',
+        disabled: '#88939e',
+        icon: content,
+        link: role.base,
+        visited: role.strong,
+        inverse: surface,
+      },
+      border: {
+        default: '#708399',
+        subtle: '#a9b5c2',
+        strong: '#3c5268',
+        divider: '#a9b5c2',
+        focus: role.base,
+      },
+      selection: {
+        background: '#2d557d',
+        content: '#ffffff',
+        border: '#537fad',
+      },
+    },
+  };
+}
 
 function toRenderableElements(elements: ElementsDefinition): ElementsDefinition {
   const model = createGraphViewModel(elements, elements, []);

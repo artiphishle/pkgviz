@@ -3,9 +3,9 @@ import { Select } from '@zora/select';
 import { Switch } from '@zora/switch';
 import { Text } from '@zora/text';
 import { View } from '@zora/view';
+import { useZoraTheme } from '@zora/ZoraProvider';
 import type { LayoutOptions } from 'cytoscape';
-import { Slider } from 'radix-ui';
-import React from 'react';
+import React, { type ChangeEvent } from 'react';
 
 import { useSettings } from '@/features/settings/adapters/inbound/react/useSettings';
 import { t } from '@/i18n/i18n';
@@ -132,23 +132,30 @@ function SettingsSection({ children, title }: SettingsSectionProps) {
   );
 }
 
-/*** Renders the retained Radix slider until ZORA owns a canonical Slider element. */
+/*** Renders the native numeric range using the active ZORA brand token. */
 function SettingsSlider({ ariaLabel, max, min, onValueChange, step, value }: SettingsSliderProps) {
+  const { theme } = useZoraTheme();
+
+  /*** Applies one browser range value through the settings owner. */
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    onValueChange(Number.parseFloat(event.target.value));
+  };
+
   return (
-    <Slider.Root
-      min={min}
-      max={max}
-      step={step}
-      value={[value]}
-      onValueChange={([nextValue]) => onValueChange(nextValue)}
+    <input
       aria-label={ariaLabel}
-      className="relative flex h-5 w-full touch-none select-none items-center"
-    >
-      <Slider.Track className="relative h-1.5 grow rounded-full bg-neutral-200 dark:bg-neutral-800">
-        <Slider.Range className="absolute h-1.5 rounded-full bg-blue-600 dark:bg-blue-400" />
-      </Slider.Track>
-      <Slider.Thumb className="block h-4 w-4 rounded-full border border-neutral-300 bg-white shadow focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-100" />
-    </Slider.Root>
+      max={max}
+      min={min}
+      step={step}
+      type="range"
+      value={value}
+      onChange={handleChange}
+      style={{
+        accentColor: theme.semantics.brand.base,
+        cursor: 'pointer',
+        width: '100%',
+      }}
+    />
   );
 }
 
