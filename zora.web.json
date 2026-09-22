@@ -1,6 +1,7 @@
 {
   "schemaVersion": 1,
   "components": [
+    "accordion",
     "activity-indicator",
     "app-bar",
     "badge",
@@ -9,6 +10,7 @@
     "card",
     "graph-view",
     "icon",
+    "list",
     "scroll-view",
     "select",
     "surface",
