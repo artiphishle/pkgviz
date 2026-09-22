@@ -2,6 +2,22 @@ import { inspectProjectAsync } from '@ankhorage/project-detector/node';
 import type { ProjectInspection } from '@ankhorage/project-detector/types';
 
 const PROJECT_PATH_ERROR_CODES: ReadonlySet<string> = new Set(['EACCES', 'ENOENT', 'ENOTDIR']);
+const EXCLUDED_ANALYSIS_DIRECTORIES = [
+  '@types',
+  '.github',
+  'examples',
+  'test',
+  'tests',
+  '__tests__',
+];
+const EXCLUDED_ANALYSIS_FILES = [
+  '**/*.test.*',
+  '**/*.spec.*',
+  '**/*_test.*',
+  '**/*_spec.*',
+  '**/test_*.*',
+  '**/spec_*.*',
+];
 
 /*** Inspect one project through the canonical bounded filesystem owner. */
 export async function inspectProjectForAnalysisAsync(
@@ -9,7 +25,8 @@ export async function inspectProjectForAnalysisAsync(
 ): Promise<ProjectInspection> {
   try {
     const inspection = await inspectProjectAsync(projectPath, {
-      excludeDirectories: ['@types', '.github', 'examples', 'test'],
+      excludeDirectories: EXCLUDED_ANALYSIS_DIRECTORIES,
+      excludeFiles: EXCLUDED_ANALYSIS_FILES,
     });
     if (!inspection.complete) {
       throw new Error(
