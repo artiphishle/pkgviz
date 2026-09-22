@@ -80,7 +80,7 @@ function aggregateVisibleEdges(
   packageToVisible: ReadonlyMap<string, string>,
   visibleNodeIds: ReadonlySet<string>,
   allowSelfLoops: boolean
-): readonly EdgeDefinition[] {
+): EdgeDefinition[] {
   const edgeMap = new Map<string, EdgeDefinition>();
   const edgeOrigins = new Map<string, string[]>();
 
