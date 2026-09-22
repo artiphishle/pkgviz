@@ -36,11 +36,7 @@ export default [
     rules: legacyAnalysisRules,
   },
   {
-    files: [
-      'src/components/**/*.{ts,tsx}',
-      'src/layouts/**/*.{ts,tsx}',
-      'src/screens/**/*.{ts,tsx}',
-    ],
+    files: ['src/layouts/**/*.{ts,tsx}', 'src/screens/**/*.{ts,tsx}'],
     rules: legacyUiRules,
   },
   {
@@ -53,13 +49,6 @@ export default [
     files: ['src/i18n/i18n.ts'],
     rules: {
       'security/detect-object-injection': 'off',
-    },
-  },
-  {
-    files: ['src/components/ThemeToggle.tsx', 'src/components/ZoomInput.tsx'],
-    rules: {
-      'react-hooks/refs': 'off',
-      'react-hooks/set-state-in-effect': 'off',
     },
   },
 ];

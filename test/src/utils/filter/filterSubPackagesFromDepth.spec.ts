@@ -1,21 +1,11 @@
 import { describe, expect, it } from '@artiphishle/testosterone';
 
-import {
-  filterSubPackagesByDepth,
-  getMaxDepth,
-  getMaxDepthByRoot,
-} from '@/utils/filter/filterSubPackagesFromDepth';
+import { filterSubPackagesByDepth, getMaxDepth } from '@/utils/filter/filterSubPackagesFromDepth';
 import type { ElementsDefinition } from 'cytoscape';
 
 describe('[filterSubPackagesByDepth]', () => {
-  it('reports depth globally and per root', () => {
-    const elements = createElements();
-
-    expect(getMaxDepth(elements)).toBe(3);
-    expect(getMaxDepthByRoot(elements)).toEqual({
-      app: 3,
-      vendor: 2,
-    });
+  it('reports the global package depth', () => {
+    expect(getMaxDepth(createElements())).toBe(3);
   });
 
   it('lifts and aggregates edges at the selected depth', () => {

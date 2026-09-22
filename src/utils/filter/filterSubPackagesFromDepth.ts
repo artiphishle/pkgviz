@@ -80,23 +80,6 @@ export function getMaxDepth(elements: ElementsDefinition): number {
 }
 
 /***
- * Maximum depth per root, e.g. { 'a': 3, 'x.y': 2 }.
- */
-export function getMaxDepthByRoot(elements: ElementsDefinition): Record<string, number> {
-  const pkgs = elements.nodes.map(n => String(n.data.id));
-  const roots = findRoots(pkgs);
-  const rootSet = new Set(roots);
-
-  const result: Record<string, number> = Object.fromEntries(roots.map(r => [r, 1]));
-  for (const pkg of pkgs) {
-    const root = nearestRoot(pkg, rootSet);
-    const depth = pkg.split('.').length - root.split('.').length + 1;
-    if (depth > result[root]) result[root] = depth;
-  }
-  return result;
-}
-
-/***
  * Filters sub-packages so only the desired number of levels under each root are shown.
  * @performance Aggregate weights and origin IDs in local maps without repeatedly copying growing
  * evidence arrays. Inputs remain immutable; a large lifted bundle must stay linear in edge count.
