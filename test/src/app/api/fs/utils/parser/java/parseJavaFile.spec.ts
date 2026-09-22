@@ -1,6 +1,6 @@
 import { assert, describe, expect, it, resolve } from '@artiphishle/testosterone';
 import { readJavaProjectFileMetadataAsync } from '@/features/project-analysis/adapters/outbound/source-metadata/readJavaProjectFileMetadataAsync';
-import { parseProjectPath } from '@/shared/utils/parseProjectPath';
+import { parseProjectPath } from '@/utils/parseProjectPath';
 
 describe('[readJavaProjectFileMetadataAsync]', () => {
   it('parses a .java file correctly', async () => {
