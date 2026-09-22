@@ -36,7 +36,7 @@ export default [
     rules: legacyAnalysisRules,
   },
   {
-    files: ['src/layouts/**/*.{ts,tsx}', 'src/screens/**/*.{ts,tsx}'],
+    files: ['src/screens/**/*.{ts,tsx}'],
     rules: legacyUiRules,
   },
   {
