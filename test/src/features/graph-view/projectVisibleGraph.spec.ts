@@ -184,9 +184,7 @@ describe('[graph view projection]', () => {
     expect(devtools?.data.label).toBe('devtools');
     expect(singleton?.data.parent).toBeUndefined();
     expect(singleton?.data.label).toBe('@single/only');
-    expect(
-      result.elements.nodes.some(node => node.data.id === 'vendor-scope:@zora')
-    ).toBe(false);
+    expect(result.elements.nodes.some(node => node.data.id === 'vendor-scope:@zora')).toBe(false);
     expect(
       result.elements.nodes.find(node => node.data.id === '@zora/list')?.data.parent
     ).toBeUndefined();
@@ -211,7 +209,9 @@ describe('[graph view projection]', () => {
       showVendorPackages: false,
     });
 
-    expect(flat.elements.nodes.some(node => node.data.id === 'vendor-scope:@ankhorage')).toBe(false);
+    expect(
+      flat.elements.nodes.some(node => node.data.id === 'vendor-scope:@ankhorage')
+    ).toBe(false);
     expect(
       flat.elements.nodes.find(node => node.data.id === '@ankhorage/zora')?.data.label
     ).toBe('@ankhorage/zora');
