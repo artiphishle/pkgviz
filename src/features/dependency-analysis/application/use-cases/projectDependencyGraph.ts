@@ -1,7 +1,4 @@
-import type {
-  DependencyGraph,
-  DependencyGraphNodeData,
-} from '@ankhorage/dependency-graph';
+import type { DependencyGraph, DependencyGraphNodeData } from '@ankhorage/dependency-graph';
 import type { GraphEdge, GraphNode } from '@ankhorage/graph';
 
 import type {
@@ -52,12 +49,13 @@ function packageId(data: DependencyGraphNodeData): string | undefined {
 }
 
 /*** Convert one owner node into the metadata shape required by PKGViz graph projection. */
-function projectNode(id: string, data: DependencyGraphNodeData): GraphNode<PackageDependencyNodeData> {
+function projectNode(
+  id: string,
+  data: DependencyGraphNodeData
+): GraphNode<PackageDependencyNodeData> {
   const intrinsic = data.classification === 'intrinsic' || data.focus;
   const parent =
-    data.kind === 'module'
-      ? data.parentPath ?? parentPackage(id)
-      : parentPackage(id);
+    data.kind === 'module' ? (data.parentPath ?? parentPackage(id)) : parentPackage(id);
   const label = data.kind === 'module' ? data.label : id;
 
   return {

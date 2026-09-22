@@ -154,7 +154,12 @@ async function importsForLanguageAsync(
       return projectDependencyImportsAsync(dependencyGraph, projectPath);
     case Language.Java:
     case Language.Cpp:
-      return projectDependencyImportsAsync(dependencyGraph, projectPath, analysisRootPath, 'specifier');
+      return projectDependencyImportsAsync(
+        dependencyGraph,
+        projectPath,
+        analysisRootPath,
+        'specifier'
+      );
     case Language.Kotlin:
       return projectDependencyImportsAsync(
         dependencyGraph,

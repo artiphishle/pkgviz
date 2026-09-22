@@ -89,9 +89,7 @@ function createOwnerGraph(): DependencyGraph {
           kind: 'import',
           analyzerId: 'typescript',
           weight: 1,
-          evidence: [
-            dependencyEvidence('src/features/one.ts', '../shared/value', 'intrinsic'),
-          ],
+          evidence: [dependencyEvidence('src/features/one.ts', '../shared/value', 'intrinsic')],
         },
       },
     ],

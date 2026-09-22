@@ -25,9 +25,9 @@ export function getPackageCyclesWithMembers(
     const cycle = [...(findCyclePath(graph, scc) ?? [...scc, scc[0]])];
     cycles.push({
       packages: cycle,
-      edges: cycle.slice(0, -1).map((from, index) =>
-        cycleEdgeEvidence(graph, files, from, cycle[index + 1])
-      ),
+      edges: cycle
+        .slice(0, -1)
+        .map((from, index) => cycleEdgeEvidence(graph, files, from, cycle[index + 1])),
     });
   }
 
@@ -74,17 +74,11 @@ function projectImportEvidence(
     filePath,
     fileClass: file?.className ?? path.basename(filePath, path.extname(filePath)),
     importName: evidence.specifier,
-    isIntrinsic:
-      evidence.classification === 'intrinsic' || evidence.classification === 'focus',
+    isIntrinsic: evidence.classification === 'intrinsic' || evidence.classification === 'focus',
   };
 }
 
 /*** Match owner-relative source evidence to the Tree-relative parser file path. */
-function findParsedFile(
-  files: readonly ParsedFile[],
-  sourceFile: string
-): ParsedFile | undefined {
-  return files.find(
-    file => sourceFile === file.path || sourceFile.endsWith(`/${file.path}`)
-  );
+function findParsedFile(files: readonly ParsedFile[], sourceFile: string): ParsedFile | undefined {
+  return files.find(file => sourceFile === file.path || sourceFile.endsWith(`/${file.path}`));
 }
