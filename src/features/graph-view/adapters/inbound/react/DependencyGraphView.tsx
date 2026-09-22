@@ -5,7 +5,7 @@ import { GraphView, type GraphViewElementEvent, type GraphViewLayoutName } from 
 import type { ElementsDefinition, LayoutOptions } from 'cytoscape';
 import React, { useMemo } from 'react';
 
-import { useSettings } from '@/contexts/SettingsContext';
+import { useSettings } from '@/features/settings/adapters/inbound/react/useSettings';
 import { createGraphViewModel } from '@/features/graph-view/adapters/inbound/react/createGraphViewModel';
 import { createGraphViewStyles } from '@/features/graph-view/adapters/inbound/react/createGraphViewStyles';
 import { GraphZoomControls } from '@/features/graph-view/adapters/inbound/react/GraphZoomControls';
