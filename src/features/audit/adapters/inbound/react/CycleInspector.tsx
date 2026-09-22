@@ -29,7 +29,7 @@ export function CycleInspector({ inspection, onClose }: CycleInspectorProps) {
           />
         }
         description={`${packageCount} ${t('audit.packages')} · ${inspection.cycle.edges.length} ${t(
-          'audit.dependencyEdges',
+          'audit.dependencyEdges'
         )}`}
         title={inspection.label}
         tone="outline"
