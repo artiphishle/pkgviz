@@ -16,9 +16,9 @@ import { HomeGraph } from '@/screens/home/HomeGraph';
 import { HomeSidebar } from '@/screens/home/HomeSidebar';
 import type { Audit } from '@/types/audit';
 import type { CycleInspection } from '@/types/auditVisualization';
-import type { ProjectOverview } from '@/types/projectAnalysis';
 import type { ProjectAnalysisActionResult } from '@/types/projectAnalysisActionResult';
 import type { ProjectTreeNode } from '@/types/projectTree';
+import type { ProjectOverview } from '@/types/workspace';
 import { getProjectName } from '@/utils/getProjectName';
 
 /*** Renders the PKGViz home screen and composes project navigation, diagnostics, and the graph. */

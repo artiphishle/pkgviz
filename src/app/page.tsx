@@ -1,6 +1,6 @@
 import { connection } from 'next/server';
 
-import { loadProjectOverviewAsync } from '@/features/project-analysis/composition/loadProjectOverviewAsync';
+import { loadProjectOverviewAsync } from '@/features/workspace/composition/loadProjectOverviewAsync';
 import HomeScreen from '@/screens/home/Home';
 import { parseProjectPath } from '@/utils/parseProjectPath';
 import { runProjectAnalysisActionAsync } from '@/utils/runProjectAnalysisActionAsync';
