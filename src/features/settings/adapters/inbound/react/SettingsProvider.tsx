@@ -1,5 +1,5 @@
 import { useLocalStorage } from 'ankh-hooks/store';
-import React, { type PropsWithChildren } from 'react';
+import { createElement, type PropsWithChildren } from 'react';
 
 import { SettingsContext } from '@/features/settings/adapters/inbound/react/SettingsContext';
 import { readSettingsEnvironment } from '@/features/settings/utils/readSettingsEnvironment';
@@ -29,9 +29,10 @@ export function SettingsProvider({ children }: PropsWithChildren) {
     environment.cytoscapeLayoutSpacing
   );
 
-  return (
-    <SettingsContext
-      value={{
+  return createElement(
+    SettingsContext.Provider,
+    {
+      value: {
         cytoscapeLayout,
         cytoscapeLayoutSpacing,
         maxSubPackageDepth,
@@ -44,10 +45,9 @@ export function SettingsProvider({ children }: PropsWithChildren) {
         setSubPackageDepth,
         toggleShowCompoundNodes: () => setShowCompoundNodes(previous => !previous),
         toggleShowVendorPackages: () => setShowVendorPackages(previous => !previous),
-      }}
-    >
-      {children}
-    </SettingsContext>
+      },
+    },
+    children
   );
 }
 
