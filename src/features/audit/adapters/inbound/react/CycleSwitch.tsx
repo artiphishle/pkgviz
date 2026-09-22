@@ -9,12 +9,7 @@ export function CycleSwitch({ ariaLabel, checkedColor, id, onToggle, value }: Cy
   const { theme } = useZoraTheme();
 
   return (
-    <View
-      align="center"
-      direction="row"
-      gap="xs"
-      style={{ flexShrink: 0, marginLeft: 'auto' }}
-    >
+    <View align="center" direction="row" gap="xs" style={{ flexShrink: 0, marginLeft: 'auto' }}>
       <span
         aria-hidden="true"
         style={{
