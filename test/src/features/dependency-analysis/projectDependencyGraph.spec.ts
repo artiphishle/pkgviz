@@ -8,12 +8,14 @@ describe('[canonical dependency package projection]', () => {
     const graph = projectDependencyGraph(createOwnerGraph());
 
     expect(graph.nodes.map(node => node.id).sort()).toEqual([
+      '@zora/list',
       'react',
       'src',
       'src.features',
       'src.shared',
     ]);
     expect(graph.nodes.find(node => node.id === 'src')?.data).toEqual({
+      classification: 'intrinsic',
       path: 'src',
       parent: '',
       label: 'src',
@@ -21,7 +23,9 @@ describe('[canonical dependency package projection]', () => {
       isIntrinsic: true,
     });
     expect(graph.nodes.find(node => node.id === 'src.features')?.data.parent).toBe('src');
+    expect(graph.nodes.find(node => node.id === 'react')?.data.classification).toBe('vendor');
     expect(graph.nodes.find(node => node.id === 'react')?.data.isIntrinsic).toBeUndefined();
+    expect(graph.nodes.find(node => node.id === '@zora/list')?.data.classification).toBe('unknown');
 
     const vendor = graph.edges.find(
       edge => edge.source === 'src.features' && edge.target === 'react'
@@ -63,6 +67,16 @@ function createOwnerGraph(): DependencyGraph {
           focus: false,
           label: 'react',
           packageName: 'react',
+        },
+      },
+      {
+        id: 'unknown:@zora/list',
+        data: {
+          kind: 'package',
+          classification: 'unknown',
+          focus: false,
+          label: '@zora/list',
+          packageName: '@zora/list',
         },
       },
     ],
