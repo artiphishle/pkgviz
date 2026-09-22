@@ -1,7 +1,7 @@
 import { assert, describe, it } from '@artiphishle/testosterone';
 import { detectProject } from '@ankhorage/project-detector';
-import { selectParserLanguage } from '../../../src/features/project-analysis/application/use-cases/selectParserLanguage';
-import { Language } from '../../../src/types/language';
+import { selectParserLanguage } from '@/features/project-analysis/application/use-cases/selectParserLanguage';
+import { Language } from '@/types/language';
 
 describe('pkgviz parser selection', () => {
   for (const [file, language] of [
