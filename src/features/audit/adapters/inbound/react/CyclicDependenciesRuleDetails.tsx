@@ -11,6 +11,7 @@ import {
   getCycleColor,
   getCycleId,
 } from '@/features/audit/utils/cycleVisualization';
+import { createCycleThemeColors } from '@/features/audit/utils/createCycleThemeColors';
 import { t } from '@/i18n/i18n';
 import type { PackageCycleDetail } from '@/types/audit';
 import type { CycleInspection, CycleSelection } from '@/types/auditVisualization';
@@ -22,6 +23,9 @@ export function CyclicDependenciesRuleDetails({
   inspectedCycleId,
   onCycleInspectionChange,
 }: CyclicDependenciesRuleDetailsProps) {
+  const { theme } = useZoraTheme();
+  const cycleColors = createCycleThemeColors(theme);
+
   return (
     <View gap="s" p="m">
       <View align="center" direction="row" gap="s">
@@ -39,7 +43,7 @@ export function CyclicDependenciesRuleDetails({
         const cycleId = getCycleId(cycle);
         return (
           <CycleRow
-            color={getCycleColor(index)}
+            color={getCycleColor(cycleColors, index)}
             cycle={cycle}
             index={index}
             inspected={inspectedCycleId === cycleId}
@@ -49,7 +53,12 @@ export function CyclicDependenciesRuleDetails({
               onCycleInspectionChange(
                 inspectedCycleId === cycleId
                   ? null
-                  : createCycleInspection(cycle, index, t('audit.cycle') + ' ' + (index + 1))
+                  : createCycleInspection(
+                      cycle,
+                      index,
+                      t('audit.cycle') + ' ' + (index + 1),
+                      cycleColors
+                    )
               )
             }
             onSelectedChange={selected => {
