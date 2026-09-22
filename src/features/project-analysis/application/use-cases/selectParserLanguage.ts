@@ -15,7 +15,7 @@ export function selectParserLanguage(detection: ProjectDetection): ParserSelecti
   ];
   const candidates = supported
     .flatMap(language => {
-      const detected = detection.languages.find(candidate => candidate.id === language);
+      const detected = detection.languages.find(candidate => candidate.id === String(language));
       return detected ? [{ language, detected }] : [];
     })
     .sort(
@@ -24,8 +24,8 @@ export function selectParserLanguage(detection: ProjectDetection): ParserSelecti
         right.detected.evidence.length - left.detected.evidence.length ||
         supported.indexOf(left.language) - supported.indexOf(right.language)
     );
-  const selected = candidates[0];
-  if (!selected) {
+  const selected = candidates.at(0);
+  if (selected === undefined) {
     throw new Error(
       `No supported parser detected. Found: ${detection.languages.map(language => language.id).join(', ') || 'unknown'}. Supported: ${supported.join(', ')}.`
     );
