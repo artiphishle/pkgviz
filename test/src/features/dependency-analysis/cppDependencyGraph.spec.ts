@@ -1,14 +1,23 @@
+import { createDependencyGraphAsync } from '@ankhorage/dependency-graph';
 import { describe, expect, it, resolve } from '@artiphishle/testosterone';
 
 import { parseCppFile } from '@/app/utils/parser/cpp/parseCppFile';
-import { analyzeDependencyImportsAsync } from '@/features/dependency-analysis/adapters/outbound/dependency-graph/analyzeDependencyImportsAsync';
+import { projectDependencyImportsAsync } from '@/features/dependency-analysis/adapters/outbound/dependency-graph/projectDependencyImportsAsync';
 
 describe('[C++ dependency graph migration]', () => {
   it('preserves locked C++ namespace/include semantics through the canonical analyzer', async () => {
     const appRoot = resolve(process.cwd(), 'examples/cpp/my-app');
     const projectRoot = resolve(appRoot, 'src');
     const file = resolve(projectRoot, 'services/UserService.cpp');
-    const importsByFile = await analyzeDependencyImportsAsync(appRoot, projectRoot, 'specifier');
+    const dependencyGraph = await createDependencyGraphAsync({
+      projects: [{ id: 'current', rootPath: appRoot }],
+    });
+    const importsByFile = await projectDependencyImportsAsync(
+      dependencyGraph,
+      appRoot,
+      projectRoot,
+      'specifier'
+    );
     const parsed = await parseCppFile(
       file,
       projectRoot,
