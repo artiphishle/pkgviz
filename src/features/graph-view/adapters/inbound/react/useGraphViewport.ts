@@ -1,48 +1,68 @@
-import type { GraphViewController, GraphViewLayoutName } from '@zora/graph-view';
-import { useRef, useState } from 'react';
+import type { GraphViewController } from '@zora/graph-view';
+import { type Dispatch, type SetStateAction, useRef, useState } from 'react';
 
 /***
- * Mirrors the owner's settled zoom bounds and coordinates intentional layout changes.
- * @performance
- * Viewport events only read cached controller values; ordinary zoom must never compact spacing,
- * measure labels or rerun layout. The explicit Fit button requests the owner's bounded compaction.
+ * Mirrors owner viewport state without changing graph framing after layout or node movement.
+ * @performance Layout completion only refreshes cached bounds. Readable fit and spacing optimization
+ * remain an explicit user action so manual node positioning is never overwritten automatically.
  */
-export function useGraphViewport(layout: GraphViewLayoutName) {
+export function useGraphViewport() {
   const [controller, setController] = useState<GraphViewController | null>(null);
   const controllerRef = useRef<GraphViewController | null>(null);
   const [viewport, setViewport] = useState({ zoom: 1, min: 0.5, max: 2 });
-  const previousLayoutRef = useRef(layout);
-
-  /*** Publishes only changed viewport values, including range changes without a zoom event. */
-  const synchronize = (nextController: GraphViewController) => {
-    const { zoom } = nextController.getViewport();
-    const { min, max } = nextController.getZoomRange();
-    setViewport(previous =>
-      previous.zoom === zoom && previous.min === min && previous.max === max
-        ? previous
-        : { zoom, min, max }
-    );
-  };
 
   /*** Captures the controller before synchronizing the initial viewport. */
   const handleReady = (nextController: GraphViewController) => {
     controllerRef.current = nextController;
     setController(nextController);
-    synchronize(nextController);
+    synchronizeGraphViewport(nextController, setViewport);
   };
 
   /*** Reads the controller synchronously, including events before React commits readiness. */
   const handleViewportChange = () => {
-    if (controllerRef.current !== null) synchronize(controllerRef.current);
+    if (controllerRef.current !== null)
+      synchronizeGraphViewport(controllerRef.current, setViewport);
   };
 
-  /*** Fits intentional algorithm changes and refreshes bounds after every settled layout. */
+  /*** Refreshes settled owner bounds without fitting or changing manually positioned nodes. */
   const handleLayoutComplete = (nextController: GraphViewController) => {
-    const layoutChanged = previousLayoutRef.current !== layout;
-    previousLayoutRef.current = layout;
-    if (layoutChanged) nextController.fit();
-    synchronize(nextController);
+    synchronizeGraphViewport(nextController, setViewport);
   };
 
-  return { controller, handleLayoutComplete, handleReady, handleViewportChange, ...viewport };
+  /*** Runs readable fit and spacing optimization only from explicit user intent. */
+  const fitGraph = () => {
+    const nextController = controllerRef.current;
+    if (nextController === null) return;
+    nextController.fit({ optimizeSpacing: true });
+    synchronizeGraphViewport(nextController, setViewport);
+  };
+
+  return {
+    controller,
+    fitGraph,
+    handleLayoutComplete,
+    handleReady,
+    handleViewportChange,
+    ...viewport,
+  };
+}
+
+/*** Publishes only changed viewport values, including range changes without a zoom event. */
+function synchronizeGraphViewport(
+  controller: GraphViewController,
+  setViewport: Dispatch<SetStateAction<GraphViewportState>>
+) {
+  const { zoom } = controller.getViewport();
+  const { min, max } = controller.getZoomRange();
+  setViewport(previous =>
+    previous.zoom === zoom && previous.min === min && previous.max === max
+      ? previous
+      : { zoom, min, max }
+  );
+}
+
+interface GraphViewportState {
+  readonly zoom: number;
+  readonly min: number;
+  readonly max: number;
 }
