@@ -1,6 +1,6 @@
 import { resolve } from 'node:path';
 
-import { readProjectSnapshotAsync } from '@/features/project-analysis/adapters/outbound/filesystem/readProjectSnapshotAsync';
+import { readProjectSnapshotAsync } from '@/features/project-analysis/composition/readProjectSnapshotAsync';
 import { createProjectSnapshotReader } from '@/features/project-analysis/application/use-cases/createProjectSnapshotReader';
 import type { ProjectSnapshot } from '@/types/projectAnalysis';
 
