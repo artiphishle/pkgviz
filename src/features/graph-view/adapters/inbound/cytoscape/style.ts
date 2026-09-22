@@ -115,7 +115,6 @@ function getNodeStateStyles(colors: GraphPalette): StylesheetJson {
         'overlay-opacity': 0,
       },
     },
-
   ];
 }
 
