@@ -2,7 +2,7 @@ import { createDependencyGraphAsync } from '@ankhorage/dependency-graph';
 import { describe, expect, it, resolve } from '@artiphishle/testosterone';
 
 import { projectDependencyImportsAsync } from '@/features/dependency-analysis/adapters/outbound/dependency-graph/projectDependencyImportsAsync';
-import { readProjectSnapshotAsync } from '@/features/project-analysis/adapters/outbound/filesystem/readProjectSnapshotAsync';
+import { readProjectSnapshotAsync } from '@/features/project-analysis/composition/readProjectSnapshotAsync';
 
 describe('[TypeScript dependency graph migration]', () => {
   it('preserves PKGViz import semantics from the canonical dependency analyzer', async () => {
