@@ -1,7 +1,7 @@
 import { describe, expect, it, resolve } from '@artiphishle/testosterone';
 
 import { readTypeScriptProjectFileMetadataAsync } from '@/features/project-analysis/adapters/outbound/source-metadata/readTypeScriptProjectFileMetadataAsync';
-import { parseProjectPath } from '@/shared/utils/parseProjectPath';
+import { parseProjectPath } from '@/utils/parseProjectPath';
 
 describe('[TypeScript: readTypeScriptProjectFileMetadataAsync]', () => {
   it('parses file metadata while preserving canonical dependency imports', async () => {
