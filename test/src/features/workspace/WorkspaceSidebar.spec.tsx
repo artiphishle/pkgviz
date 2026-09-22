@@ -3,15 +3,15 @@ import { ZoraProvider } from '@zora/ZoraProvider';
 import React from 'react';
 
 import { SettingsProvider } from '@/features/settings/adapters/inbound/react/SettingsProvider';
-import { HomeSidebar } from '@/screens/home/HomeSidebar';
+import { WorkspaceSidebar } from '@/features/workspace/adapters/inbound/react/WorkspaceSidebar';
 import type { Audit } from '@/types/audit';
 
-describe('[HomeSidebar]', () => {
+describe('[WorkspaceSidebar]', () => {
   it('omits the Rules tab when the audit has no findings', () => {
     const { container, unmount } = render(
       <ZoraProvider mode="light">
         <SettingsProvider>
-          <HomeSidebar
+          <WorkspaceSidebar
             cycleSelection={{ highlights: [], selectedIds: [], setSelected: () => undefined }}
             evaluation={passedEvaluation}
             inspectedCycleId={null}
@@ -32,7 +32,7 @@ describe('[HomeSidebar]', () => {
     const { container, unmount } = render(
       <ZoraProvider mode="light">
         <SettingsProvider>
-          <HomeSidebar
+          <WorkspaceSidebar
             cycleSelection={{ highlights: [], selectedIds: [], setSelected: () => undefined }}
             evaluation={passedEvaluation}
             inspectedCycleId={null}
