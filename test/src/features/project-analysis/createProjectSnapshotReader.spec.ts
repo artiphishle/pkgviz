@@ -1,7 +1,7 @@
 import { assert, describe, it } from '@artiphishle/testosterone';
 
 import { createProjectSnapshotReader } from '@/features/project-analysis/application/use-cases/createProjectSnapshotReader';
-import { Language } from '@/shared/types';
+import { Language } from '@/types/language';
 import type { ProjectSnapshot } from '@/types/projectAnalysis';
 
 describe('[project snapshot reader]', () => {
