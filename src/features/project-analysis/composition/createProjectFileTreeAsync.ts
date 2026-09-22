@@ -5,12 +5,12 @@ import type { ProjectInspection } from '@ankhorage/project-detector/types';
 import { resolveFileSystemPathWithinRoot } from '@ankhorage/utility/node/fs';
 
 import { projectDependencyImportsAsync } from '@/features/dependency-analysis/adapters/outbound/dependency-graph/projectDependencyImportsAsync';
-import { readCppProjectFileMetadataAsync } from '@/features/project-analysis/adapters/outbound/source-metadata/readCppProjectFileMetadataAsync';
-import { readDelphiProjectFileMetadataAsync } from '@/features/project-analysis/adapters/outbound/source-metadata/readDelphiProjectFileMetadataAsync';
-import { readJavaProjectFileMetadataAsync } from '@/features/project-analysis/adapters/outbound/source-metadata/readJavaProjectFileMetadataAsync';
-import { readKotlinProjectFileMetadataAsync } from '@/features/project-analysis/adapters/outbound/source-metadata/readKotlinProjectFileMetadataAsync';
-import { readPythonProjectFileMetadataAsync } from '@/features/project-analysis/adapters/outbound/source-metadata/readPythonProjectFileMetadataAsync';
-import { readTypeScriptProjectFileMetadataAsync } from '@/features/project-analysis/adapters/outbound/source-metadata/readTypeScriptProjectFileMetadataAsync';
+import { readCppProjectFileMetadata } from '@/features/project-analysis/adapters/outbound/source-metadata/readCppProjectFileMetadata';
+import { readDelphiProjectFileMetadata } from '@/features/project-analysis/adapters/outbound/source-metadata/readDelphiProjectFileMetadata';
+import { readJavaProjectFileMetadata } from '@/features/project-analysis/adapters/outbound/source-metadata/readJavaProjectFileMetadata';
+import { readKotlinProjectFileMetadata } from '@/features/project-analysis/adapters/outbound/source-metadata/readKotlinProjectFileMetadata';
+import { readPythonProjectFileMetadata } from '@/features/project-analysis/adapters/outbound/source-metadata/readPythonProjectFileMetadata';
+import { readTypeScriptProjectFileMetadata } from '@/features/project-analysis/adapters/outbound/source-metadata/readTypeScriptProjectFileMetadata';
 import { Language } from '@/types/language';
 import type {
   ProjectFileMetadata,
@@ -64,7 +64,7 @@ export async function createProjectFileTreeAsync(
       continue;
     }
 
-    const fileMetadata = await readSourceMetadataAsync({
+    const fileMetadata = readSourceMetadata({
       analysisRootPath,
       imports: importsByFile.get(relativeFile) ?? [],
       language,
@@ -190,23 +190,21 @@ async function importsForLanguageAsync(
 }
 
 /*** Read one source file through the language-specific PKGViz metadata adapter. */
-async function readSourceMetadataAsync(
-  input: ReadSourceMetadataInput
-): Promise<ProjectFileMetadata> {
+function readSourceMetadata(input: ReadSourceMetadataInput): ProjectFileMetadata {
   const fullPath = resolveFileSystemPathWithinRoot(input.projectPath, input.sourceFile);
   switch (input.language) {
     case Language.Java:
-      return readJavaProjectFileMetadataAsync(fullPath, input.analysisRootPath, input.imports);
+      return readJavaProjectFileMetadata(fullPath, input.analysisRootPath, input.imports);
     case Language.TypeScript:
-      return readTypeScriptProjectFileMetadataAsync(fullPath, input.analysisRootPath, input.imports);
+      return readTypeScriptProjectFileMetadata(fullPath, input.analysisRootPath, input.imports);
     case Language.Cpp:
-      return readCppProjectFileMetadataAsync(fullPath, input.analysisRootPath, input.imports);
+      return readCppProjectFileMetadata(fullPath, input.analysisRootPath, input.imports);
     case Language.Python:
-      return readPythonProjectFileMetadataAsync(fullPath, input.analysisRootPath, input.imports);
+      return readPythonProjectFileMetadata(fullPath, input.analysisRootPath, input.imports);
     case Language.Delphi:
-      return readDelphiProjectFileMetadataAsync(fullPath, input.analysisRootPath, input.imports);
+      return readDelphiProjectFileMetadata(fullPath, input.analysisRootPath, input.imports);
     case Language.Kotlin:
-      return readKotlinProjectFileMetadataAsync(fullPath, input.analysisRootPath, input.imports);
+      return readKotlinProjectFileMetadata(fullPath, input.analysisRootPath, input.imports);
     default:
       throw new Error(`Unsupported parser language: ${input.language}`);
   }
