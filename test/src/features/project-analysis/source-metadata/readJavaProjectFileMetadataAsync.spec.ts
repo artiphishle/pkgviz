@@ -25,7 +25,8 @@ describe('[readJavaProjectFileMetadata]', () => {
     const projectPath = resolve(process.cwd(), 'examples/java/my-app');
 
     assert.throws(
-      () => readJavaProjectFileMetadata(resolve(projectPath, '..', 'outside.java'), projectPath, []),
+      () =>
+        readJavaProjectFileMetadata(resolve(projectPath, '..', 'outside.java'), projectPath, []),
       /Path escaped the allowed root/
     );
   });

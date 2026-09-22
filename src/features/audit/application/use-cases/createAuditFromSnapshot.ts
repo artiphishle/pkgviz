@@ -1,9 +1,9 @@
 import { getPackageCyclesWithMembers } from '@/features/audit/application/use-cases/getPackageCyclesWithMembers';
 import { evaluateAuditRules } from '@/features/audit/domain/evaluateAuditRules';
 import { resolveAuditConfiguration } from '@/features/audit/domain/resolveAuditConfiguration';
-import { getProjectName } from '@/utils/getProjectName';
 import type { Audit, ResolveAuditConfigurationInput } from '@/types/audit';
 import type { ProjectSnapshot } from '@/types/projectAnalysis';
+import { getProjectName } from '@/utils/getProjectName';
 
 /*** Evaluates audit policy against the same files and weighted graph used by the visualization. */
 export function createAuditFromSnapshot(

@@ -14,12 +14,12 @@ import { useThemeMode } from '@/features/theme/adapters/inbound/react/useThemeMo
 import { t } from '@/i18n/i18n';
 import { HomeGraph } from '@/screens/home/HomeGraph';
 import { HomeSidebar } from '@/screens/home/HomeSidebar';
-import { getProjectName } from '@/utils/getProjectName';
 import type { Audit } from '@/types/audit';
 import type { CycleInspection } from '@/types/auditVisualization';
 import type { ProjectOverview } from '@/types/projectAnalysis';
 import type { ProjectAnalysisActionResult } from '@/types/projectAnalysisActionResult';
 import type { ProjectTreeNode } from '@/types/projectTree';
+import { getProjectName } from '@/utils/getProjectName';
 
 /*** Renders the PKGViz home screen and composes project navigation, diagnostics, and the graph. */
 export default function HomeScreen({ project }: HomeScreenProps) {

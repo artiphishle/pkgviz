@@ -1,0 +1,1 @@
+{"version":3,"names":["TouchableHighlight","TouchableOpacity","TouchableWithoutFeedback"],"sourceRoot":"../../../../src","sources":["components/touchables/Touchables.tsx"],"mappings":";;AAAA,SACEA,kBAAkB,EAClBC,gBAAgB,EAChBC,wBAAwB,QACnB,8BAA8B","ignoreList":[]}

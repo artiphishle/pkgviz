@@ -56,6 +56,8 @@ function getCommonGraphPackage(children: readonly ProjectTreeNode[]): string {
 }
 
 /*** Distinguishes project file metadata from recursive directory records without relying on class names. */
-function isProjectFileMetadata(value: ProjectFileTree | ProjectFileMetadata): value is ProjectFileMetadata {
+function isProjectFileMetadata(
+  value: ProjectFileTree | ProjectFileMetadata
+): value is ProjectFileMetadata {
   return 'path' in value && typeof value.path === 'string' && 'package' in value;
 }

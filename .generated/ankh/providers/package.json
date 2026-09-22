@@ -1,0 +1,7 @@
+{
+  "name": "ankh-provider-cache",
+  "private": true,
+  "dependencies": {
+    "@ankhorage/zora": "21.0.2"
+  }
+}

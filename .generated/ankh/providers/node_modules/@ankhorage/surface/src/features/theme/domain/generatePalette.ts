@@ -1,0 +1,64 @@
+import type { GeneratedThemeSwatches, ThemeColorMode } from '@ankhorage/color-theory';
+import {
+  DARK_SEMANTIC_COLOR_REFERENCES,
+  generateThemeModeColors,
+  LIGHT_SEMANTIC_COLOR_REFERENCES,
+  parseHexColorOrThrow,
+} from '@ankhorage/color-theory';
+import type { ThemeConfig } from '@ankhorage/contracts';
+
+import type { SurfaceColorDiagnostics, ThemeSemantics, ThemeTokens } from '../../../types/theme';
+import { resolveSemanticColors } from './resolveSemanticColors';
+import { resolveSurfaceSemanticModel } from './resolveSurfaceSemanticModel';
+
+export function generatePalette(
+  config: ThemeConfig,
+  mode: ThemeColorMode = 'light',
+): {
+  colors: ThemeTokens['colors'];
+  swatches: GeneratedThemeSwatches;
+  semantics: ThemeSemantics;
+  colorDiagnostics: SurfaceColorDiagnostics;
+} {
+  const modeConfig = mode === 'dark' ? config.dark : config.light;
+  const isDark = mode === 'dark';
+
+  parseHexColorOrThrow(modeConfig.primaryColor);
+
+  const generated = generateThemeModeColors(modeConfig);
+  const { swatches } = generated;
+  const references = isDark ? DARK_SEMANTIC_COLOR_REFERENCES : LIGHT_SEMANTIC_COLOR_REFERENCES;
+  const resolved = resolveSemanticColors(generated, references);
+  const { semantics, colorDiagnostics } = resolveSurfaceSemanticModel({
+    generated,
+    mode,
+    references,
+    resolved,
+  });
+  const { border, content, error, info, neutral, success, surface, warning } = semantics;
+
+  const colors: ThemeTokens['colors'] = {
+    primary: swatches.primary[500],
+    secondary: (swatches.secondary ?? swatches.primary)[500],
+    accent: (swatches.tertiary ?? swatches.primary)[500],
+    highlight: (swatches.quaternary ?? swatches.primary)[500],
+    tertiary: (swatches.tertiary ?? swatches.primary)[500],
+    quaternary: (swatches.quaternary ?? swatches.primary)[500],
+    background: neutral.bg,
+    surface: surface.default,
+    text: content.default,
+    textSecondary: content.muted,
+    border: border.default,
+    error: error.base,
+    success: success.base,
+    warning: warning.base,
+    info: info.base,
+  };
+
+  return {
+    colors,
+    swatches,
+    semantics,
+    colorDiagnostics,
+  };
+}
