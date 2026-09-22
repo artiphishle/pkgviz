@@ -19,7 +19,7 @@ describe('[Kotlin dependency graph migration]', () => {
       'specifier',
       'kotlin-standard-library'
     );
-    const parsed = await readKotlinProjectFileMetadata(
+    const parsed = readKotlinProjectFileMetadata(
       file,
       projectRoot,
       importsByFile.get('com/example/services/UserService.kt') ?? []
