@@ -6,6 +6,6 @@ export const layout: CircleLayoutOptions = {
   fit: true,
   avoidOverlap: true,
 
-  // Sorts nodes alphabetically around the circle
-  sort: (a: NodeSingular, b: NodeSingular) => String(a.data('id')).localeCompare(String(b.data('id'))),
+  // Sorts nodes alphabetically around the circle using Cytoscape's typed identity API.
+  sort: (a: NodeSingular, b: NodeSingular) => a.id().localeCompare(b.id()),
 };
