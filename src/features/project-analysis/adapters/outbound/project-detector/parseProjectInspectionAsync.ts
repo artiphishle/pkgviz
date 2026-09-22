@@ -156,21 +156,24 @@ async function importsForLanguageAsync(
     case Language.Cpp:
       return projectDependencyImportsAsync(dependencyGraph, projectPath, analysisRootPath, 'specifier');
     case Language.Kotlin:
-      return analyzeDependencyImportsAsync(
+      return projectDependencyImportsAsync(
+        dependencyGraph,
         projectPath,
         analysisRootPath,
         'specifier',
         'kotlin-standard-library'
       );
     case Language.Python:
-      return analyzeDependencyImportsAsync(
+      return projectDependencyImportsAsync(
+        dependencyGraph,
         projectPath,
         analysisRootPath,
         'specifier',
         'python-legacy'
       );
     case Language.Delphi:
-      return analyzeDependencyImportsAsync(
+      return projectDependencyImportsAsync(
+        dependencyGraph,
         projectPath,
         analysisRootPath,
         'specifier',
