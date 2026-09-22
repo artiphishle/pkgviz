@@ -3,7 +3,7 @@ import { readJavaProjectFileMetadata } from '@/features/project-analysis/adapter
 import { parseProjectPath } from '@/utils/parseProjectPath';
 
 describe('[readJavaProjectFileMetadata]', () => {
-  it('parses a .java file correctly', async () => {
+  it('parses a .java file correctly', () => {
     process.env.NEXT_PUBLIC_PROJECT_PATH = resolve(process.cwd(), 'examples/java/my-app');
     const projectPath = parseProjectPath();
     const javaFile = resolve(projectPath, 'src/main/java/com/example/myapp/App.java');
@@ -21,11 +21,11 @@ describe('[readJavaProjectFileMetadata]', () => {
     expect(parsedJavaFile.path).toBe('src/main/java/com/example/myapp/App.java');
   });
 
-  it('rejects file reads outside the selected project root', async () => {
+  it('rejects file reads outside the selected project root', () => {
     const projectPath = resolve(process.cwd(), 'examples/java/my-app');
 
-    await assert.rejects(
-      readJavaProjectFileMetadata(resolve(projectPath, '..', 'outside.java'), projectPath, []),
+    assert.throws(
+      () => readJavaProjectFileMetadata(resolve(projectPath, '..', 'outside.java'), projectPath, []),
       /Path escaped the allowed root/
     );
   });
