@@ -19,7 +19,7 @@ describe('[Python dependency graph migration]', () => {
       'specifier',
       'python-legacy'
     );
-    const parsed = await readPythonProjectFileMetadata(
+    const parsed = readPythonProjectFileMetadata(
       file,
       projectRoot,
       importsByFile.get('services/user_service.py') ?? []
