@@ -8,9 +8,7 @@ const VENDOR_SCOPE_NODE_PREFIX = 'vendor-scope:';
  */
 export function groupScopedVendorPackages(elements: ElementsDefinition): ElementsDefinition {
   const packagesByScope = indexScopedVendorPackages(elements.nodes);
-  const groupedScopes = new Map(
-    [...packagesByScope].filter(([, packages]) => packages.length > 1)
-  );
+  const groupedScopes = new Map([...packagesByScope].filter(([, packages]) => packages.length > 1));
   if (groupedScopes.size === 0) return elements;
 
   return {
