@@ -1,5 +1,6 @@
 import path from 'node:path';
 
+import type { DependencyGraph } from '@ankhorage/dependency-graph';
 import type { ProjectInspection } from '@ankhorage/project-detector/types';
 import { resolveFileSystemPathWithinRoot } from '@ankhorage/utility/node/fs';
 
@@ -9,7 +10,7 @@ import { parseJavaFile } from '@/app/utils/parser/java/parseJavaFile';
 import { parseKotlinFile } from '@/app/utils/parser/kotlin/parseFile';
 import { parsePythonFile } from '@/app/utils/parser/python/parseFile';
 import { parseFile as parseTypeScriptFile } from '@/app/utils/parser/typescript/parseFile';
-import { analyzeDependencyImportsAsync } from '@/features/dependency-analysis/adapters/outbound/dependency-graph/analyzeDependencyImportsAsync';
+import { projectDependencyImportsAsync } from '@/features/dependency-analysis/adapters/outbound/dependency-graph/projectDependencyImportsAsync';
 import {
   type ImportDefinition,
   Language,
@@ -28,6 +29,7 @@ interface ParseSourceInput {
 /*** Project the canonical inspection inventory into PKGViz's parsed tree. */
 export async function parseProjectInspectionAsync(
   inspection: ProjectInspection,
+  dependencyGraph: DependencyGraph,
   language: Language,
   projectPath: string
 ): Promise<ParsedDirectory> {
@@ -37,7 +39,12 @@ export async function parseProjectInspectionAsync(
   const analysisRootPath = resolveFileSystemPathWithinRoot(projectPath, analysisRoot, {
     allowRoot: true,
   });
-  const importsByFile = await importsForLanguageAsync(language, projectPath, analysisRootPath);
+  const importsByFile = await importsForLanguageAsync(
+    dependencyGraph,
+    language,
+    projectPath,
+    analysisRootPath
+  );
   const result = createParsedDirectory();
   const directories = new Map<string, ParsedDirectory>([['', result]]);
 
@@ -137,16 +144,17 @@ function createParsedDirectory(): ParsedDirectory {
 
 /*** Return import evidence using the existing PKGViz presentation semantics per parser. */
 async function importsForLanguageAsync(
+  dependencyGraph: DependencyGraph,
   language: Language,
   projectPath: string,
   analysisRootPath: string
 ): Promise<ReadonlyMap<string, readonly ImportDefinition[]>> {
   switch (language) {
     case Language.TypeScript:
-      return analyzeDependencyImportsAsync(projectPath);
+      return projectDependencyImportsAsync(dependencyGraph, projectPath);
     case Language.Java:
     case Language.Cpp:
-      return analyzeDependencyImportsAsync(projectPath, analysisRootPath, 'specifier');
+      return projectDependencyImportsAsync(dependencyGraph, projectPath, analysisRootPath, 'specifier');
     case Language.Kotlin:
       return analyzeDependencyImportsAsync(
         projectPath,
