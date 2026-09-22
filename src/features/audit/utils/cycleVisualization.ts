@@ -3,7 +3,8 @@ import type { CycleFocus, CycleHighlight, CycleInspection } from '@/types/auditV
 
 /*** Returns one stable cycle color from the active ZORA-derived cycle palette. */
 export function getCycleColor(colors: readonly string[], index: number): string {
-  return colors[index % colors.length] ?? colors[0] ?? 'currentColor';
+  if (colors.length === 0) return 'currentColor';
+  return colors[index % colors.length];
 }
 
 /*** Returns the stable UI identity for one cycle occurrence. */
