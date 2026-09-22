@@ -49,9 +49,11 @@ function toggleCompoundNode(
   };
 }
 
-/*** Normalizes graph metadata into the string identity expected by Cytoscape. */
+/*** Normalizes primitive graph metadata into the string identity expected by Cytoscape. */
 function toGraphString(value: unknown): string {
-  return value === undefined || value === null ? '' : String(value);
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  return '';
 }
 
 /*** Normalizes optional graph metadata without inventing an empty parent identity. */
