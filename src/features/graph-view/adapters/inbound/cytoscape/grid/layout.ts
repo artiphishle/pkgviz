@@ -7,5 +7,5 @@ export const layout: GridLayoutOptions = {
   avoidOverlap: true,
 
   // Sort nodes alphabetically by their ID
-  sort: (a: NodeSingular, b: NodeSingular) => a.data('id').localeCompare(b.data('id')),
+  sort: (a: NodeSingular, b: NodeSingular) => String(a.data('id')).localeCompare(String(b.data('id'))),
 };

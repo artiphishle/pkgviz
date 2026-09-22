@@ -6,55 +6,60 @@ export function getWeightBuckets(
   algorithm: 'linear' | 'log' | 'quantile' = 'linear',
   filteredElements: ElementsDefinition
 ) {
-  if (!filteredElements) return { thresholds: [], counts: [] };
-
-  const weights = filteredElements.edges.map(e => Number(e.data.weight));
+  const weights = filteredElements.edges.map(edge => Number(edge.data.weight));
   const max = getMaxEdgeWeight(filteredElements);
-
-  const thresholds: number[] = [];
-  const counts = new Array(categoryCount).fill(0);
-
-  if (algorithm === 'linear') {
-    for (let i = 1; i < categoryCount; i++) {
-      thresholds.push((i * max) / categoryCount);
-    }
-    thresholds.push(max);
-  } else if (algorithm === 'log') {
-    const logMax = Math.log(max);
-    for (let i = 1; i < categoryCount; i++) {
-      thresholds.push(Math.exp((i * logMax) / categoryCount));
-    }
-    thresholds.push(max);
-  } else if (algorithm === 'quantile') {
-    const sorted = [...weights].sort((a, b) => a - b);
-    for (let i = 1; i < categoryCount; i++) {
-      const qIndex = Math.floor((i * sorted.length) / categoryCount);
-      thresholds.push(sorted[qIndex]);
-    }
-    thresholds.push(max);
-  }
-
-  // Count how many weights fall into each bucket
-  weights.forEach(w => {
-    for (let i = 0; i < thresholds.length; i++) {
-      if (w <= thresholds[i]) {
-        counts[i]++;
-        break;
-      }
-    }
-  });
+  const thresholds = createThresholds(categoryCount, algorithm, weights, max);
 
   return {
     thresholds: thresholds.map(Math.round),
-    counts,
+    counts: countWeightsByThreshold(weights, thresholds),
   };
 }
 
-/*** Returns the largest edge weight in the graph. */
-function getMaxEdgeWeight(filteredElements: ElementsDefinition) {
-  return (
-    filteredElements?.edges.reduce((max, edge) => {
-      return edge.data.weight > max ? edge.data.weight : max;
-    }, 0) ?? 0
-  );
+/*** Creates ordered thresholds for the selected edge-weight distribution policy. */
+function createThresholds(
+  categoryCount: number,
+  algorithm: 'linear' | 'log' | 'quantile',
+  weights: readonly number[],
+  max: number
+): readonly number[] {
+  if (categoryCount <= 0) return [];
+  if (algorithm === 'linear') {
+    return Array.from({ length: categoryCount }, (_, index) =>
+      index === categoryCount - 1 ? max : ((index + 1) * max) / categoryCount
+    );
+  }
+  if (algorithm === 'log') {
+    const logMax = Math.log(max);
+    return Array.from({ length: categoryCount }, (_, index) =>
+      index === categoryCount - 1 ? max : Math.exp(((index + 1) * logMax) / categoryCount)
+    );
+  }
+
+  const sorted = [...weights].sort((left, right) => left - right);
+  return Array.from({ length: categoryCount }, (_, index) => {
+    if (index === categoryCount - 1) return max;
+    const quantileIndex = Math.floor(((index + 1) * sorted.length) / categoryCount);
+    return sorted.at(quantileIndex) ?? max;
+  });
+}
+
+/*** Counts edge weights once per non-overlapping threshold range. */
+function countWeightsByThreshold(
+  weights: readonly number[],
+  thresholds: readonly number[]
+): readonly number[] {
+  return thresholds.map((threshold, index) => {
+    const previousThreshold = index === 0 ? Number.NEGATIVE_INFINITY : thresholds.at(index - 1);
+    const lowerBound = previousThreshold ?? Number.NEGATIVE_INFINITY;
+    return weights.filter(weight => weight > lowerBound && weight <= threshold).length;
+  });
+}
+
+/*** Returns the largest numeric edge weight in the graph. */
+function getMaxEdgeWeight(filteredElements: ElementsDefinition): number {
+  return filteredElements.edges.reduce((max, edge) => {
+    const weight = typeof edge.data.weight === 'number' ? edge.data.weight : 0;
+    return weight > max ? weight : max;
+  }, 0);
 }

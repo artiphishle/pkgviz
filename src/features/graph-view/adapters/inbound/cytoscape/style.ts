@@ -1,57 +1,17 @@
 import type { ElementsDefinition, StylesheetJson } from 'cytoscape';
 
-import { createCompoundOpacityIndex } from '@/features/graph-view/utils/createCompoundOpacityIndex';
+import {
+  getGraphPalette,
+  type GraphPalette,
+  type ThemeKey,
+} from '@/features/graph-view/adapters/inbound/cytoscape/getGraphPalette';
 import { getWeightBuckets } from '@/features/graph-view/adapters/inbound/cytoscape/getWeightBuckets';
+import { createCompoundOpacityIndex } from '@/features/graph-view/utils/createCompoundOpacityIndex';
 
-export type ThemeKey = 'dark' | 'light';
-
-const palette = {
-  light: {
-    canvasBg: '#ffffff',
-    edge: '#000',
-    weightXs: '#000',
-    weightMd: '#000',
-    weightXl: '#000',
-
-    nodeBg: '#E8F1FF',
-    nodeBorder: '#0B5FFF',
-    nodeBorderVendor: '#E2D5FF',
-    nodeBgVendor: '#D1C4FF',
-    nodeText: '#0B5FFF',
-    compoundBg: '#7892B3',
-
-    selectedFill: '#0B5FFF',
-    selectedFillVendor: '#a025aa',
-    selectedRing: '#0B5FFF',
-    selectedText: '#FFF',
-  },
-  dark: {
-    canvasBg: '#171717',
-    edge: '#707070',
-    weightXs: '#5A5A5A',
-    weightMd: '#8A8A8A',
-    weightXl: '#C0C0C0',
-
-    nodeBg: '#1E2533',
-    nodeBgVendor: '#241431',
-    nodeBorder: '#2A3A4A',
-    nodeBorderVendor: '#351542',
-    nodeText: '#E8F0FF',
-    compoundBg: '#A9BCD5',
-
-    selectedFill: '#2E6FFF',
-    selectedFillVendor: '#4E25AA',
-    selectedRing: '#BBD3FF',
-    selectedText: '#FFFFFF',
-  },
-} as const;
-
-/*** Returns the canvas background for the active theme. */
-export const getCanvasBg = (theme: ThemeKey) => palette[theme].canvasBg;
 
 /*** Builds the shared Cytoscape styles for the active theme. */
 export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey): StylesheetJson {
-  const colors = palette[theme];
+  const colors = getGraphPalette(theme);
   const { thresholds } = getWeightBuckets(3, 'linear', filteredElements);
 
   return [
@@ -66,13 +26,11 @@ export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey):
   ];
 }
 
-type Palette = (typeof palette)[ThemeKey];
-
 /***
  * Shows leaf neighborhoods without changing layout geometry or dimming compound descendants.
  * @performance Use paint-only interaction styles; border size, labels and dimensions stay stable.
  */
-function getNodeInteractionStyles(colors: Palette): StylesheetJson {
+function getNodeInteractionStyles(colors: GraphPalette): StylesheetJson {
   return [
     { selector: 'node:childless.hushed', style: { opacity: 0.2 } },
     {
@@ -94,7 +52,7 @@ function getNodeInteractionStyles(colors: Palette): StylesheetJson {
  * style updates can change geometry and trigger further layout work. The style regression tests
  * cover stable dimensions across theme changes and updates to prepared label data.
  */
-function getNodeBaseStyles(colors: Palette): StylesheetJson {
+function getNodeBaseStyles(colors: GraphPalette): StylesheetJson {
   return [
     {
       selector: 'node',
@@ -128,7 +86,7 @@ function getNodeBaseStyles(colors: Palette): StylesheetJson {
  * @performance Selection uses an outline: changing border width changes layout dimensions.
  * Audit overlays retain their existing geometry and remain separate from transient interactions.
  */
-function getNodeStateStyles(colors: Palette): StylesheetJson {
+function getNodeStateStyles(colors: GraphPalette): StylesheetJson {
   return [
     {
       selector: 'node.auditCycle',
@@ -167,7 +125,7 @@ function getNodeStateStyles(colors: Palette): StylesheetJson {
  * Shows softly tinted compound boundaries with bounded, prepared nested-depth opacity.
  * @performance Keep grouping paint-only; do not add nested DOM surfaces or extra graph elements.
  */
-function getCompoundStyles(colors: Palette): StylesheetJson {
+function getCompoundStyles(colors: GraphPalette): StylesheetJson {
   return [
     {
       selector: 'node:parent, node:parent:selected',
@@ -240,7 +198,7 @@ function getCompoundOpacityStyles(elements: ElementsDefinition): StylesheetJson 
  * and loop-capable routing: cheaper edge styles must not silently remove dependency direction or
  * lifted self-loops. Measure and discuss those visual tradeoffs before changing this baseline.
  */
-function getEdgeBaseStyles(colors: Palette): StylesheetJson {
+function getEdgeBaseStyles(colors: GraphPalette): StylesheetJson {
   return [
     {
       selector: 'edge',
@@ -279,7 +237,7 @@ function getEdgeBaseStyles(colors: Palette): StylesheetJson {
 }
 
 /*** Applies the existing aggregate dependency-weight buckets. */
-function getEdgeWeightStyles(colors: Palette, thresholds: readonly number[]): StylesheetJson {
+function getEdgeWeightStyles(colors: GraphPalette, thresholds: readonly number[]): StylesheetJson {
   return [
     { selector: 'edge[weight <= 1]', style: { label: '' } },
     {
@@ -311,7 +269,7 @@ function getEdgeWeightStyles(colors: Palette, thresholds: readonly number[]): St
 }
 
 /*** Shows audit steps above compound content only for active cycle edges. */
-function getCycleEdgeStyles(colors: Palette): StylesheetJson {
+function getCycleEdgeStyles(colors: GraphPalette): StylesheetJson {
   return [
     {
       selector: 'edge.auditCycle',

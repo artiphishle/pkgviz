@@ -6,10 +6,8 @@ import { getStyle as getCircleStyle } from '@/features/graph-view/adapters/inbou
 import { getStyle as getConcentricStyle } from '@/features/graph-view/adapters/inbound/cytoscape/concentric/style';
 import { getStyle as getElkStyle } from '@/features/graph-view/adapters/inbound/cytoscape/elk/style';
 import { getStyle as getGridStyle } from '@/features/graph-view/adapters/inbound/cytoscape/grid/style';
-import {
-  getStyle as getCommonStyle,
-  type ThemeKey,
-} from '@/features/graph-view/adapters/inbound/cytoscape/style';
+import type { ThemeKey } from '@/features/graph-view/adapters/inbound/cytoscape/getGraphPalette';
+import { getStyle as getCommonStyle } from '@/features/graph-view/adapters/inbound/cytoscape/style';
 
 /*** Builds ZORA GraphView style rules from the existing PKGViz Cytoscape style policy. */
 export function createGraphViewStyles(

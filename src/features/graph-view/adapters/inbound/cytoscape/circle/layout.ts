@@ -7,5 +7,5 @@ export const layout: CircleLayoutOptions = {
   avoidOverlap: true,
 
   // Sorts nodes alphabetically around the circle
-  sort: (a: NodeSingular, b: NodeSingular) => a.data('id').localeCompare(b.data('id')),
+  sort: (a: NodeSingular, b: NodeSingular) => String(a.data('id')).localeCompare(String(b.data('id'))),
 };
