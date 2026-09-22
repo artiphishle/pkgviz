@@ -1,13 +1,13 @@
 import { assert, describe, expect, it, resolve } from '@artiphishle/testosterone';
-import { parseJavaFile } from '@/app/utils/parser/java/parseJavaFile';
+import { readJavaProjectFileMetadataAsync } from '@/features/project-analysis/adapters/outbound/source-metadata/readJavaProjectFileMetadataAsync';
 import { parseProjectPath } from '@/shared/utils/parseProjectPath';
 
-describe('[parseJavaFile]', () => {
+describe('[readJavaProjectFileMetadataAsync]', () => {
   it('parses a .java file correctly', async () => {
     process.env.NEXT_PUBLIC_PROJECT_PATH = resolve(process.cwd(), 'examples/java/my-app');
     const projectPath = parseProjectPath();
     const javaFile = resolve(projectPath, 'src/main/java/com/example/myapp/App.java');
-    const parsedJavaFile = await parseJavaFile(javaFile, projectPath, [
+    const parsedJavaFile = await readJavaProjectFileMetadataAsync(javaFile, projectPath, [
       {
         name: 'com.example.myapp.a.A',
         pkg: 'com.example.myapp.a',
@@ -25,7 +25,7 @@ describe('[parseJavaFile]', () => {
     const projectPath = resolve(process.cwd(), 'examples/java/my-app');
 
     await assert.rejects(
-      parseJavaFile(resolve(projectPath, '..', 'outside.java'), projectPath, []),
+      readJavaProjectFileMetadataAsync(resolve(projectPath, '..', 'outside.java'), projectPath, []),
       /Path escaped the allowed root/
     );
   });
