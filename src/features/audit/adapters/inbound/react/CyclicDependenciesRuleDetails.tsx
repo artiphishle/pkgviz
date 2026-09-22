@@ -136,9 +136,12 @@ function CycleRowAction(props: CycleRowActionProps) {
         flex: 1,
         minWidth: 0,
         outlineColor: theme.semantics.border.focus,
-        padding: 0,
+        paddingBottom: 0,
+        paddingLeft: props.inspected ? 6 : 0,
+        paddingRight: 0,
+        paddingTop: 0,
         textAlign: 'left',
-        ...(props.inspected ? { boxShadow: `inset 3px 0 ${props.color}`, paddingLeft: 6 } : {}),
+        ...(props.inspected ? { boxShadow: `inset 3px 0 ${props.color}` } : {}),
       }}
       title={props.route}
       onClick={props.onInspect}
