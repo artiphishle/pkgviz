@@ -7,7 +7,7 @@ describe('[readJavaProjectFileMetadata]', () => {
     process.env.NEXT_PUBLIC_PROJECT_PATH = resolve(process.cwd(), 'examples/java/my-app');
     const projectPath = parseProjectPath();
     const javaFile = resolve(projectPath, 'src/main/java/com/example/myapp/App.java');
-    const parsedJavaFile = await readJavaProjectFileMetadata(javaFile, projectPath, [
+    const parsedJavaFile = readJavaProjectFileMetadata(javaFile, projectPath, [
       {
         name: 'com.example.myapp.a.A',
         pkg: 'com.example.myapp.a',
