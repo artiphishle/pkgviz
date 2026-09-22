@@ -1,4 +1,5 @@
-import { Language, type ParsedFile } from '@/shared/types';
+import { Language } from '@/types/language';
+import type { ProjectFileMetadata } from '@/types/projectFiles';
 
 import { beforeEach } from 'node:test';
 import { describe, expect, it, resolve } from '@artiphishle/testosterone';
@@ -29,7 +30,7 @@ describe('[getAuditAction]', () => {
 
     // any ok. Avoid cyclic type: Java package nesting can contain unknown length of sub packages
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const auditAppJava = (audit.files.com as any).example.myapp['App.java'] as ParsedFile;
+    const auditAppJava = (audit.files.com as any).example.myapp['App.java'] as ProjectFileMetadata;
 
     // audit.files > File 'App.java'
     expect(auditAppJava.className).toBe(appJava.className);
