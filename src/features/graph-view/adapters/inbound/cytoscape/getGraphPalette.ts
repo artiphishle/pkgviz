@@ -1,49 +1,40 @@
-export type ThemeKey = 'dark' | 'light';
+import type { ZoraRuntimeTheme } from '@zora/ZoraProvider';
 
-const palette = {
-  light: {
-    canvasBg: '#ffffff',
-    edge: '#000',
-    weightXs: '#000',
-    weightMd: '#000',
-    weightXl: '#000',
+export interface GraphPalette {
+  readonly canvasBg: string;
+  readonly compoundBg: string;
+  readonly edge: string;
+  readonly nodeBg: string;
+  readonly nodeBgVendor: string;
+  readonly nodeBorder: string;
+  readonly nodeBorderVendor: string;
+  readonly nodeText: string;
+  readonly nodeTextVendor: string;
+  readonly selectedFill: string;
+  readonly selectedRing: string;
+  readonly selectedText: string;
+  readonly weightMd: string;
+  readonly weightXl: string;
+  readonly weightXs: string;
+}
 
-    nodeBg: '#E8F1FF',
-    nodeBorder: '#0B5FFF',
-    nodeBorderVendor: '#E2D5FF',
-    nodeBgVendor: '#D1C4FF',
-    nodeText: '#0B5FFF',
-    compoundBg: '#7892B3',
-
-    selectedFill: '#0B5FFF',
-    selectedFillVendor: '#a025aa',
-    selectedRing: '#0B5FFF',
-    selectedText: '#FFF',
-  },
-  dark: {
-    canvasBg: '#171717',
-    edge: '#707070',
-    weightXs: '#5A5A5A',
-    weightMd: '#8A8A8A',
-    weightXl: '#C0C0C0',
-
-    nodeBg: '#1E2533',
-    nodeBgVendor: '#241431',
-    nodeBorder: '#2A3A4A',
-    nodeBorderVendor: '#351542',
-    nodeText: '#E8F0FF',
-    compoundBg: '#A9BCD5',
-
-    selectedFill: '#2E6FFF',
-    selectedFillVendor: '#4E25AA',
-    selectedRing: '#BBD3FF',
-    selectedText: '#FFFFFF',
-  },
-} as const;
-
-export type GraphPalette = (typeof palette)[ThemeKey];
-
-/*** Resolves the graph palette for the active light or dark theme. */
-export function getGraphPalette(theme: ThemeKey): GraphPalette {
-  return theme === 'dark' ? palette.dark : palette.light;
+/*** Maps the active ZORA theme semantics into PKGViz graph presentation roles. */
+export function getGraphPalette(theme: ZoraRuntimeTheme): GraphPalette {
+  return {
+    canvasBg: theme.semantics.surface.default,
+    compoundBg: theme.semantics.surface.subtle,
+    edge: theme.semantics.content.muted,
+    nodeBg: theme.semantics.brand.softBg,
+    nodeBgVendor: theme.semantics.secondary.softBg,
+    nodeBorder: theme.semantics.brand.outline,
+    nodeBorderVendor: theme.semantics.secondary.outline,
+    nodeText: theme.semantics.brand.onSoftText,
+    nodeTextVendor: theme.semantics.secondary.onSoftText,
+    selectedFill: theme.semantics.selection.background,
+    selectedRing: theme.semantics.selection.border,
+    selectedText: theme.semantics.selection.content,
+    weightMd: theme.semantics.border.strong,
+    weightXl: theme.semantics.content.default,
+    weightXs: theme.semantics.border.subtle,
+  };
 }
