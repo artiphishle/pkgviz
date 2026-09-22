@@ -1,14 +1,19 @@
+import { createDependencyGraphAsync } from '@ankhorage/dependency-graph';
 import { describe, expect, it, resolve } from '@artiphishle/testosterone';
 
 import { parseDelphiFile } from '@/app/utils/parser/delphi/parseFile';
-import { analyzeDependencyImportsAsync } from '@/features/dependency-analysis/adapters/outbound/dependency-graph/analyzeDependencyImportsAsync';
+import { projectDependencyImportsAsync } from '@/features/dependency-analysis/adapters/outbound/dependency-graph/projectDependencyImportsAsync';
 
 describe('[Delphi dependency graph migration]', () => {
   it('preserves locked Delphi unit/import semantics through the canonical analyzer', async () => {
     const appRoot = resolve(process.cwd(), 'examples/delphi/my-app');
     const projectRoot = resolve(appRoot, 'src');
     const file = resolve(projectRoot, 'Services/UserService.pas');
-    const importsByFile = await analyzeDependencyImportsAsync(
+    const dependencyGraph = await createDependencyGraphAsync({
+      projects: [{ id: 'current', rootPath: appRoot }],
+    });
+    const importsByFile = await projectDependencyImportsAsync(
+      dependencyGraph,
       appRoot,
       projectRoot,
       'specifier',

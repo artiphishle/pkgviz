@@ -1,14 +1,19 @@
+import { createDependencyGraphAsync } from '@ankhorage/dependency-graph';
 import { describe, expect, it, resolve } from '@artiphishle/testosterone';
 
 import { parsePythonFile } from '@/app/utils/parser/python/parseFile';
-import { analyzeDependencyImportsAsync } from '@/features/dependency-analysis/adapters/outbound/dependency-graph/analyzeDependencyImportsAsync';
+import { projectDependencyImportsAsync } from '@/features/dependency-analysis/adapters/outbound/dependency-graph/projectDependencyImportsAsync';
 
 describe('[Python dependency graph migration]', () => {
   it('preserves locked Python package/import semantics through the canonical analyzer', async () => {
     const appRoot = resolve(process.cwd(), 'examples/python/my-app');
     const projectRoot = resolve(appRoot, 'src');
     const file = resolve(projectRoot, 'services/user_service.py');
-    const importsByFile = await analyzeDependencyImportsAsync(
+    const dependencyGraph = await createDependencyGraphAsync({
+      projects: [{ id: 'current', rootPath: appRoot }],
+    });
+    const importsByFile = await projectDependencyImportsAsync(
+      dependencyGraph,
       appRoot,
       projectRoot,
       'specifier',

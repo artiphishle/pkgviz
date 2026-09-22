@@ -1,10 +1,10 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import {
-  createDependencyGraphAsync,
-  type DependencyGraphNodeData,
-  type DependencyImportEvidence,
+import type {
+  DependencyGraph,
+  DependencyGraphNodeData,
+  DependencyImportEvidence,
 } from '@ankhorage/dependency-graph';
 import { resolveFileSystemPathWithinRoot } from '@ankhorage/utility/node/fs';
 
@@ -29,8 +29,9 @@ interface AppendEvidenceInput {
   readonly sourceTextByFile: Map<string, Promise<string>>;
 }
 
-/*** Returns PKGViz import definitions from the canonical dependency analyzer. */
-export async function analyzeDependencyImportsAsync(
+/*** Project PKGViz import metadata from one canonical dependency graph without rescanning source. */
+export async function projectDependencyImportsAsync(
+  graph: DependencyGraph,
   projectRoot: string,
   analysisRoot: string = projectRoot,
   importNameMode: ImportNameMode = 'package',
@@ -44,9 +45,6 @@ export async function analyzeDependencyImportsAsync(
     resolveFileSystemPathWithinRoot(analysisRoot, '.', { allowRoot: true }),
     { allowRoot: true }
   );
-  const graph = await createDependencyGraphAsync({
-    projects: [{ id: 'current', rootPath: canonicalProjectRoot }],
-  });
   const nodes = new Map(graph.nodes.map(node => [node.id, node.data] as const));
   const imports = new Map<string, OrderedImport[]>();
   const sourceTextByFile = new Map<string, Promise<string>>();
@@ -82,7 +80,7 @@ type ImportNameMode = 'package' | 'specifier';
 type ImportIntrinsicMode =
   'canonical' | 'delphi-standard-library' | 'kotlin-standard-library' | 'python-legacy';
 
-/*** Adds one canonical evidence item while retaining the original source declaration position. */
+/*** Add one canonical evidence item while retaining the original source declaration position. */
 async function appendEvidenceAsync(input: AppendEvidenceInput): Promise<number> {
   const absoluteSourceFile = path.resolve(input.projectRoot, input.evidence.sourceFile);
   const sourceFile = toPosix(path.relative(input.analysisRoot, absoluteSourceFile));
@@ -102,7 +100,7 @@ async function appendEvidenceAsync(input: AppendEvidenceInput): Promise<number> 
   return input.ordinal + 1;
 }
 
-/*** Converts collected import evidence into source-order PKGViz definitions. */
+/*** Convert collected import evidence into source-order PKGViz definitions. */
 function materializeImports(
   imports: ReadonlyMap<string, readonly OrderedImport[]>
 ): ReadonlyMap<string, readonly ImportDefinition[]> {
@@ -120,7 +118,7 @@ function materializeImports(
   );
 }
 
-/*** Reads source content once so adapter output preserves source declaration order. */
+/*** Read source content once so adapter output preserves source declaration order. */
 function readSourceTextAsync(
   cache: Map<string, Promise<string>>,
   sourceFile: string
@@ -133,7 +131,7 @@ function readSourceTextAsync(
   return sourceText;
 }
 
-/*** Missing evidence source files retain canonical ordering instead of failing analysis. */
+/*** Keep missing evidence source files in canonical order instead of failing projection. */
 async function readOptionalSourceTextAsync(sourceFile: string): Promise<string> {
   try {
     return await readFile(sourceFile, 'utf8');
@@ -143,9 +141,11 @@ async function readOptionalSourceTextAsync(sourceFile: string): Promise<string> 
   }
 }
 
-/*** Preserves PKGViz presentation semantics independently from canonical graph classification. */
+/*** Preserve PKGViz presentation semantics independently from canonical graph classification. */
 function isIntrinsicImport(evidence: DependencyImportEvidence, mode: ImportIntrinsicMode): boolean {
-  if (mode === 'canonical') return evidence.classification === 'intrinsic';
+  if (mode === 'canonical') {
+    return evidence.classification === 'intrinsic' || evidence.classification === 'focus';
+  }
   if (mode === 'python-legacy') return evidence.specifier.startsWith('.');
   if (mode === 'delphi-standard-library') {
     return (
@@ -164,7 +164,7 @@ function isIntrinsicImport(evidence: DependencyImportEvidence, mode: ImportIntri
   );
 }
 
-/*** Maps canonical dependency-graph node metadata to PKGViz package notation. */
+/*** Map canonical dependency nodes to the package notation retained in parser metadata. */
 function targetPackage(target: DependencyGraphNodeData): string {
   if (target.kind === 'module') return target.path ?? '';
   if (target.classification === 'intrinsic' && target.focus && target.path === '.') return '';

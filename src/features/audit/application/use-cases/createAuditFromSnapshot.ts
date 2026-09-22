@@ -11,7 +11,7 @@ export function createAuditFromSnapshot(
   configurationInput: ResolveAuditConfigurationInput = {}
 ): Audit {
   const configuration = resolveAuditConfiguration(configurationInput);
-  const cyclicPackages = getPackageCyclesWithMembers(snapshot.files, snapshot.graph).cycles;
+  const cyclicPackages = getPackageCyclesWithMembers(snapshot.files, snapshot.packageGraph).cycles;
   const rules = evaluateAuditRules({ configuration, cyclicPackages });
 
   return {

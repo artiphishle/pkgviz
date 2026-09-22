@@ -1,14 +1,19 @@
+import { createDependencyGraphAsync } from '@ankhorage/dependency-graph';
 import { describe, expect, it, resolve } from '@artiphishle/testosterone';
 
 import { parseKotlinFile } from '@/app/utils/parser/kotlin/parseFile';
-import { analyzeDependencyImportsAsync } from '@/features/dependency-analysis/adapters/outbound/dependency-graph/analyzeDependencyImportsAsync';
+import { projectDependencyImportsAsync } from '@/features/dependency-analysis/adapters/outbound/dependency-graph/projectDependencyImportsAsync';
 
 describe('[Kotlin dependency graph migration]', () => {
   it('preserves locked Kotlin package/import semantics through the canonical analyzer', async () => {
     const appRoot = resolve(process.cwd(), 'examples/kotlin/my-app');
     const projectRoot = resolve(appRoot, 'src/main/kotlin');
     const file = resolve(projectRoot, 'com/example/services/UserService.kt');
-    const importsByFile = await analyzeDependencyImportsAsync(
+    const dependencyGraph = await createDependencyGraphAsync({
+      projects: [{ id: 'current', rootPath: appRoot }],
+    });
+    const importsByFile = await projectDependencyImportsAsync(
+      dependencyGraph,
       appRoot,
       projectRoot,
       'specifier',

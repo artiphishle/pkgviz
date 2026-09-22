@@ -1,15 +1,20 @@
+import { createDependencyGraphAsync } from '@ankhorage/dependency-graph';
 import { assert, describe, expect, it, resolve } from '@artiphishle/testosterone';
 
-import { buildGraph } from '@/app/utils/buildGraph';
-import { getParsedFileStructure } from '@/app/utils/getParsedFileStructure';
-import { analyzeDependencyImportsAsync } from '@/features/dependency-analysis/adapters/outbound/dependency-graph/analyzeDependencyImportsAsync';
-import { Language } from '@/shared/types';
+import { projectDependencyImportsAsync } from '@/features/dependency-analysis/adapters/outbound/dependency-graph/projectDependencyImportsAsync';
+import { readProjectSnapshotAsync } from '@/features/project-analysis/adapters/outbound/filesystem/readProjectSnapshotAsync';
 
 describe('[Java dependency graph migration]', () => {
   it('rejects an analysis root outside the selected project', async () => {
+    const projectRoot = resolve(process.cwd(), 'examples/java/my-app');
+    const dependencyGraph = await createDependencyGraphAsync({
+      projects: [{ id: 'current', rootPath: projectRoot }],
+    });
+
     await assert.rejects(
-      analyzeDependencyImportsAsync(
-        resolve(process.cwd(), 'examples/java/my-app'),
+      projectDependencyImportsAsync(
+        dependencyGraph,
+        projectRoot,
         resolve(process.cwd(), 'examples/typescript/my-app')
       ),
       /Path escaped the allowed root/
@@ -19,7 +24,11 @@ describe('[Java dependency graph migration]', () => {
   it('uses canonical Java import evidence at the Java source-root boundary', async () => {
     const projectRoot = resolve(process.cwd(), 'examples/java/my-app');
     const analysisRoot = resolve(projectRoot, 'src/main/java');
-    const importsByFile = await analyzeDependencyImportsAsync(
+    const dependencyGraph = await createDependencyGraphAsync({
+      projects: [{ id: 'current', rootPath: projectRoot }],
+    });
+    const importsByFile = await projectDependencyImportsAsync(
+      dependencyGraph,
       projectRoot,
       analysisRoot,
       'specifier'
@@ -34,10 +43,9 @@ describe('[Java dependency graph migration]', () => {
     ]);
   });
 
-  it('preserves the locked Java package dependency semantics after analyzer migration', async () => {
-    process.env.NEXT_PUBLIC_PROJECT_PATH = resolve(process.cwd(), 'examples/java/my-app');
-    const files = await getParsedFileStructure(Language.Java);
-    const graph = buildGraph(files);
+  it('preserves the locked Java package dependency semantics from the owner graph', async () => {
+    const projectRoot = resolve(process.cwd(), 'examples/java/my-app');
+    const { graph } = await readProjectSnapshotAsync(projectRoot);
 
     const weights = new Map(
       graph.edges.map(edge => [`${edge.data.source}->${edge.data.target}`, edge.data.weight])
