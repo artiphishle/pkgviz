@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@artiphishle/testosterone';
-import { parseProjectPath } from '@/shared/utils/parseProjectPath';
+import { parseProjectPath } from '@/utils/parseProjectPath';
 
 describe('[parseProjectPath]', () => {
   it('should parse project path from environment variable', () => {
