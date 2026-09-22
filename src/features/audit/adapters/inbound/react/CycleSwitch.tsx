@@ -1,31 +1,40 @@
 'use client';
-import { Switch } from 'radix-ui';
-import React from 'react';
 
-/*** Renders the audit-only switch whose selected color must match its graph cycle exactly. */
+import { Switch } from '@zora/switch';
+import { View } from '@zora/view';
+import { useZoraTheme } from '@zora/ZoraProvider';
+
+/*** Renders an audit cycle toggle through ZORA with a data-driven cycle color indicator. */
 export function CycleSwitch({ ariaLabel, checkedColor, id, onToggle, value }: CycleSwitchProps) {
+  const { theme } = useZoraTheme();
+
   return (
-    <span className="ml-auto inline-flex shrink-0">
-      <Switch.Root
-        aria-label={ariaLabel}
-        className="relative h-[18px] w-[42px] shrink-0 cursor-pointer rounded-full bg-neutral-200 outline-none data-[state=checked]:bg-neutral-200 dark:bg-neutral-800 dark:data-[state=checked]:bg-gray-700"
-        id={id}
+    <View
+      align="center"
+      direction="row"
+      gap="xs"
+      style={{ flexShrink: 0, marginLeft: 'auto' }}
+    >
+      <span
+        aria-hidden="true"
+        style={{
+          backgroundColor: value ? checkedColor : theme.semantics.content.subtle,
+          borderRadius: 999,
+          height: 8,
+          opacity: value ? 1 : 0.6,
+          width: 8,
+        }}
+      />
+      <Switch
+        accessibilityLabel={ariaLabel}
         checked={value}
-        onCheckedChange={onToggle}
-      >
-        {value && checkedColor ? (
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 rounded-full opacity-25"
-            style={{ backgroundColor: checkedColor }}
-          />
-        ) : null}
-        <Switch.Thumb
-          className="relative block size-[16px] translate-x-0.5 rounded-full bg-neutral-500 transition-transform duration-100 will-change-transform data-[state=checked]:translate-x-[24px] data-[state=checked]:bg-blue-500 dark:bg-neutral-500 dark:data-[state=checked]:bg-white"
-          style={value && checkedColor ? { backgroundColor: checkedColor } : undefined}
-        />
-      </Switch.Root>
-    </span>
+        size="s"
+        testID={id}
+        onCheckedChange={(checked: boolean) => {
+          if (checked !== value) onToggle();
+        }}
+      />
+    </View>
   );
 }
 
