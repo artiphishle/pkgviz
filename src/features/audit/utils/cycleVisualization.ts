@@ -1,20 +1,9 @@
 import type { PackageCycleDetail } from '@/types/audit';
 import type { CycleFocus, CycleHighlight, CycleInspection } from '@/types/auditVisualization';
 
-const CYCLE_ERROR_COLORS = [
-  '#dc2626',
-  '#7f1d1d',
-  '#fb7185',
-  '#be123c',
-  '#ef4444',
-  '#450a0a',
-  '#f43f5e',
-  '#991b1b',
-] as const;
-
-/*** Returns a stable distinct error-red color for one cycle occurrence. */
-export function getCycleColor(index: number): string {
-  return CYCLE_ERROR_COLORS[index % CYCLE_ERROR_COLORS.length];
+/*** Returns one stable cycle color from the active ZORA-derived cycle palette. */
+export function getCycleColor(colors: readonly string[], index: number): string {
+  return colors[index % colors.length] ?? colors[0] ?? 'currentColor';
 }
 
 /*** Returns the stable UI identity for one cycle occurrence. */
@@ -28,10 +17,14 @@ export function getCycleId(cycle: PackageCycleDetail): string {
 }
 
 /*** Creates one stable cycle highlight descriptor. */
-function createCycleHighlight(cycle: PackageCycleDetail, index: number): CycleHighlight {
+function createCycleHighlight(
+  cycle: PackageCycleDetail,
+  index: number,
+  colors: readonly string[]
+): CycleHighlight {
   return {
     id: getCycleId(cycle),
-    color: getCycleColor(index),
+    color: getCycleColor(colors, index),
     cycle,
   };
 }
@@ -39,11 +32,12 @@ function createCycleHighlight(cycle: PackageCycleDetail, index: number): CycleHi
 /*** Creates graph highlights for the selected cycle occurrence IDs. */
 export function createCycleHighlights(
   cycles: readonly PackageCycleDetail[],
-  selectedCycleIds: readonly string[]
+  selectedCycleIds: readonly string[],
+  colors: readonly string[]
 ): readonly CycleHighlight[] {
   return cycles.flatMap((cycle, index) => {
     const id = getCycleId(cycle);
-    return selectedCycleIds.includes(id) ? [createCycleHighlight(cycle, index)] : [];
+    return selectedCycleIds.includes(id) ? [createCycleHighlight(cycle, index, colors)] : [];
   });
 }
 
@@ -77,10 +71,11 @@ export function createCycleFocus(highlights: readonly CycleHighlight[]): CycleFo
 export function createCycleInspection(
   cycle: PackageCycleDetail,
   index: number,
-  label: string
+  label: string,
+  colors: readonly string[]
 ): CycleInspection {
   return {
-    ...createCycleHighlight(cycle, index),
+    ...createCycleHighlight(cycle, index, colors),
     label,
   };
 }
