@@ -30,10 +30,7 @@ export async function runPkgvizCliAsync(argv: readonly string[] = process.argv):
 }
 
 /*** Runs the default audit command and maps blocking findings onto the process exit contract. */
-async function runAuditCommandAsync(
-  callerRoot: string,
-  options: PkgvizCliOptions
-): Promise<void> {
+async function runAuditCommandAsync(callerRoot: string, options: PkgvizCliOptions): Promise<void> {
   if (options.verbose) console.log('[pkgviz]', `Running audit for ${callerRoot}`);
 
   const result = await runAuditAsync({

@@ -19,48 +19,53 @@ const DEFAULT_OPTIONS: PkgvizCliOptions = {
   rules: [],
 };
 
-/*** Recursively consumes CLI tokens without mutable parser state. */
-function parseTokens(
-  tokens: readonly string[],
-  options: PkgvizCliOptions
-): PkgvizCliOptions {
-  const [argument, ...rest] = tokens;
-  if (argument === undefined) return options;
+type FlagUpdater = (options: PkgvizCliOptions) => PkgvizCliOptions;
+type ValueUpdater = (options: PkgvizCliOptions, value: string) => PkgvizCliOptions;
 
-  if (argument === '-o' || argument === '--out') {
-    const [value, ...tail] = readRequiredValue(argument, rest);
-    return parseTokens(tail, { ...options, out: value });
-  }
-  if (argument === '--open') return parseTokens(rest, { ...options, open: true });
-  if (argument === '--serve') return parseTokens(rest, { ...options, serve: true });
-  if (argument === '--prod') return parseTokens(rest, { ...options, prod: true });
-  if (argument === '-p' || argument === '--port') {
-    const [value, ...tail] = readRequiredValue(argument, rest);
-    return parseTokens(tail, { ...options, port: Number(value) });
-  }
-  if (argument === '--wait') {
-    const [value, ...tail] = readRequiredValue(argument, rest);
-    return parseTokens(tail, { ...options, waitMs: Number(value) });
-  }
-  if (argument === '--no-pretty') return parseTokens(rest, { ...options, pretty: false });
-  if (argument === '--no-fail-on-rule-violation') {
-    return parseTokens(rest, { ...options, failOnRuleViolation: false });
-  }
-  if (argument === '-v' || argument === '--verbose') {
-    return parseTokens(rest, { ...options, verbose: true });
-  }
-  if (argument === '-h' || argument === '--help') {
-    return parseTokens(rest, { ...options, help: true });
-  }
-  if (argument === '--rule') {
-    const [value, ...tail] = readRequiredValue(argument, rest);
-    return parseTokens(tail, {
+const FLAG_UPDATERS = new Map<string, FlagUpdater>([
+  ['--open', options => ({ ...options, open: true })],
+  ['--serve', options => ({ ...options, serve: true })],
+  ['--prod', options => ({ ...options, prod: true })],
+  ['--no-pretty', options => ({ ...options, pretty: false })],
+  [
+    '--no-fail-on-rule-violation',
+    options => ({ ...options, failOnRuleViolation: false }),
+  ],
+  ['-v', options => ({ ...options, verbose: true })],
+  ['--verbose', options => ({ ...options, verbose: true })],
+  ['-h', options => ({ ...options, help: true })],
+  ['--help', options => ({ ...options, help: true })],
+]);
+
+const VALUE_UPDATERS = new Map<string, ValueUpdater>([
+  ['-o', (options, value) => ({ ...options, out: value })],
+  ['--out', (options, value) => ({ ...options, out: value })],
+  ['-p', (options, value) => ({ ...options, port: Number(value) })],
+  ['--port', (options, value) => ({ ...options, port: Number(value) })],
+  ['--wait', (options, value) => ({ ...options, waitMs: Number(value) })],
+  [
+    '--rule',
+    (options, value) => ({
       ...options,
       rules: [...options.rules, parseRuleConfiguration(value)],
-    });
-  }
+    }),
+  ],
+]);
 
-  return parseTokens(rest, options);
+/*** Recursively consumes CLI tokens without mutable parser state. */
+function parseTokens(tokens: readonly string[], options: PkgvizCliOptions): PkgvizCliOptions {
+  if (tokens.length === 0) return options;
+
+  const argument = tokens[0];
+  const rest = tokens.slice(1);
+  const flagUpdater = FLAG_UPDATERS.get(argument);
+  if (flagUpdater !== undefined) return parseTokens(rest, flagUpdater(options));
+
+  const valueUpdater = VALUE_UPDATERS.get(argument);
+  if (valueUpdater === undefined) return parseTokens(rest, options);
+
+  const [value, ...tail] = readRequiredValue(argument, rest);
+  return parseTokens(tail, valueUpdater(options, value));
 }
 
 /*** Reads one required option value and returns it together with the unconsumed tail. */
@@ -68,9 +73,8 @@ function readRequiredValue(
   option: string,
   tokens: readonly string[]
 ): readonly [string, ...string[]] {
-  const [value, ...tail] = tokens;
-  if (value === undefined) throw new Error(`${option} requires a value.`);
-  return [value, ...tail];
+  if (tokens.length === 0) throw new Error(`${option} requires a value.`);
+  return [tokens[0], ...tokens.slice(1)];
 }
 
 /*** Parses one CLI audit-rule override without accepting unknown rule IDs or modes. */

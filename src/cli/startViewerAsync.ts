@@ -51,8 +51,9 @@ export async function startViewerAsync(
 
 /*** Finds the first available preferred or conventional viewer port. */
 async function findFreePortAsync(preferred?: number): Promise<number> {
-  const candidates = [...new Set([preferred, 3000, 3001, 3030, 4000, 5173, 8787, 0])]
-    .filter((port): port is number => port !== undefined);
+  const candidates = [...new Set([preferred, 3000, 3001, 3030, 4000, 5173, 8787, 0])].filter(
+    (port): port is number => port !== undefined
+  );
   const port = await findAvailablePortAsync(candidates);
   if (port === null) throw new Error('No free port found');
   return port;
@@ -60,10 +61,11 @@ async function findFreePortAsync(preferred?: number): Promise<number> {
 
 /*** Checks candidate ports in order and returns the first actual listening port. */
 async function findAvailablePortAsync(candidates: readonly number[]): Promise<number | null> {
-  const [candidate, ...rest] = candidates;
-  if (candidate === undefined) return null;
+  if (candidates.length === 0) return null;
+
+  const candidate = candidates[0];
   const port = await claimAvailablePortAsync(candidate);
-  return port === null ? findAvailablePortAsync(rest) : port;
+  return port ?? findAvailablePortAsync(candidates.slice(1));
 }
 
 /*** Temporarily binds one port and returns its actual assigned value when available. */
@@ -99,8 +101,13 @@ function resolveNextBin(packageRoot: string): string {
 /*** Pipes viewer output only when verbose CLI logging is enabled. */
 function pipeViewerOutput(child: ReturnType<typeof spawn>, verbose: boolean): void {
   if (!verbose) return;
-  child.stdout?.on('data', data => process.stdout.write(data));
-  child.stderr?.on('data', data => process.stderr.write(data));
+  child.stdout?.on('data', (data: unknown) => writeProcessOutput(process.stdout, data));
+  child.stderr?.on('data', (data: unknown) => writeProcessOutput(process.stderr, data));
+}
+
+/*** Writes one safely narrowed child-process output chunk. */
+function writeProcessOutput(stream: NodeJS.WriteStream, data: unknown): void {
+  if (typeof data === 'string' || data instanceof Uint8Array) stream.write(data);
 }
 
 /*** Emits one verbose PKGViz CLI line when requested. */
