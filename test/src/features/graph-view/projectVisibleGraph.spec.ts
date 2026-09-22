@@ -160,6 +160,61 @@ describe('[graph view projection]', () => {
 
     expect(result.elements.nodes.map(node => node.data.label)).toEqual(['services.filepattern']);
   });
+  it('groups sibling canonical scoped vendors under one organization compound', () => {
+    const result = projectVisibleGraph({
+      currentPackage: '',
+      elements: createScopedVendorElements(),
+      showCompoundNodes: true,
+      showVendorPackages: true,
+      subPackageDepth: 2,
+    });
+
+    const scope = result.elements.nodes.find(node => node.data.id === 'vendor-scope:@ankhorage');
+    const zora = result.elements.nodes.find(node => node.data.id === '@ankhorage/zora');
+    const devtools = result.elements.nodes.find(node => node.data.id === '@ankhorage/devtools');
+    const singleton = result.elements.nodes.find(node => node.data.id === '@single/only');
+    const zoraEdge = result.elements.edges.find(edge => edge.data.target === '@ankhorage/zora');
+
+    expect(scope?.data.label).toBe('@ankhorage');
+    expect(scope?.classes).toBe('isVendor');
+    expect(zora?.data.parent).toBe('vendor-scope:@ankhorage');
+    expect(zora?.data.label).toBe('zora');
+    expect(devtools?.data.parent).toBe('vendor-scope:@ankhorage');
+    expect(devtools?.data.label).toBe('devtools');
+    expect(singleton?.data.parent).toBeUndefined();
+    expect(singleton?.data.label).toBe('@single/only');
+    expect(zoraEdge?.data.source).toBe('src.feature');
+    expect(zoraEdge?.data.weight).toBe(2);
+  });
+
+  it('does not materialize vendor scope compounds when vendors or compounds are hidden', () => {
+    const base = {
+      currentPackage: '',
+      elements: createScopedVendorElements(),
+      subPackageDepth: 2,
+    };
+    const flat = projectVisibleGraph({
+      ...base,
+      showCompoundNodes: false,
+      showVendorPackages: true,
+    });
+    const withoutVendors = projectVisibleGraph({
+      ...base,
+      showCompoundNodes: true,
+      showVendorPackages: false,
+    });
+
+    expect(flat.elements.nodes.some(node => node.data.id === 'vendor-scope:@ankhorage')).toBe(false);
+    expect(
+      flat.elements.nodes.find(node => node.data.id === '@ankhorage/zora')?.data.label
+    ).toBe('@ankhorage/zora');
+    expect(
+      withoutVendors.elements.nodes.some(node => String(node.data.id).startsWith('vendor-scope:'))
+    ).toBe(false);
+    expect(
+      withoutVendors.elements.nodes.some(node => node.data.id === '@ankhorage/zora')
+    ).toBe(false);
+  });
 });
 
 describe('[package scope with external dependencies]', () => {
@@ -242,5 +297,28 @@ function createDeepElements(): ElementsDefinition {
       { data: { id: 'src.io.reflectoring.beta' } },
     ],
     edges: [],
+  };
+}
+
+
+/*** Creates scoped and unscoped canonical vendor roots with stable dependency edges. */
+function createScopedVendorElements(): ElementsDefinition {
+  return {
+    nodes: [
+      { data: { id: 'src', isIntrinsic: true } },
+      { data: { id: 'src.feature', isIntrinsic: true, parent: 'src' } },
+      { data: { id: '@ankhorage/zora', isIntrinsic: false }, classes: 'isVendor' },
+      { data: { id: '@ankhorage/devtools', isIntrinsic: false }, classes: 'isVendor' },
+      { data: { id: '@ankhorage/supabase', isIntrinsic: false }, classes: 'isVendor' },
+      { data: { id: '@single/only', isIntrinsic: false }, classes: 'isVendor' },
+      { data: { id: 'react', isIntrinsic: false }, classes: 'isVendor' },
+    ],
+    edges: [
+      { data: { id: 'zora', source: 'src.feature', target: '@ankhorage/zora', weight: 2 } },
+      { data: { id: 'devtools', source: 'src.feature', target: '@ankhorage/devtools', weight: 3 } },
+      { data: { id: 'supabase', source: 'src.feature', target: '@ankhorage/supabase', weight: 4 } },
+      { data: { id: 'single', source: 'src.feature', target: '@single/only', weight: 5 } },
+      { data: { id: 'react', source: 'src.feature', target: 'react', weight: 6 } },
+    ],
   };
 }
