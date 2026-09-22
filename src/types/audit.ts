@@ -1,3 +1,4 @@
+import type { PackageDependencyGraph } from '@/types/dependencyAnalysis';
 import type { ParserSelection } from '@/types/parserSelection';
 import type { ProjectFileTree } from '@/types/projectFiles';
 
@@ -68,6 +69,7 @@ export interface Audit {
   readonly evaluation: AuditEvaluation;
   readonly meta: AuditMeta;
   readonly files: ProjectFileTree;
+  readonly packageGraph: PackageDependencyGraph;
 }
 
 export interface EvaluateAuditRulesInput {

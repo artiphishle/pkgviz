@@ -48,6 +48,19 @@ describe('[getAuditAction]', () => {
     expect(typeof audit.meta.timeStart).toBe('number');
     expect(typeof audit.meta.timeEnd).toBe('number');
 
+    // Portable viewer data must retain the analyzed dependency graph without rebuilding it from files.
+    const packageA = audit.packageGraph.nodes.find(node => node.id === 'com.example.myapp.a');
+    expect(packageA?.data.isIntrinsic).toBe(true);
+
+    const appToA = audit.packageGraph.edges.find(
+      edge => edge.source === 'com.example.myapp' && edge.target === 'com.example.myapp.a'
+    );
+    expect(appToA?.data.weight).toBe(1);
+    expect(appToA?.data.evidence.length).toBe(1);
+
+    const serialized = JSON.parse(JSON.stringify(audit)) as typeof audit;
+    expect(serialized.packageGraph).toEqual(audit.packageGraph);
+
     const cyclicRule = audit.evaluation.rules.find(rule => rule.id === 'cyclic-dependencies');
     expect(cyclicRule?.status).toBe('failed');
     expect(cyclicRule?.policy).toBe('blocking');

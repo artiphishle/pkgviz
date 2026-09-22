@@ -18,6 +18,7 @@ export function createAuditFromSnapshot(
     configuration,
     evaluation: { cyclicPackages, rules },
     files: snapshot.files,
+    packageGraph: snapshot.packageGraph,
     meta: {
       language: snapshot.language,
       projectName: getProjectName(snapshot.projectPath),
