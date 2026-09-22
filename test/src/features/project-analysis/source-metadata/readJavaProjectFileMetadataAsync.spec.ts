@@ -1,13 +1,13 @@
 import { assert, describe, expect, it, resolve } from '@artiphishle/testosterone';
-import { readJavaProjectFileMetadataAsync } from '@/features/project-analysis/adapters/outbound/source-metadata/readJavaProjectFileMetadataAsync';
+import { readJavaProjectFileMetadata } from '@/features/project-analysis/adapters/outbound/source-metadata/readJavaProjectFileMetadata';
 import { parseProjectPath } from '@/utils/parseProjectPath';
 
-describe('[readJavaProjectFileMetadataAsync]', () => {
+describe('[readJavaProjectFileMetadata]', () => {
   it('parses a .java file correctly', async () => {
     process.env.NEXT_PUBLIC_PROJECT_PATH = resolve(process.cwd(), 'examples/java/my-app');
     const projectPath = parseProjectPath();
     const javaFile = resolve(projectPath, 'src/main/java/com/example/myapp/App.java');
-    const parsedJavaFile = await readJavaProjectFileMetadataAsync(javaFile, projectPath, [
+    const parsedJavaFile = await readJavaProjectFileMetadata(javaFile, projectPath, [
       {
         name: 'com.example.myapp.a.A',
         pkg: 'com.example.myapp.a',
@@ -25,7 +25,7 @@ describe('[readJavaProjectFileMetadataAsync]', () => {
     const projectPath = resolve(process.cwd(), 'examples/java/my-app');
 
     await assert.rejects(
-      readJavaProjectFileMetadataAsync(resolve(projectPath, '..', 'outside.java'), projectPath, []),
+      readJavaProjectFileMetadata(resolve(projectPath, '..', 'outside.java'), projectPath, []),
       /Path escaped the allowed root/
     );
   });
