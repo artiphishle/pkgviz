@@ -1,0 +1,2 @@
+export type { FontProviderProps, FontRuntime } from '../../types/font';
+export { FontProvider } from './adapters/inbound/FontProvider';

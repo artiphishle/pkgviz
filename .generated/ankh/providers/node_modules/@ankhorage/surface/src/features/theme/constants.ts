@@ -1,0 +1,68 @@
+import type { FontWeight, ThemeTokens } from '../../types/theme';
+
+const EMPTY_FONT_MAP: Record<FontWeight, string | undefined> = {
+  '100': undefined,
+  '200': undefined,
+  '300': undefined,
+  '400': undefined,
+  '500': undefined,
+  '600': undefined,
+  '700': undefined,
+  '800': undefined,
+  '900': undefined,
+  bold: undefined,
+  normal: undefined,
+};
+
+const DEFAULT_TOKENS: Omit<ThemeTokens, 'colors' | 'swatches' | 'semantics' | 'colorDiagnostics'> =
+  {
+    spacing: { none: 0, xs: 4, s: 8, m: 16, l: 24, xl: 32, xxl: 48 },
+    radii: { none: 0, s: 4, m: 8, l: 16, full: 9999 },
+    typography: {
+      headings: {
+        1: { size: 32, lineHeight: 40, weight: 'bold' },
+        2: { size: 24, lineHeight: 32, weight: 'bold' },
+        3: { size: 20, lineHeight: 28, weight: 'bold' },
+        4: { size: 18, lineHeight: 24, weight: 'semiBold' },
+        5: { size: 16, lineHeight: 22, weight: 'semiBold' },
+        6: { size: 14, lineHeight: 20, weight: 'semiBold' },
+      },
+      sizes: {
+        xs: 12,
+        s: 14,
+        m: 16,
+        l: 18,
+        xl: 20,
+        xxl: 24,
+        '3xl': 30,
+        h1: 32,
+        h2: 24,
+        h3: 20,
+        h4: 18,
+        h5: 16,
+        h6: 14,
+      },
+      weights: {
+        thin: '100',
+        extraLight: '200',
+        light: '300',
+        regular: '400',
+        medium: '500',
+        semiBold: '600',
+        bold: '700',
+        extraBold: '800',
+        black: '900',
+      },
+      fonts: { normal: { ...EMPTY_FONT_MAP }, italic: { ...EMPTY_FONT_MAP } },
+    },
+    shadows: { soft: 2, medium: 4, hard: 8 },
+  };
+
+export const SURFACE_COLOR_POLICY = {
+  disabledContrast: 3,
+  surfaceSeparation: 1.05,
+  textContrast: 4.5,
+  uiContrast: 3,
+} as const;
+
+export { DEFAULT_TOKENS };

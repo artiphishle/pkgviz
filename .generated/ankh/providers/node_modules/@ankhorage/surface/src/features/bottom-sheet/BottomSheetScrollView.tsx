@@ -1,0 +1,4 @@
+import { BottomSheetScrollView as GorhomBottomSheetScrollView } from '@gorhom/bottom-sheet';
+
+/*** Exposes the native BottomSheet-aware ScrollView implementation. */
+export const BottomSheetScrollView = GorhomBottomSheetScrollView;

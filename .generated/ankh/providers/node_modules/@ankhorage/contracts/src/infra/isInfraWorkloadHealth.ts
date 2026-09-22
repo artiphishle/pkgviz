@@ -1,0 +1,38 @@
+import { isRecord } from '@ankhorage/utility/object';
+
+import { infraFields } from './infraFields';
+import { isInfraShape } from './isInfraShape';
+
+/*** Validate runtime-neutral readiness probes and bounded numeric parameters. */
+export function isInfraWorkloadHealth(value: unknown): boolean {
+  if (!isRecord(value)) return false;
+  const timing = {
+    intervalSeconds: infraFields.optionalPositiveInteger,
+    timeoutSeconds: infraFields.optionalPositiveInteger,
+    failureThreshold: infraFields.optionalPositiveInteger,
+  };
+  switch (value.kind) {
+    case 'http':
+      return isInfraShape(value, {
+        ...timing,
+        kind: (kind) => kind === 'http',
+        port: infraFields.port,
+        path: (path) => typeof path === 'string' && path.startsWith('/'),
+      });
+    case 'tcp':
+      return isInfraShape(value, {
+        ...timing,
+        kind: (kind) => kind === 'tcp',
+        port: infraFields.port,
+      });
+    case 'command':
+      return isInfraShape(value, {
+        ...timing,
+        kind: (kind) => kind === 'command',
+        command: (command) =>
+          Array.isArray(command) && command.length > 0 && infraFields.strings(command),
+      });
+    default:
+      return false;
+  }
+}

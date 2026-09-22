@@ -1,0 +1,245 @@
+{
+  "cachedAtMs": 1789997352702,
+  "entries": [
+    {
+      "description": "Headless project update analysis, planning, execution, recovery, and verification for Ankhorage tooling.",
+      "metadata": {
+        "capabilities": ["apm.status", "apm.plan", "apm.apply", "apm.verify"],
+        "category": "apm",
+        "provider": "./dist/cli/provider.js"
+      },
+      "packageName": "@ankhorage/apm",
+      "repositoryUrl": "https://github.com/ankhorage/apm",
+      "version": "0.8.10"
+    },
+    {
+      "description": "Explicit Ankh provider bootstrap for boarding websites and source artifacts into Ankhorage.",
+      "metadata": {
+        "capabilities": ["board.web.import", "board.openapi.import", "board.manifest.generate"],
+        "category": "board",
+        "provider": "./dist/ankh.provider.js"
+      },
+      "packageName": "@ankhorage/board",
+      "repositoryUrl": "https://github.com/ankhorage/board",
+      "version": "0.3.16"
+    },
+    {
+      "description": "Headless toolkit for importing, normalizing, and executing canonical Ankhorage API and data-source configs.",
+      "metadata": {
+        "capabilities": [
+          "data-sources.inspect",
+          "data-sources.validate",
+          "data-sources.test",
+          "data-sources.normalize"
+        ],
+        "category": "data-sources",
+        "provider": "./dist/cli/index.js"
+      },
+      "packageName": "@ankhorage/data-sources",
+      "repositoryUrl": "https://github.com/ankhorage/data-sources",
+      "version": "2.0.11"
+    },
+    {
+      "description": "Declarative deployment engine for Expo apps across web, iOS, and Android — build, provision, publish, and manage releases from one configuration.",
+      "metadata": {
+        "capabilities": ["deploy.inspect", "deploy.plan", "deploy.execute"],
+        "category": "deploy",
+        "provider": "./dist/cli/index.js"
+      },
+      "packageName": "@ankhorage/deploy",
+      "repositoryUrl": "https://github.com/ankhorage/deploy",
+      "version": "0.12.9"
+    },
+    {
+      "description": "Shared tooling, repository automation, runtime policies, and agent standards for Ankhorage TypeScript projects",
+      "metadata": {
+        "capabilities": [
+          "devtools.apm.sync",
+          "devtools.apm.validate",
+          "devtools.structure.build",
+          "devtools.structure.check",
+          "devtools.changeset",
+          "devtools.lint",
+          "devtools.format",
+          "devtools.knip",
+          "devtools.sync",
+          "devtools.status",
+          "devtools.agents.sync",
+          "devtools.agents.status",
+          "devtools.skills.sync",
+          "devtools.skills.status",
+          "devtools.eslint.sync",
+          "devtools.eslint.status",
+          "devtools.prettier.sync",
+          "devtools.prettier.status",
+          "devtools.knip.sync",
+          "devtools.knip.status",
+          "devtools.package.sync",
+          "devtools.package.status",
+          "devtools.workflows.sync",
+          "devtools.workflows.status",
+          "devtools.vscode.sync",
+          "devtools.vscode.status"
+        ],
+        "category": "devtools",
+        "provider": "./dist/cli/index.js"
+      },
+      "packageName": "@ankhorage/devtools",
+      "repositoryUrl": "https://github.com/ankhorage/devtools",
+      "version": "1.18.5"
+    },
+    {
+      "description": "Deterministic documentation generator for TypeScript packages.",
+      "metadata": {
+        "capabilities": ["docs.generate"],
+        "category": "docs",
+        "provider": "./dist/cli/index.js"
+      },
+      "packageName": "@ankhorage/paradox",
+      "repositoryUrl": "https://github.com/ankhorage/paradox",
+      "version": "0.1.26"
+    },
+    {
+      "description": "Executable Ankh provider and standalone CLI for lightweight repo and package compliance diagnostics.",
+      "metadata": {
+        "capabilities": ["doctor.validate", "doctor.fix", "doctor.repo", "doctor.package"],
+        "category": "doctor",
+        "provider": "./dist/cli/index.js"
+      },
+      "packageName": "@ankhorage/doctor",
+      "repositoryUrl": "https://github.com/ankhorage/doctor",
+      "version": "0.10.30"
+    },
+    {
+      "description": "Project-aware infrastructure generation library and executable Ankh provider for Ankhorage.",
+      "metadata": {
+        "capabilities": [
+          "infra.validate",
+          "infra.plan",
+          "infra.generate",
+          "infra.up",
+          "infra.status",
+          "infra.outputs",
+          "infra.down",
+          "infra.destroy"
+        ],
+        "category": "infra",
+        "provider": "./dist/cli/index.js"
+      },
+      "packageName": "@ankhorage/infra",
+      "repositoryUrl": "https://github.com/ankhorage/infra",
+      "version": "7.1.6"
+    },
+    {
+      "description": "Standalone manifest-driven navigator capability for Expo Router across React Native and React Native Web.",
+      "metadata": {
+        "capabilities": [
+          "navigator.catalog",
+          "navigator.validate",
+          "navigator.plan",
+          "navigator.generate",
+          "navigator.verify",
+          "navigator.examples.generate",
+          "navigator.examples.verify"
+        ],
+        "category": "navigator",
+        "provider": "./dist/cli/createCliProvider.js"
+      },
+      "packageName": "@ankhorage/navigator",
+      "repositoryUrl": "https://github.com/ankhorage/navigator",
+      "version": "3.2.7"
+    },
+    {
+      "description": "Headless lifecycle engine for deterministic Ankhorage project modules.",
+      "metadata": {
+        "capabilities": [
+          "orchestrator.modules",
+          "orchestrator.install",
+          "orchestrator.remove",
+          "orchestrator.sync"
+        ],
+        "category": "orchestrator",
+        "provider": "./dist/cli/index.js"
+      },
+      "packageName": "@ankhorage/orchestrator",
+      "repositoryUrl": "https://github.com/ankhorage/orchestrator",
+      "version": "0.3.3"
+    },
+    {
+      "description": "Cross-platform permission registry and runtime helpers for Expo, React Native, and React Native Web apps, with unified request/check APIs for camera, media, location, notifications, microphone, and other web/native capabilities.",
+      "metadata": {
+        "capabilities": [
+          "permissions.inspect",
+          "permissions.check",
+          "permissions.request",
+          "permissions.manifest"
+        ],
+        "category": "permissions",
+        "provider": "./dist/cli/index.js"
+      },
+      "packageName": "@ankhorage/permissions",
+      "repositoryUrl": "https://github.com/ankhorage/permissions",
+      "version": "0.2.5"
+    },
+    {
+      "description": "Extensible, evidence-based project detection and safe filesystem inspection for standalone tools.",
+      "metadata": {
+        "capabilities": ["project-detector.inspect"],
+        "category": "project-detector",
+        "provider": "./dist/cli/provider.js"
+      },
+      "packageName": "@ankhorage/project-detector",
+      "repositoryUrl": "https://github.com/ankhorage/project-detector",
+      "version": "0.2.0"
+    },
+    {
+      "description": "Standalone repository capability for connecting and managing an app project's source repository.",
+      "metadata": {
+        "capabilities": ["repository.connect"],
+        "category": "repository",
+        "provider": "./dist/cli/index.js"
+      },
+      "packageName": "@ankhorage/repository",
+      "repositoryUrl": "https://github.com/ankhorage/repository",
+      "version": "0.4.13"
+    },
+    {
+      "description": "Studio authoring package for Ankhorage apps",
+      "metadata": {
+        "capabilities": [
+          "studio.dev",
+          "studio.projects.list",
+          "studio.projects.create",
+          "studio.projects.delete"
+        ],
+        "category": "studio",
+        "provider": "./dist/cli/index.js"
+      },
+      "packageName": "@ankhorage/studio",
+      "repositoryUrl": "https://github.com/ankhorage/studio",
+      "version": "3.3.3"
+    },
+    {
+      "description": "Portable Ankhorage app templates, presets, and manifest authoring helpers.",
+      "metadata": {
+        "capabilities": ["templates.list", "templates.inspect", "templates.create"],
+        "category": "templates",
+        "provider": "./dist/cli/index.js"
+      },
+      "packageName": "@ankhorage/templates",
+      "repositoryUrl": "https://github.com/ankhorage/templates",
+      "version": "12.0.1"
+    },
+    {
+      "description": "Opinionated React Native and React Native Web UI kit built on @ankhorage/surface.",
+      "metadata": {
+        "capabilities": ["zora.create", "zora.sync"],
+        "category": "zora",
+        "provider": "./dist/cli/index.js"
+      },
+      "packageName": "@ankhorage/zora",
+      "repositoryUrl": "https://github.com/ankhorage/zora",
+      "version": "21.0.2"
+    }
+  ]
+}
