@@ -4,7 +4,7 @@ import type {
   GraphViewLayoutName,
   GraphViewNode,
 } from '@zora/graph-view';
-import { useMemo, useRef, useState } from 'react';
+import { type Dispatch, type SetStateAction, useMemo, useRef, useState } from 'react';
 
 /***
  * Mirrors settled owner bounds and runs one canonical optimized fit for every material graph geometry.
@@ -23,34 +23,24 @@ export function useGraphViewport(input: UseGraphViewportInput) {
     [edges, layout, nodes]
   );
 
-  /*** Publishes only changed viewport values, including range changes without a zoom event. */
-  const synchronize = (nextController: GraphViewController) => {
-    const { zoom } = nextController.getViewport();
-    const { min, max } = nextController.getZoomRange();
-    setViewport(previous =>
-      previous.zoom === zoom && previous.min === min && previous.max === max
-        ? previous
-        : { zoom, min, max }
-    );
-  };
-
   /*** Applies the canonical readable graph optimization and records the geometry it normalized. */
   const optimizeGraph = (nextController: GraphViewController) => {
     optimizedGeometryRef.current = geometrySignature;
     nextController.fit({ optimizeSpacing: true });
-    synchronize(nextController);
+    synchronizeGraphViewport(nextController, setViewport);
   };
 
   /*** Captures the controller before synchronizing the initial viewport. */
   const handleReady = (nextController: GraphViewController) => {
     controllerRef.current = nextController;
     setController(nextController);
-    synchronize(nextController);
+    synchronizeGraphViewport(nextController, setViewport);
   };
 
   /*** Reads the controller synchronously, including events before React commits readiness. */
   const handleViewportChange = () => {
-    if (controllerRef.current !== null) synchronize(controllerRef.current);
+    if (controllerRef.current !== null)
+      synchronizeGraphViewport(controllerRef.current, setViewport);
   };
 
   /*** Optimizes each newly settled graph geometry once and otherwise only refreshes owner bounds. */
@@ -59,7 +49,7 @@ export function useGraphViewport(input: UseGraphViewportInput) {
       optimizeGraph(nextController);
       return;
     }
-    synchronize(nextController);
+    synchronizeGraphViewport(nextController, setViewport);
   };
 
   /*** Reuses the same canonical optimization path for explicit user-requested Fit. */
@@ -77,6 +67,20 @@ export function useGraphViewport(input: UseGraphViewportInput) {
   };
 }
 
+/*** Publishes only changed viewport values, including range changes without a zoom event. */
+function synchronizeGraphViewport(
+  controller: GraphViewController,
+  setViewport: Dispatch<SetStateAction<GraphViewportState>>
+) {
+  const { zoom } = controller.getViewport();
+  const { min, max } = controller.getZoomRange();
+  setViewport(previous =>
+    previous.zoom === zoom && previous.min === min && previous.max === max
+      ? previous
+      : { zoom, min, max }
+  );
+}
+
 /*** Creates a stable geometry identity while intentionally ignoring interaction and paint-only state. */
 function createGraphGeometrySignature(
   layout: GraphViewLayoutName,
@@ -88,6 +92,12 @@ function createGraphGeometrySignature(
     nodes: nodes.map(node => [node.id, node.parentId ?? '', node.label ?? '']),
     edges: edges.map(edge => [edge.id ?? '', edge.source, edge.target]),
   });
+}
+
+interface GraphViewportState {
+  readonly zoom: number;
+  readonly min: number;
+  readonly max: number;
 }
 
 interface UseGraphViewportInput {
