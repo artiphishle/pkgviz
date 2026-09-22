@@ -53,7 +53,7 @@ function CycleRows({
               onCycleInspectionChange(
                 inspectedCycleId === cycleId
                   ? null
-                  : createCycleInspection(cycle, index, t('audit.cycle') + ' ' + (index + 1)),
+                  : createCycleInspection(cycle, index, t('audit.cycle') + ' ' + (index + 1))
               )
             }
             onSelectedChange={selected => {
