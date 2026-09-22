@@ -1,15 +1,15 @@
+import type { ZoraRuntimeTheme } from '@zora/ZoraProvider';
 import type { ElementsDefinition, StylesheetJson } from 'cytoscape';
 
 import {
   getGraphPalette,
   type GraphPalette,
-  type ThemeKey,
 } from '@/features/graph-view/adapters/inbound/cytoscape/getGraphPalette';
 import { getWeightBuckets } from '@/features/graph-view/adapters/inbound/cytoscape/getWeightBuckets';
 import { createCompoundOpacityIndex } from '@/features/graph-view/utils/createCompoundOpacityIndex';
 
 /*** Builds the shared Cytoscape styles for the active theme. */
-export function getStyle(filteredElements: ElementsDefinition, theme: ThemeKey): StylesheetJson {
+export function getStyle(filteredElements: ElementsDefinition, theme: ZoraRuntimeTheme): StylesheetJson {
   const colors = getGraphPalette(theme);
   const { thresholds } = getWeightBuckets(3, 'linear', filteredElements);
 
@@ -75,6 +75,8 @@ function getNodeBaseStyles(colors: GraphPalette): StylesheetJson {
       selector: 'node.isVendor',
       style: {
         'background-color': colors.nodeBgVendor,
+        'border-color': colors.nodeBorderVendor,
+        color: colors.nodeTextVendor,
       },
     },
   ];
@@ -113,10 +115,7 @@ function getNodeStateStyles(colors: GraphPalette): StylesheetJson {
         'overlay-opacity': 0,
       },
     },
-    {
-      selector: 'node.isVendor:selected',
-      style: { 'background-color': colors.selectedFillVendor },
-    },
+
   ];
 }
 
@@ -153,6 +152,7 @@ function getCompoundStyles(colors: GraphPalette): StylesheetJson {
       style: {
         'background-color': colors.nodeBgVendor,
         'border-color': colors.nodeBorderVendor,
+        color: colors.nodeTextVendor,
       },
     },
     {
