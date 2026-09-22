@@ -1,0 +1,21 @@
+name: Format Debug
+
+on:
+  push:
+    branches:
+      - fix/230-cycle-ui-polish
+
+jobs:
+  diff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+      - run: bun install --frozen-lockfile
+      - name: Show canonical prettier diff
+        run: |
+          ./node_modules/.bin/ankhorage-prettier --write test/src/features/workspace/WorkspaceSidebar.spec.tsx
+          git diff -- test/src/features/workspace/WorkspaceSidebar.spec.tsx
+          test -n "$(git diff -- test/src/features/workspace/WorkspaceSidebar.spec.tsx)"
