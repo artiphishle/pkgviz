@@ -5,8 +5,8 @@ import { useLocalStorage } from 'ankh-hooks/store';
 import { useCallback, useMemo } from 'react';
 
 import { resolveSelectedCycleIds } from '@/features/audit/application/use-cases/resolveSelectedCycleIds';
-import { createCycleHighlights } from '@/features/audit/utils/cycleVisualization';
 import { createCycleThemeColors } from '@/features/audit/utils/createCycleThemeColors';
+import { createCycleHighlights } from '@/features/audit/utils/cycleVisualization';
 import { readSettingsEnvironment } from '@/features/settings/utils/readSettingsEnvironment';
 import type { PackageCycleDetail } from '@/types/audit';
 import type { CycleSelection } from '@/types/auditVisualization';
