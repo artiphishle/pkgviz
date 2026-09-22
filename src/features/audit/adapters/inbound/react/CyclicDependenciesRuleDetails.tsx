@@ -2,6 +2,7 @@
 import { Badge } from '@zora/badge';
 import { Text } from '@zora/text';
 import { View } from '@zora/view';
+import { useZoraTheme } from '@zora/ZoraProvider';
 import React from 'react';
 
 import { CycleSwitch } from '@/features/audit/adapters/inbound/react/CycleSwitch';
@@ -64,6 +65,7 @@ export function CyclicDependenciesRuleDetails({
 
 /*** Renders one compact cycle switch while the graph owns detailed evidence presentation. */
 function CycleRow(props: CycleRowProps) {
+  const { theme } = useZoraTheme();
   const route = props.cycle.packages.join(' → ');
   const packageCount = new Set(props.cycle.packages).size;
   const label = t('audit.cycle') + ' ' + (props.index + 1);
@@ -80,10 +82,21 @@ function CycleRow(props: CycleRowProps) {
       <button
         type="button"
         aria-expanded={props.inspected}
-        className="min-w-0 flex-1 cursor-pointer rounded text-left focus-visible:outline-2 focus-visible:outline-offset-2"
-        style={
-          props.inspected ? { boxShadow: `inset 3px 0 ${props.color}`, paddingLeft: 6 } : undefined
-        }
+        style={{
+          background: 'transparent',
+          border: 0,
+          borderRadius: theme.radii.s,
+          color: 'inherit',
+          cursor: 'pointer',
+          flex: 1,
+          minWidth: 0,
+          outlineColor: theme.semantics.border.focus,
+          padding: 0,
+          textAlign: 'left',
+          ...(props.inspected
+            ? { boxShadow: `inset 3px 0 ${props.color}`, paddingLeft: 6 }
+            : {}),
+        }}
         title={route}
         onClick={props.onInspect}
       >
