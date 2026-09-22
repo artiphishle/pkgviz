@@ -160,6 +160,7 @@ describe('[graph view projection]', () => {
 
     expect(result.elements.nodes.map(node => node.data.label)).toEqual(['services.filepattern']);
   });
+
   it('groups sibling canonical scoped vendors under one organization compound', () => {
     const result = projectVisibleGraph({
       currentPackage: '',
@@ -183,6 +184,12 @@ describe('[graph view projection]', () => {
     expect(devtools?.data.label).toBe('devtools');
     expect(singleton?.data.parent).toBeUndefined();
     expect(singleton?.data.label).toBe('@single/only');
+    expect(
+      result.elements.nodes.some(node => node.data.id === 'vendor-scope:@zora')
+    ).toBe(false);
+    expect(
+      result.elements.nodes.find(node => node.data.id === '@zora/list')?.data.parent
+    ).toBeUndefined();
     expect(zoraEdge?.data.source).toBe('src.feature');
     expect(zoraEdge?.data.weight).toBe(2);
   });
@@ -300,18 +307,40 @@ function createDeepElements(): ElementsDefinition {
   };
 }
 
-
 /*** Creates scoped and unscoped canonical vendor roots with stable dependency edges. */
 function createScopedVendorElements(): ElementsDefinition {
   return {
     nodes: [
       { data: { id: 'src', isIntrinsic: true } },
       { data: { id: 'src.feature', isIntrinsic: true, parent: 'src' } },
-      { data: { id: '@ankhorage/zora', isIntrinsic: false }, classes: 'isVendor' },
-      { data: { id: '@ankhorage/devtools', isIntrinsic: false }, classes: 'isVendor' },
-      { data: { id: '@ankhorage/supabase', isIntrinsic: false }, classes: 'isVendor' },
-      { data: { id: '@single/only', isIntrinsic: false }, classes: 'isVendor' },
-      { data: { id: 'react', isIntrinsic: false }, classes: 'isVendor' },
+      {
+        data: { id: '@ankhorage/zora', classification: 'vendor', isIntrinsic: false },
+        classes: 'isVendor',
+      },
+      {
+        data: { id: '@ankhorage/devtools', classification: 'vendor', isIntrinsic: false },
+        classes: 'isVendor',
+      },
+      {
+        data: { id: '@ankhorage/supabase', classification: 'vendor', isIntrinsic: false },
+        classes: 'isVendor',
+      },
+      {
+        data: { id: '@single/only', classification: 'vendor', isIntrinsic: false },
+        classes: 'isVendor',
+      },
+      {
+        data: { id: 'react', classification: 'vendor', isIntrinsic: false },
+        classes: 'isVendor',
+      },
+      {
+        data: { id: '@zora/list', classification: 'unknown', isIntrinsic: false },
+        classes: 'isVendor',
+      },
+      {
+        data: { id: '@zora/tree-view', classification: 'unknown', isIntrinsic: false },
+        classes: 'isVendor',
+      },
     ],
     edges: [
       { data: { id: 'zora', source: 'src.feature', target: '@ankhorage/zora', weight: 2 } },
@@ -319,6 +348,15 @@ function createScopedVendorElements(): ElementsDefinition {
       { data: { id: 'supabase', source: 'src.feature', target: '@ankhorage/supabase', weight: 4 } },
       { data: { id: 'single', source: 'src.feature', target: '@single/only', weight: 5 } },
       { data: { id: 'react', source: 'src.feature', target: 'react', weight: 6 } },
+      { data: { id: 'zora-list', source: 'src.feature', target: '@zora/list', weight: 7 } },
+      {
+        data: {
+          id: 'zora-tree-view',
+          source: 'src.feature',
+          target: '@zora/tree-view',
+          weight: 8,
+        },
+      },
     ],
   };
 }
