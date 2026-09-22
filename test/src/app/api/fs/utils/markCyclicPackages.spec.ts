@@ -1,26 +1,25 @@
 import { describe, expect, it, resolve } from '@artiphishle/testosterone';
 
-import { buildGraph } from '@/app/utils/buildGraph';
-import { getParsedFileStructure } from '@/app/utils/getParsedFileStructure';
 import { getPackageCyclesWithMembers } from '@/app/utils/markCyclicPackages';
+import { readProjectSnapshotAsync } from '@/features/project-analysis/adapters/outbound/filesystem/readProjectSnapshotAsync';
 
 describe('[package cycles]', () => {
-  it('detects the A-B-A package cycle', async () => {
-    process.env.NEXT_PUBLIC_PROJECT_PATH = resolve(process.cwd(), 'examples/java/my-app');
-
-    const files = await getParsedFileStructure();
-    const result = getPackageCyclesWithMembers(files, buildGraph(files));
+  it('detects the A-B-A package cycle on the canonical package graph', async () => {
+    const snapshot = await readProjectSnapshotAsync(
+      resolve(process.cwd(), 'examples/java/my-app')
+    );
+    const result = getPackageCyclesWithMembers(snapshot.files, snapshot.packageGraph);
     const cyclic = Array.from(result.packageSet);
 
     expect(cyclic.length).toBe(2);
     expect(cyclic.sort()).toEqual(['com.example.myapp.a', 'com.example.myapp.b']);
   });
 
-  it('preserves member evidence for every edge in the cycle', async () => {
-    process.env.NEXT_PUBLIC_PROJECT_PATH = resolve(process.cwd(), 'examples/java/my-app');
-
-    const files = await getParsedFileStructure();
-    const details = getPackageCyclesWithMembers(files, buildGraph(files));
+  it('preserves canonical member evidence for every edge in the cycle', async () => {
+    const snapshot = await readProjectSnapshotAsync(
+      resolve(process.cwd(), 'examples/java/my-app')
+    );
+    const details = getPackageCyclesWithMembers(snapshot.files, snapshot.packageGraph);
 
     expect(details.cycles.length).toBe(1);
 
@@ -37,11 +36,13 @@ describe('[package cycles]', () => {
 
     expect(aToB?.via.length).toBe(1);
     expect(aToB?.via[0].filePath).toBe('com/example/myapp/a/A.java');
+    expect(aToB?.via[0].fileClass).toBe('A');
     expect(aToB?.via[0].importName).toBe('com.example.myapp.b.B');
     expect(aToB?.via[0].isIntrinsic).toBe(true);
 
     expect(bToA?.via.length).toBe(1);
     expect(bToA?.via[0].filePath).toBe('com/example/myapp/b/B.java');
+    expect(bToA?.via[0].fileClass).toBe('B');
     expect(bToA?.via[0].importName).toBe('com.example.myapp.a.A');
     expect(bToA?.via[0].isIntrinsic).toBe(true);
   });
