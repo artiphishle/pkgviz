@@ -7,12 +7,12 @@ import type {
   DependencyImportEvidence,
 } from '@ankhorage/dependency-graph';
 import { resolveFileSystemPathWithinRoot } from '@ankhorage/utility/node/fs';
+import { toPortablePath } from '@ankhorage/utility/node/path';
 
-import type { ImportDefinition } from '@/shared/types';
-import { toPosix } from '@/shared/utils/toPosix';
+import type { ProjectImportMetadata } from '@/types/projectFiles';
 
 interface OrderedImport {
-  readonly definition: ImportDefinition;
+  readonly definition: ProjectImportMetadata;
   readonly position: number;
   readonly ordinal: number;
 }
@@ -36,7 +36,7 @@ export async function projectDependencyImportsAsync(
   analysisRoot: string = projectRoot,
   importNameMode: ImportNameMode = 'package',
   intrinsicMode: ImportIntrinsicMode = 'canonical'
-): Promise<ReadonlyMap<string, readonly ImportDefinition[]>> {
+): Promise<ReadonlyMap<string, readonly ProjectImportMetadata[]>> {
   const canonicalProjectRoot = resolveFileSystemPathWithinRoot(projectRoot, '.', {
     allowRoot: true,
   });
@@ -83,7 +83,7 @@ type ImportIntrinsicMode =
 /*** Add one canonical evidence item while retaining the original source declaration position. */
 async function appendEvidenceAsync(input: AppendEvidenceInput): Promise<number> {
   const absoluteSourceFile = path.resolve(input.projectRoot, input.evidence.sourceFile);
-  const sourceFile = toPosix(path.relative(input.analysisRoot, absoluteSourceFile));
+  const sourceFile = toPortablePath(path.relative(input.analysisRoot, absoluteSourceFile));
   const sourceText = await readSourceTextAsync(input.sourceTextByFile, absoluteSourceFile);
   const current = input.imports.get(sourceFile) ?? [];
 
@@ -103,7 +103,7 @@ async function appendEvidenceAsync(input: AppendEvidenceInput): Promise<number> 
 /*** Convert collected import evidence into source-order PKGViz definitions. */
 function materializeImports(
   imports: ReadonlyMap<string, readonly OrderedImport[]>
-): ReadonlyMap<string, readonly ImportDefinition[]> {
+): ReadonlyMap<string, readonly ProjectImportMetadata[]> {
   return new Map(
     [...imports].map(([sourceFile, entries]) => [
       sourceFile,
