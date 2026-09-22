@@ -6,22 +6,13 @@ import { Text } from '@zora/text';
 import { View } from '@zora/view';
 import React from 'react';
 
-import {
-  createCycleInspection,
-  getCycleColor,
-  getCycleId,
-} from '@/features/audit/utils/cycleVisualization';
+import { createCycleInspection, getCycleId } from '@/features/audit/utils/cycleVisualization';
 import { t } from '@/i18n/i18n';
 import type { PackageCycleDetail } from '@/types/audit';
 import type { CycleInspection, CycleSelection } from '@/types/auditVisualization';
 
 /*** Renders cycle findings with compact ZORA rows and persistent independent selection. */
-export function CyclicDependenciesRuleDetails({
-  cycles,
-  cycleSelection,
-  inspectedCycleId,
-  onCycleInspectionChange,
-}: CyclicDependenciesRuleDetailsProps) {
+export function CyclicDependenciesRuleDetails(props: CyclicDependenciesRuleDetailsProps) {
   return (
     <View gap="s" p="m">
       <View align="center" direction="row" gap="s">
@@ -29,41 +20,49 @@ export function CyclicDependenciesRuleDetails({
           {t('audit.rule.cyclicDependencies')}
         </Text>
         <Badge color="danger" size="s">
-          {cycles.length}
+          {props.cycles.length}
         </Badge>
         <Text emphasis="muted" variant="caption">
           {t('audit.cycles')}
         </Text>
       </View>
-      <View gap="none">
-        {cycles.map((cycle, index) => {
-          const cycleId = getCycleId(cycle);
-          return (
-            <CycleRow
-              cycle={cycle}
-              index={index}
-              inspected={inspectedCycleId === cycleId}
-              key={cycleId}
-              selected={cycleSelection.selectedIds.includes(cycleId)}
-              onInspect={() =>
-                onCycleInspectionChange(
-                  inspectedCycleId === cycleId
-                    ? null
-                    : createCycleInspection(
-                        cycle,
-                        index,
-                        t('audit.cycle') + ' ' + (index + 1),
-                      ),
-                )
-              }
-              onSelectedChange={(selected) => {
-                cycleSelection.setSelected(cycleId, selected);
-                if (!selected && inspectedCycleId === cycleId) onCycleInspectionChange(null);
-              }}
-            />
-          );
-        })}
-      </View>
+      <CycleRows {...props} />
+    </View>
+  );
+}
+
+/*** Maps cycle findings to compact list rows while preserving inspection and selection state. */
+function CycleRows({
+  cycles,
+  cycleSelection,
+  inspectedCycleId,
+  onCycleInspectionChange,
+}: CyclicDependenciesRuleDetailsProps) {
+  return (
+    <View gap="none">
+      {cycles.map((cycle, index) => {
+        const cycleId = getCycleId(cycle);
+        return (
+          <CycleRow
+            cycle={cycle}
+            index={index}
+            inspected={inspectedCycleId === cycleId}
+            key={cycleId}
+            selected={cycleSelection.selectedIds.includes(cycleId)}
+            onInspect={() =>
+              onCycleInspectionChange(
+                inspectedCycleId === cycleId
+                  ? null
+                  : createCycleInspection(cycle, index, t('audit.cycle') + ' ' + (index + 1)),
+              )
+            }
+            onSelectedChange={selected => {
+              cycleSelection.setSelected(cycleId, selected);
+              if (!selected && inspectedCycleId === cycleId) onCycleInspectionChange(null);
+            }}
+          />
+        );
+      })}
     </View>
   );
 }
