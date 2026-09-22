@@ -3,6 +3,7 @@ import { IconButton } from '@zora/button';
 import type { GraphViewController } from '@zora/graph-view';
 import { Text } from '@zora/text';
 import { View } from '@zora/view';
+import { useZoraTheme } from '@zora/ZoraProvider';
 import React, { type ChangeEvent } from 'react';
 
 interface GraphZoomControlsProps {
@@ -14,6 +15,8 @@ interface GraphZoomControlsProps {
 
 /*** Renders graph zoom controls through ZORA except for the retained range slider. */
 export function GraphZoomControls({ controller, maxZoom, minZoom, zoom }: GraphZoomControlsProps) {
+  const { theme } = useZoraTheme();
+
   /*** Applies one slider zoom value through the GraphView controller. */
   const handleSliderChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (controller === null) return;
@@ -40,8 +43,12 @@ export function GraphZoomControls({ controller, maxZoom, minZoom, zoom }: GraphZ
         step="any"
         value={zoom}
         onChange={handleSliderChange}
-        className="w-64"
         aria-label="Zoom"
+        style={{
+          accentColor: theme.semantics.brand.base,
+          cursor: 'pointer',
+          width: 256,
+        }}
       />
       <Text variant="caption">{(zoom * 100).toFixed(0)}%</Text>
     </View>
