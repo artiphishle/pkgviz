@@ -1,5 +1,6 @@
 'use client';
 
+import { toCytoscapeElements } from '@ankhorage/graph-cytoscape';
 import { GraphView, type GraphViewElementEvent, type GraphViewLayoutName } from '@zora/graph-view';
 import type { ElementsDefinition, LayoutOptions } from 'cytoscape';
 import React, { useMemo } from 'react';
@@ -16,14 +17,22 @@ import { useThemeMode } from '@/features/theme/adapters/inbound/react/useThemeMo
 import { LAYOUTS } from '@/layouts/constants';
 import { getCanvasBg } from '@/layouts/style';
 import type { CycleHighlight } from '@/types/auditVisualization';
+import type { PackageDependencyGraph } from '@/types/dependencyAnalysis';
 
 /*** Renders PKGViz graph policy through the materialized ZORA GraphView runtime. */
 export function DependencyGraphView(props: DependencyGraphViewProps) {
   const settings = useSettings();
   const { mode: theme } = useThemeMode();
+  const packageGraph = useMemo(
+    () =>
+      toCytoscapeElements(props.packageGraph, {
+        nodeClasses: node => (node.data.isIntrinsic === true ? undefined : 'isVendor'),
+      }),
+    [props.packageGraph]
+  );
   const visibleElements = useGraphProjection({
     currentPackage: props.currentPackage,
-    elements: props.packageGraph,
+    elements: packageGraph,
     preservePackageScope: props.cycleHighlights.length > 0,
     setCurrentPackage: props.setCurrentPackage,
     setMaxSubPackageDepth: settings.setMaxSubPackageDepth,
@@ -45,7 +54,7 @@ export function DependencyGraphView(props: DependencyGraphViewProps) {
   const presentation = useGraphViewPresentation({
     cycleHighlights: props.cycleHighlights,
     layout: settings.cytoscapeLayout,
-    packageGraph: props.packageGraph,
+    packageGraph,
     theme,
     visibleElements,
   });
@@ -159,7 +168,7 @@ function readGraphViewLayout(layout: LayoutOptions['name']): GraphViewLayoutName
 
 interface DependencyGraphViewProps {
   readonly currentPackage: string;
-  readonly packageGraph: ElementsDefinition;
+  readonly packageGraph: PackageDependencyGraph;
   readonly setCurrentPackage: (path: string) => void;
   readonly cycleHighlights: readonly CycleHighlight[];
   readonly overlay?: React.ReactNode;

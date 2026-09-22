@@ -3,11 +3,11 @@ import { loadProjectSnapshotAsync } from '@/features/project-analysis/compositio
 import { buildProjectTree } from '@/features/project-tree/application/use-cases/buildProjectTree';
 import type { ProjectOverview } from '@/types/projectAnalysis';
 
-/*** Derives graph, tree and audit evaluation from one freshly shared project snapshot. */
+/*** Derives canonical package graph, tree and audit evaluation from one shared snapshot. */
 export async function loadProjectOverviewAsync(projectPath: string): Promise<ProjectOverview> {
   const snapshot = await loadProjectSnapshotAsync(projectPath);
   return {
-    graph: snapshot.graph,
+    packageGraph: snapshot.packageGraph,
     tree: buildProjectTree(snapshot.files),
     evaluation: createAuditFromSnapshot(snapshot).evaluation,
   };

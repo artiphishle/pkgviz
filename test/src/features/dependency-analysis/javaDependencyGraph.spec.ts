@@ -45,10 +45,10 @@ describe('[Java dependency graph migration]', () => {
 
   it('preserves the locked Java package dependency semantics from the owner graph', async () => {
     const projectRoot = resolve(process.cwd(), 'examples/java/my-app');
-    const { graph } = await readProjectSnapshotAsync(projectRoot);
+    const { packageGraph } = await readProjectSnapshotAsync(projectRoot);
 
     const weights = new Map(
-      graph.edges.map(edge => [`${edge.data.source}->${edge.data.target}`, edge.data.weight])
+      packageGraph.edges.map(edge => [`${edge.source}->${edge.target}`, edge.data.weight])
     );
 
     expect(weights.get('com.example.myapp->com.example.myapp.a')).toBe(1);
@@ -56,7 +56,7 @@ describe('[Java dependency graph migration]', () => {
     expect(weights.get('com.example.myapp.a->com.example.myapp.c')).toBe(1);
     expect(weights.get('com.example.myapp.a->com.example.myapp.d')).toBe(1);
     expect(weights.get('com.example.myapp.b->com.example.myapp.a')).toBe(1);
-    expect(graph.edges.length).toBe(5);
+    expect(packageGraph.edges.length).toBe(5);
 
     for (const packageName of [
       'com.example.myapp.a',
@@ -65,7 +65,7 @@ describe('[Java dependency graph migration]', () => {
       'com.example.myapp.d',
     ]) {
       expect(
-        graph.nodes.some(node => node.data.id === packageName && node.classes !== 'isVendor')
+        packageGraph.nodes.some(node => node.id === packageName && node.data.isIntrinsic === true)
       ).toBe(true);
     }
   });
