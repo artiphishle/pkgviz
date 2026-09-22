@@ -31,7 +31,7 @@ const cycles: readonly PackageCycleDetail[] = [
 ];
 
 describe('[AuditRuleList]', () => {
-  it('shows violated cycles compactly with right-aligned disabled switches by default', () => {
+  it('shows violated cycles as compact single-line rows with trailing switches', () => {
     const { container, getByText } = render(
       <ZoraProvider mode="light">
         <AuditRuleList
@@ -44,19 +44,16 @@ describe('[AuditRuleList]', () => {
 
     expect(getByText('Cyclic Dependencies')).toBeDefined();
     expect(getByText('2')).toBeDefined();
-    expect(getByText('app.a → app.b → app.a')).toBeDefined();
-    expect(getByText('app.self → app.self')).toBeDefined();
+    expect(getByText('C1: app.a → app.b → app.a')).toBeDefined();
+    expect(getByText('C2: app.self → app.self')).toBeDefined();
 
     const switches = Array.from(
-      container.querySelectorAll<HTMLButtonElement>('button[role="switch"]')
+      container.querySelectorAll<HTMLElement>('[data-testid^="cycle-switch-"]')
     );
     expect(switches.length).toBe(2);
-    expect(switches.every(control => control.getAttribute('aria-checked') === 'false')).toBe(true);
-    expect(
-      switches.every(
-        control => control.parentElement?.parentElement?.lastElementChild === control.parentElement
-      )
-    ).toBe(true);
+    expect(container.querySelector('[data-testid="cycle-row-0"]')?.textContent).toContain(
+      'C1: app.a → app.b → app.a'
+    );
     expect(container.textContent?.includes('src/a.ts')).toBe(false);
   });
 

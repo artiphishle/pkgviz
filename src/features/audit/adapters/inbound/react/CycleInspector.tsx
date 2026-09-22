@@ -1,4 +1,5 @@
 'use client';
+import { Accordion, AccordionItem } from '@zora/accordion';
 import { IconButton } from '@zora/button';
 import { Card } from '@zora/card';
 import { Text } from '@zora/text';
@@ -24,16 +25,49 @@ export function CycleInspector({ inspection, onClose }: CycleInspectorProps) {
   const { theme } = useZoraTheme();
 
   return (
+<<<<<<< HEAD
     <aside style={INSPECTOR_STYLE}>
       <CycleInspectorCard
         inspection={inspection}
         borderColor={theme.semantics.border.subtle}
         onClose={onClose}
       />
+=======
+    <aside className="absolute top-4 right-4 z-20 w-[24rem] max-w-[calc(100%-2rem)]">
+      <Card
+        compact
+        actions={
+          <IconButton
+            color="neutral"
+            icon={{ name: 'close-outline' }}
+            label={t('audit.closeInspector')}
+            size="s"
+            variant="ghost"
+            onPress={onClose}
+          />
+        }
+        description={`${packageCount} ${t('audit.packages')} · ${inspection.cycle.edges.length} ${t(
+          'audit.dependencyEdges'
+        )}`}
+        title={inspection.label}
+        tone="outline"
+      >
+        <View gap="m">
+          <Text variant="label" weight="bold">
+            {t('audit.cyclePath')}
+          </Text>
+          <Text selectable variant="code">
+            {inspection.cycle.packages.join(' → ')}
+          </Text>
+          <CycleEvidence edges={inspection.cycle.edges} />
+        </View>
+      </Card>
+>>>>>>> origin/main
     </aside>
   );
 }
 
+<<<<<<< HEAD
 /*** Renders the themed card body for one inspected dependency cycle. */
 function CycleInspectorCard({ borderColor, inspection, onClose }: CycleInspectorCardProps) {
   const packageCount = new Set(inspection.cycle.packages).size;
@@ -84,11 +118,16 @@ function CycleInspectorCard({ borderColor, inspection, onClose }: CycleInspector
 
 /*** Renders collapsible evidence for every directed edge in the cycle. */
 function CycleEvidence({ borderColor, edges }: CycleEvidenceProps) {
+=======
+/*** Renders dependency evidence with canonical ZORA disclosure semantics. */
+function CycleEvidence({ edges }: CycleEvidenceProps) {
+>>>>>>> origin/main
   return (
     <View gap="s">
       <Text variant="label" weight="bold">
         {t('audit.dependencyEvidence')}
       </Text>
+<<<<<<< HEAD
       {edges.map((edge, index) => (
         <EvidenceEdge
           borderColor={borderColor}
@@ -97,6 +136,13 @@ function CycleEvidence({ borderColor, edges }: CycleEvidenceProps) {
           key={edge.from + '→' + edge.to + ':' + index}
         />
       ))}
+=======
+      <Accordion type="multiple">
+        {edges.map((edge, index) => (
+          <EvidenceEdge edge={edge} index={index} key={edge.from + '→' + edge.to + ':' + index} />
+        ))}
+      </Accordion>
+>>>>>>> origin/main
     </View>
   );
 }
@@ -104,6 +150,7 @@ function CycleEvidence({ borderColor, edges }: CycleEvidenceProps) {
 /*** Renders one directed dependency edge and its source/import evidence. */
 function EvidenceEdge({ borderColor, edge, index }: EvidenceEdgeProps) {
   return (
+<<<<<<< HEAD
     <details
       style={{
         border: `1px solid ${borderColor}`,
@@ -116,6 +163,13 @@ function EvidenceEdge({ borderColor, edge, index }: EvidenceEdgeProps) {
         {index + 1}. {edge.from} → {edge.to}
       </summary>
       <View gap="xs" pt="s">
+=======
+    <AccordionItem
+      title={`${index + 1}. ${edge.from} → ${edge.to}`}
+      value={`edge-${index}-${edge.from}-${edge.to}`}
+    >
+      <View gap="xs">
+>>>>>>> origin/main
         {edge.via.length === 0 ? (
           <Text emphasis="muted" variant="caption">
             {t('audit.noEvidence')}
@@ -140,7 +194,7 @@ function EvidenceEdge({ borderColor, edge, index }: EvidenceEdgeProps) {
           ))
         )}
       </View>
-    </details>
+    </AccordionItem>
   );
 }
 

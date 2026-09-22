@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it, resolve } from '@artiphishle/testosterone';
 
-import { readProjectSnapshotAsync } from '@/features/project-analysis/adapters/outbound/filesystem/readProjectSnapshotAsync';
+import { readProjectSnapshotAsync } from '@/features/project-analysis/composition/readProjectSnapshotAsync';
 import type { ProjectFileTree } from '@/types/projectFiles';
 
 describe('[project file tree]', () => {

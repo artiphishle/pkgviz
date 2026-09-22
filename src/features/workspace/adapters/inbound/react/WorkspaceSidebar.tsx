@@ -1,4 +1,5 @@
 'use client';
+import { Badge } from '@zora/badge';
 import { ScrollView } from '@zora/scroll-view';
 import { Surface } from '@zora/surface';
 import { Tab, TabList, TabPanel, Tabs } from '@zora/tabs';
@@ -55,7 +56,6 @@ export function WorkspaceSidebar(props: WorkspaceSidebarProps) {
 function WorkspaceToolTabs(props: WorkspaceToolTabsProps) {
   const findingCount = countRuleFindings(props.evaluation);
   const hasRuleFindings = findingCount > 0;
-  const rulesLabel = `${t('settings.rules')} · ${findingCount} ${t('audit.findings')}`;
 
   return (
     <Tabs
@@ -65,9 +65,19 @@ function WorkspaceToolTabs(props: WorkspaceToolTabsProps) {
       value={props.activeTool}
       onValueChange={props.onValueChange}
     >
-      <TabList>
+      <TabList fill>
         <Tab label={t('settings.tree')} value="tree" />
-        {hasRuleFindings ? <Tab label={rulesLabel} value="rules" /> : null}
+        {hasRuleFindings ? (
+          <Tab
+            label={t('settings.rules')}
+            trailing={
+              <Badge color="danger" size="s">
+                {findingCount}
+              </Badge>
+            }
+            value="rules"
+          />
+        ) : null}
         <Tab label={t('settings.export')} value="export" />
       </TabList>
       <WorkspaceTabPanels {...props} hasRuleFindings={hasRuleFindings} />

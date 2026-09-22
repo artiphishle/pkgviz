@@ -1,10 +1,13 @@
 'use client';
 import { Badge } from '@zora/badge';
+import { ListItem } from '@zora/list';
+import { Switch } from '@zora/switch';
 import { Text } from '@zora/text';
 import { View } from '@zora/view';
 import { useZoraTheme } from '@zora/ZoraProvider';
 import React from 'react';
 
+<<<<<<< HEAD
 import { CycleSwitch } from '@/features/audit/adapters/inbound/react/CycleSwitch';
 import { createCycleThemeColors } from '@/features/audit/utils/createCycleThemeColors';
 import {
@@ -12,10 +15,14 @@ import {
   getCycleColor,
   getCycleId,
 } from '@/features/audit/utils/cycleVisualization';
+=======
+import { createCycleInspection, getCycleId } from '@/features/audit/utils/cycleVisualization';
+>>>>>>> origin/main
 import { t } from '@/i18n/i18n';
 import type { PackageCycleDetail } from '@/types/audit';
 import type { CycleInspection, CycleSelection } from '@/types/auditVisualization';
 
+<<<<<<< HEAD
 /*** Renders cycle findings with ZORA presentation and persistent independent selection. */
 export function CyclicDependenciesRuleDetails(props: CyclicDependenciesRuleDetailsProps) {
   const { theme } = useZoraTheme();
@@ -25,10 +32,29 @@ export function CyclicDependenciesRuleDetails(props: CyclicDependenciesRuleDetai
     <View gap="s" p="m">
       <CycleRuleHeader count={props.cycles.length} />
       <CycleRows {...props} cycleColors={cycleColors} />
+=======
+/*** Renders cycle findings with compact ZORA rows and persistent independent selection. */
+export function CyclicDependenciesRuleDetails(props: CyclicDependenciesRuleDetailsProps) {
+  return (
+    <View gap="s" p="m">
+      <View align="center" direction="row" gap="s">
+        <Text variant="label" weight="bold">
+          {t('audit.rule.cyclicDependencies')}
+        </Text>
+        <Badge color="danger" size="s">
+          {props.cycles.length}
+        </Badge>
+        <Text emphasis="muted" variant="caption">
+          {t('audit.cycles')}
+        </Text>
+      </View>
+      <CycleRows {...props} />
+>>>>>>> origin/main
     </View>
   );
 }
 
+<<<<<<< HEAD
 /*** Renders the compact heading for the cyclic-dependencies rule. */
 function CycleRuleHeader({ count }: { readonly count: number }) {
   return (
@@ -83,22 +109,66 @@ function CycleRows({
       />
     );
   });
+=======
+/*** Maps cycle findings to compact list rows while preserving inspection and selection state. */
+function CycleRows({
+  cycles,
+  cycleSelection,
+  inspectedCycleId,
+  onCycleInspectionChange,
+}: CyclicDependenciesRuleDetailsProps) {
+  return (
+    <View gap="none">
+      {cycles.map((cycle, index) => {
+        const cycleId = getCycleId(cycle);
+        return (
+          <CycleRow
+            cycle={cycle}
+            index={index}
+            inspected={inspectedCycleId === cycleId}
+            key={cycleId}
+            selected={cycleSelection.selectedIds.includes(cycleId)}
+            onInspect={() =>
+              onCycleInspectionChange(
+                inspectedCycleId === cycleId
+                  ? null
+                  : createCycleInspection(cycle, index, t('audit.cycle') + ' ' + (index + 1))
+              )
+            }
+            onSelectedChange={selected => {
+              cycleSelection.setSelected(cycleId, selected);
+              if (!selected && inspectedCycleId === cycleId) onCycleInspectionChange(null);
+            }}
+          />
+        );
+      })}
+    </View>
+  );
+>>>>>>> origin/main
 }
 
-/*** Renders one compact cycle switch while the graph owns detailed evidence presentation. */
+/*** Renders one compact single-line cycle row with the selection switch in the trailing slot. */
 function CycleRow(props: CycleRowProps) {
   const route = props.cycle.packages.join(' → ');
-  const packageCount = new Set(props.cycle.packages).size;
-  const label = t('audit.cycle') + ' ' + (props.index + 1);
+  const label = `C${props.index + 1}: ${route}`;
 
   return (
-    <View
-      align="center"
-      direction="row"
-      gap="s"
-      style={
-        props.selected || props.inspected ? { backgroundColor: props.color + '1a' } : undefined
+    <ListItem
+      compact
+      selected={props.inspected}
+      testID={`cycle-row-${props.index}`}
+      title={label}
+      trailing={
+        <Switch
+          accessibilityLabel={t('audit.cycle') + ' ' + (props.index + 1)}
+          checked={props.selected}
+          color="danger"
+          size="s"
+          testID={`cycle-switch-${props.index}`}
+          onCheckedChange={props.onSelectedChange}
+        />
       }
+<<<<<<< HEAD
     >
       <CycleRowAction
         color={props.color}
@@ -116,6 +186,10 @@ function CycleRow(props: CycleRowProps) {
         value={props.selected}
       />
     </View>
+=======
+      onPress={props.onInspect}
+    />
+>>>>>>> origin/main
   );
 }
 
@@ -176,7 +250,6 @@ interface CycleRowsProps extends CyclicDependenciesRuleDetailsProps {
 
 interface CycleRowProps {
   readonly inspected: boolean;
-  readonly color: string;
   readonly cycle: PackageCycleDetail;
   readonly index: number;
   readonly onInspect: () => void;

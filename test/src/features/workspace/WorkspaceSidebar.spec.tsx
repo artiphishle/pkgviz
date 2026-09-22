@@ -28,6 +28,38 @@ describe('[WorkspaceSidebar]', () => {
     unmount();
   });
 
+  it('fills visible tool tabs and renders the Rules count as a ZORA badge', () => {
+    const { container, unmount } = render(
+      <ZoraProvider mode="light">
+        <SettingsProvider>
+          <WorkspaceSidebar
+            cycleSelection={{ highlights: [], selectedIds: [], setSelected: () => undefined }}
+            evaluation={failedEvaluation}
+            inspectedCycleId={null}
+            projectTree={[]}
+            selectedTreeId={null}
+            onCycleInspectionChange={() => undefined}
+            onProjectTreeSelect={() => undefined}
+          />
+        </SettingsProvider>
+      </ZoraProvider>
+    );
+    const tabList = container.querySelector<HTMLElement>('[role="tablist"]');
+    const tabWrappers = Array.from(tabList?.children ?? []);
+    const rulesTab = Array.from(container.querySelectorAll<HTMLElement>('[role="tab"]')).find(tab =>
+      tab.textContent?.includes('Rules')
+    );
+
+    expect(tabWrappers.length).toBe(3);
+    expect(tabWrappers.every(wrapper => wrapper.getAttribute('style')?.includes('flex:1'))).toBe(
+      true
+    );
+    expect(rulesTab?.textContent).toContain('Rules');
+    expect(rulesTab?.textContent).toContain('2');
+    expect(rulesTab?.textContent?.includes('Findings')).toBe(false);
+    unmount();
+  });
+
   it('bounds the tree viewport above persistent graph settings', () => {
     const { container, unmount } = render(
       <ZoraProvider mode="light">
@@ -70,6 +102,23 @@ const passedEvaluation: Audit['evaluation'] = {
       status: 'passed',
       policy: 'blocking',
       message: 'No cyclic dependencies detected.',
+      details: [],
+      evidence: {},
+    },
+  ],
+};
+
+const failedEvaluation: Audit['evaluation'] = {
+  cyclicPackages: [
+    { packages: ['app.a', 'app.b', 'app.a'], edges: [] },
+    { packages: ['app.c', 'app.d', 'app.c'], edges: [] },
+  ],
+  rules: [
+    {
+      id: 'cyclic-dependencies',
+      status: 'failed',
+      policy: 'blocking',
+      message: 'Detected 2 cyclic dependencies.',
       details: [],
       evidence: {},
     },

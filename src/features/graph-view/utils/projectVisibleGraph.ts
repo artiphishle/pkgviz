@@ -5,6 +5,7 @@ import { filterEmptyPackages } from '@/features/graph-view/utils/filterEmptyPack
 import { filterSubPackagesByDepth } from '@/features/graph-view/utils/filterSubPackagesByDepth';
 import { filterVendorPackages } from '@/features/graph-view/utils/filterVendorPackages';
 import { getMaxDepth } from '@/features/graph-view/utils/getMaxDepth';
+import { groupScopedVendorPackages } from '@/features/graph-view/utils/groupScopedVendorPackages';
 import { removeEmptyStructuralNodes } from '@/features/graph-view/utils/removeEmptyStructuralNodes';
 import { toggleCompoundNodes } from '@/features/graph-view/utils/toggleCompoundNodes';
 
@@ -21,12 +22,16 @@ export function projectVisibleGraph(input: ProjectVisibleGraphInput): ProjectVis
   );
   const depthFiltered = filterSubPackagesByDepth(packageFiltered, true, input.subPackageDepth);
   const visible = input.showVendorPackages ? depthFiltered : filterVendorPackages(depthFiltered);
+  const labeled = labelVisibleNodes(
+    input.showCompoundNodes ? visible : removeEmptyStructuralNodes(visible),
+    input.currentPackage
+  );
 
   return {
-    elements: labelVisibleNodes(
-      input.showCompoundNodes ? visible : removeEmptyStructuralNodes(visible),
-      input.currentPackage
-    ),
+    elements:
+      input.showCompoundNodes && input.showVendorPackages
+        ? groupScopedVendorPackages(labeled)
+        : labeled,
     maxSubPackageDepth: Math.max(
       1,
       getMaxDepth(
