@@ -30,7 +30,7 @@ function Harness() {
 }
 
 describe('[cycle interaction]', () => {
-  it('toggles inspection independently and closes it when its highlight is disabled', async () => {
+  it('keeps row inspection independent from the trailing cycle switch', async () => {
     const host = render(<div />);
     const previousForm = Object.getOwnPropertyDescriptor(globalThis, 'HTMLFormElement');
     Object.defineProperty(globalThis, 'HTMLFormElement', {
@@ -46,22 +46,27 @@ describe('[cycle interaction]', () => {
           </ZoraProvider>
         )
       );
-      const row = host.container.querySelector<HTMLButtonElement>('button[aria-expanded]')!;
-      const toggle = host.container.querySelector<HTMLButtonElement>('button[role="switch"]')!;
-      expect(row.className.includes('cursor-pointer')).toBe(true);
-      expect(toggle.querySelector('[aria-hidden="true"]')?.getAttribute('style')).toContain(
-        'background-color'
-      );
-      await act(async () => row.click());
-      expect(row.getAttribute('aria-expanded')).toBe('true');
-      expect(host.container.querySelector('output')?.textContent).toBe('Cycle 1');
-      await act(async () => row.click());
-      expect(host.container.querySelector('output')?.textContent).toBe('closed');
+      const row = host.container.querySelector<HTMLElement>('[data-testid="cycle-row-0"]')!;
+      const toggle = host.container.querySelector<HTMLElement>('[data-testid="cycle-switch-0"]')!;
+
+      expect(row.textContent).toContain('C1: a → b → a');
       expect(toggle.getAttribute('aria-checked')).toBe('true');
-      await act(async () => row.click());
-      await act(async () => toggle.click());
       expect(host.container.querySelector('output')?.textContent).toBe('closed');
+
+      await act(async () => toggle.click());
       expect(toggle.getAttribute('aria-checked')).toBe('false');
+      expect(host.container.querySelector('output')?.textContent).toBe('closed');
+
+      await act(async () => toggle.click());
+      expect(toggle.getAttribute('aria-checked')).toBe('true');
+      expect(host.container.querySelector('output')?.textContent).toBe('closed');
+
+      await act(async () => row.click());
+      expect(host.container.querySelector('output')?.textContent).toBe('Cycle 1');
+
+      await act(async () => toggle.click());
+      expect(toggle.getAttribute('aria-checked')).toBe('false');
+      expect(host.container.querySelector('output')?.textContent).toBe('closed');
     } finally {
       await act(async () => root.unmount());
       host.unmount();
