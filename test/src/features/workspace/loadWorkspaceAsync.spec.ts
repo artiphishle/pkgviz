@@ -1,0 +1,28 @@
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { assert, describe, it } from '@artiphishle/testosterone';
+
+import { loadWorkspaceAsync } from '@/features/workspace/composition/loadWorkspaceAsync';
+
+describe('[loadWorkspaceAsync]', () => {
+  it('returns a serializable failure for a missing project root', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'pkgviz-missing-'));
+    await rm(root, { recursive: true, force: true });
+
+    const result = await loadWorkspaceAsync(root);
+
+    assert.deepEqual(result, {
+      ok: false,
+      error: `Invalid or unavailable project path: ${root}`,
+    });
+  });
+
+  it('keeps unexpected project failures inside the workspace error contract', async () => {
+    const result = await loadWorkspaceAsync('\u0000');
+
+    assert.equal(result.ok, false);
+    if (!result.ok) assert.equal(typeof result.error, 'string');
+  });
+});

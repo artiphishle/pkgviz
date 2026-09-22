@@ -8,16 +8,16 @@ import { DependencyGraphView } from '@/features/graph-view/adapters/inbound/reac
 import type { CycleHighlight, CycleInspection } from '@/types/auditVisualization';
 import type { PackageDependencyGraph } from '@/types/dependencyAnalysis';
 
-/*** Renders the graph surface together with its optional cycle inspector overlay. */
-export function HomeGraph({
+/*** Renders the workspace graph together with its optional cycle inspector overlay. */
+export function WorkspaceGraph({
   currentPackage,
   cycleHighlights,
   cycleInspection,
   packageGraph,
   setCurrentPackage,
   onCloseInspection,
-}: HomeGraphProps) {
-  if (!packageGraph) {
+}: WorkspaceGraphProps) {
+  if (packageGraph === null) {
     return (
       <View align="center" flex={1} justify="center">
         <ActivityIndicator testID="loader" />
@@ -40,7 +40,7 @@ export function HomeGraph({
   );
 }
 
-interface HomeGraphProps {
+interface WorkspaceGraphProps {
   readonly currentPackage: string;
   readonly cycleHighlights: readonly CycleHighlight[];
   readonly cycleInspection: CycleInspection | null;

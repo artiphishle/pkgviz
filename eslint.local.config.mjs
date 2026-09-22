@@ -16,28 +16,10 @@ const legacyAnalysisRules = {
   '@typescript-eslint/no-unsafe-return': 'off',
 };
 
-const legacyUiRules = {
-  'max-lines-per-function': 'off',
-  'security/detect-object-injection': 'off',
-  '@typescript-eslint/no-floating-promises': 'off',
-  '@typescript-eslint/no-misused-promises': 'off',
-  '@typescript-eslint/no-unnecessary-condition': 'off',
-  '@typescript-eslint/no-unsafe-argument': 'off',
-  '@typescript-eslint/no-unsafe-assignment': 'off',
-  '@typescript-eslint/no-unsafe-call': 'off',
-  '@typescript-eslint/no-unsafe-member-access': 'off',
-  '@typescript-eslint/no-unsafe-return': 'off',
-  '@typescript-eslint/prefer-nullish-coalescing': 'off',
-};
-
 export default [
   {
     files: ['src/utils/**/*.{ts,tsx}'],
     rules: legacyAnalysisRules,
-  },
-  {
-    files: ['src/screens/**/*.{ts,tsx}'],
-    rules: legacyUiRules,
   },
   {
     files: ['src/app/actions/audit.actions.ts'],
