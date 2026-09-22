@@ -51,9 +51,9 @@ describe('[WorkspaceSidebar]', () => {
     );
 
     expect(tabWrappers.length).toBe(3);
-    expect(tabWrappers.every(wrapper => wrapper.getAttribute('style')?.includes('flex:1'))).toBe(
-      true
-    );
+    expect(
+      tabWrappers.every(wrapper => wrapper.getAttribute('style')?.includes('flex:1'))
+    ).toBe(true);
     expect(rulesTab?.textContent).toContain('Rules');
     expect(rulesTab?.textContent).toContain('2');
     expect(rulesTab?.textContent?.includes('Findings')).toBe(false);
