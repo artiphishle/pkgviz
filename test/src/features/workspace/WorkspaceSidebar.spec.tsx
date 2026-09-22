@@ -108,7 +108,6 @@ const passedEvaluation: Audit['evaluation'] = {
   ],
 };
 
-
 const failedEvaluation: Audit['evaluation'] = {
   cyclicPackages: [
     { packages: ['app.a', 'app.b', 'app.a'], edges: [] },
