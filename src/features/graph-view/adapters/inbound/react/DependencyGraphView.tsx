@@ -2,11 +2,11 @@
 
 import { toCytoscapeElements } from '@ankhorage/graph-cytoscape';
 import { GraphView, type GraphViewElementEvent, type GraphViewLayoutName } from '@zora/graph-view';
+import { type ZoraRuntimeTheme, useZoraTheme } from '@zora/ZoraProvider';
 import type { ElementsDefinition, LayoutOptions } from 'cytoscape';
 import React, { useMemo } from 'react';
 
 import { LAYOUTS } from '@/features/graph-view/adapters/inbound/cytoscape/constants';
-import { getCanvasBg } from '@/features/graph-view/adapters/inbound/cytoscape/getCanvasBg';
 import { createGraphViewModel } from '@/features/graph-view/adapters/inbound/react/createGraphViewModel';
 import { createGraphViewStyles } from '@/features/graph-view/adapters/inbound/react/createGraphViewStyles';
 import { GraphZoomControls } from '@/features/graph-view/adapters/inbound/react/GraphZoomControls';
@@ -15,14 +15,13 @@ import { useGraphInteractions } from '@/features/graph-view/adapters/inbound/rea
 import { useGraphProjection } from '@/features/graph-view/adapters/inbound/react/useGraphProjection';
 import { useGraphViewport } from '@/features/graph-view/adapters/inbound/react/useGraphViewport';
 import { useSettings } from '@/features/settings/adapters/inbound/react/useSettings';
-import { useThemeMode } from '@/features/theme/adapters/inbound/react/useThemeMode';
 import type { CycleHighlight } from '@/types/auditVisualization';
 import type { PackageDependencyGraph } from '@/types/dependencyAnalysis';
 
 /*** Renders PKGViz graph policy through the materialized ZORA GraphView runtime. */
 export function DependencyGraphView(props: DependencyGraphViewProps) {
   const settings = useSettings();
-  const { mode: theme } = useThemeMode();
+  const { theme } = useZoraTheme();
   const packageGraph = useMemo(
     () =>
       toCytoscapeElements(props.packageGraph, {
@@ -122,8 +121,20 @@ function DependencyGraphCanvas(props: DependencyGraphCanvasProps) {
   };
 
   return (
-    <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2 overflow-hidden px-8">
-      <div className="relative min-h-0 flex-1 overflow-hidden">
+    <div
+      style={{
+        display: 'flex',
+        flex: 1,
+        flexDirection: 'column',
+        gap: 8,
+        minHeight: 0,
+        minWidth: 0,
+        overflow: 'hidden',
+        paddingLeft: 32,
+        paddingRight: 32,
+      }}
+    >
+      <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', position: 'relative' }}>
         <GraphView
           edges={interactions.edges}
           layout={props.layout}
@@ -141,7 +152,7 @@ function DependencyGraphCanvas(props: DependencyGraphCanvasProps) {
           onViewportChange={viewport.handleViewportChange}
           onSpacingFactorChange={props.onSpacingFactorChange}
           spacingFactor={props.spacingFactor}
-          style={{ background: getCanvasBg(props.theme) }}
+          style={{ background: props.theme.semantics.surface.default }}
           styleRules={props.styles}
         />
         {props.overlay}
@@ -178,7 +189,7 @@ interface GraphViewPresentationInput {
   readonly cycleHighlights: readonly CycleHighlight[];
   readonly layout: LayoutOptions['name'];
   readonly packageGraph: ElementsDefinition;
-  readonly theme: 'dark' | 'light';
+  readonly theme: ZoraRuntimeTheme;
   readonly visibleElements: ElementsDefinition | null;
 }
 
@@ -189,5 +200,5 @@ interface DependencyGraphCanvasProps extends DependencyGraphViewProps {
   readonly model: NonNullable<ReturnType<typeof createGraphViewModel>>;
   readonly spacingFactor: number;
   readonly styles: ReturnType<typeof createGraphViewStyles>;
-  readonly theme: 'dark' | 'light';
+  readonly theme: ZoraRuntimeTheme;
 }
