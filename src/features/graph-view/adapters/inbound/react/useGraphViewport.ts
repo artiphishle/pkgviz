@@ -13,13 +13,14 @@ import { useMemo, useRef, useState } from 'react';
  * Controlled spacing acknowledgements are deliberately excluded so optimized fit cannot relayout-loop.
  */
 export function useGraphViewport(input: UseGraphViewportInput) {
+  const { edges, layout, nodes } = input;
   const [controller, setController] = useState<GraphViewController | null>(null);
   const controllerRef = useRef<GraphViewController | null>(null);
   const optimizedGeometryRef = useRef<string | null>(null);
   const [viewport, setViewport] = useState({ zoom: 1, min: 0.5, max: 2 });
   const geometrySignature = useMemo(
-    () => createGraphGeometrySignature(input),
-    [input.edges, input.layout, input.nodes]
+    () => createGraphGeometrySignature(layout, nodes, edges),
+    [edges, layout, nodes]
   );
 
   /*** Publishes only changed viewport values, including range changes without a zoom event. */
@@ -77,11 +78,15 @@ export function useGraphViewport(input: UseGraphViewportInput) {
 }
 
 /*** Creates a stable geometry identity while intentionally ignoring interaction and paint-only state. */
-function createGraphGeometrySignature(input: UseGraphViewportInput): string {
+function createGraphGeometrySignature(
+  layout: GraphViewLayoutName,
+  nodes: readonly GraphViewNode[],
+  edges: readonly GraphViewEdge[]
+): string {
   return JSON.stringify({
-    layout: input.layout,
-    nodes: input.nodes.map(node => [node.id, node.parentId ?? '', node.label ?? '']),
-    edges: input.edges.map(edge => [edge.id ?? '', edge.source, edge.target]),
+    layout,
+    nodes: nodes.map(node => [node.id, node.parentId ?? '', node.label ?? '']),
+    edges: edges.map(edge => [edge.id ?? '', edge.source, edge.target]),
   });
 }
 
