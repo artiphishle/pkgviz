@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { assert, describe, it } from '@artiphishle/testosterone';
 
-import { loadProjectOverviewAsync } from '@/features/project-analysis/composition/loadProjectOverviewAsync';
+import { loadProjectOverviewAsync } from '@/features/workspace/composition/loadProjectOverviewAsync';
 import { runProjectAnalysisActionAsync } from '@/utils/runProjectAnalysisActionAsync';
 
 describe('[project analysis actions]', () => {
