@@ -4,7 +4,7 @@ import { toCytoscapeElements } from '@ankhorage/graph-cytoscape';
 import { GraphView, type GraphViewElementEvent, type GraphViewLayoutName } from '@zora/graph-view';
 import type { ElementsDefinition, LayoutOptions } from 'cytoscape';
 import React, { useMemo } from 'react';
-import { useSettings } from '@/features/settings/adapters/inbound/react/useSettings';
+
 import { LAYOUTS } from '@/features/graph-view/adapters/inbound/cytoscape/constants';
 import { getCanvasBg } from '@/features/graph-view/adapters/inbound/cytoscape/getCanvasBg';
 import { createGraphViewModel } from '@/features/graph-view/adapters/inbound/react/createGraphViewModel';
@@ -14,6 +14,7 @@ import { useGraphFocus } from '@/features/graph-view/adapters/inbound/react/useG
 import { useGraphInteractions } from '@/features/graph-view/adapters/inbound/react/useGraphInteractions';
 import { useGraphProjection } from '@/features/graph-view/adapters/inbound/react/useGraphProjection';
 import { useGraphViewport } from '@/features/graph-view/adapters/inbound/react/useGraphViewport';
+import { useSettings } from '@/features/settings/adapters/inbound/react/useSettings';
 import { useThemeMode } from '@/features/theme/adapters/inbound/react/useThemeMode';
 import type { CycleHighlight } from '@/types/auditVisualization';
 import type { PackageDependencyGraph } from '@/types/dependencyAnalysis';

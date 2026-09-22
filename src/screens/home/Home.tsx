@@ -6,10 +6,10 @@ import { Card } from '@zora/card';
 import { useTheme } from 'next-themes';
 import { useState } from 'react';
 
-import { SettingsProvider } from '@/features/settings/adapters/inbound/react/SettingsProvider';
 import { useCycleSelection } from '@/features/audit/adapters/inbound/react/useCycleSelection';
 import { resolveProjectTreeNavigation } from '@/features/project-tree/application/use-cases/resolveProjectTreeNavigation';
 import { findProjectTreeNodeByGraphPackage } from '@/features/project-tree/utils/findProjectTreeNodeByGraphPackage';
+import { SettingsProvider } from '@/features/settings/adapters/inbound/react/SettingsProvider';
 import { useThemeMode } from '@/features/theme/adapters/inbound/react/useThemeMode';
 import { t } from '@/i18n/i18n';
 import { HomeGraph } from '@/screens/home/HomeGraph';
