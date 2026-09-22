@@ -1,7 +1,7 @@
 import { createDependencyGraphAsync } from '@ankhorage/dependency-graph';
 import { describe, expect, it, resolve } from '@artiphishle/testosterone';
 
-import { parseDelphiFile } from '@/app/utils/parser/delphi/parseFile';
+import { readDelphiProjectFileMetadata } from '@/features/project-analysis/adapters/outbound/source-metadata/readDelphiProjectFileMetadata';
 import { projectDependencyImportsAsync } from '@/features/dependency-analysis/adapters/outbound/dependency-graph/projectDependencyImportsAsync';
 
 describe('[Delphi dependency graph migration]', () => {
@@ -19,7 +19,7 @@ describe('[Delphi dependency graph migration]', () => {
       'specifier',
       'delphi-standard-library'
     );
-    const parsed = await parseDelphiFile(
+    const parsed = readDelphiProjectFileMetadata(
       file,
       projectRoot,
       importsByFile.get('Services/UserService.pas') ?? []
