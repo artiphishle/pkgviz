@@ -3,6 +3,7 @@
 import { Switch } from '@zora/switch';
 import { View } from '@zora/view';
 import { useZoraTheme } from '@zora/ZoraProvider';
+import React from 'react';
 
 /*** Renders an audit cycle toggle through ZORA with a data-driven cycle color indicator. */
 export function CycleSwitch({ ariaLabel, checkedColor, id, onToggle, value }: CycleSwitchProps) {
