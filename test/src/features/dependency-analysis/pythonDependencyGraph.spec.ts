@@ -1,7 +1,7 @@
 import { createDependencyGraphAsync } from '@ankhorage/dependency-graph';
 import { describe, expect, it, resolve } from '@artiphishle/testosterone';
 
-import { parsePythonFile } from '@/app/utils/parser/python/parseFile';
+import { readPythonProjectFileMetadata } from '@/features/project-analysis/adapters/outbound/source-metadata/readPythonProjectFileMetadata';
 import { projectDependencyImportsAsync } from '@/features/dependency-analysis/adapters/outbound/dependency-graph/projectDependencyImportsAsync';
 
 describe('[Python dependency graph migration]', () => {
@@ -19,7 +19,7 @@ describe('[Python dependency graph migration]', () => {
       'specifier',
       'python-legacy'
     );
-    const parsed = await parsePythonFile(
+    const parsed = readPythonProjectFileMetadata(
       file,
       projectRoot,
       importsByFile.get('services/user_service.py') ?? []

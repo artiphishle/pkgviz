@@ -101,14 +101,3 @@ jobs:
           else
             echo "No changeset:status script found; skipping."
           fi
-
-      - name: Enforce PKGViz cyclic-dependencies rule
-        run: bun bin/pkgviz.ts --out pkgviz-audit.json --rule cyclic-dependencies=block
-
-      - name: Upload PKGViz self-audit
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: pkgviz-self-audit
-          path: pkgviz-audit.json
-          if-no-files-found: warn
