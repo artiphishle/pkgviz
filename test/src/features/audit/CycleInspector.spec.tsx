@@ -39,7 +39,7 @@ describe('[CycleInspector]', () => {
     expect(getByText('Cycle 1')).toBeDefined();
     expect(getByText('1. app.a → app.b')).toBeDefined();
     expect(container.querySelector('details')).toBeNull();
-    expect(container.querySelector('[aria-expanded]') !== null).toBe(true);
+    expect(container.textContent?.includes('src/a.ts')).toBe(false);
     unmount();
   });
 });
