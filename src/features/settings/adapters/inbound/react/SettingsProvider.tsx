@@ -1,5 +1,5 @@
 import { useLocalStorage } from 'ankh-hooks/store';
-import type { PropsWithChildren } from 'react';
+import React, { type PropsWithChildren } from 'react';
 
 import { SettingsContext } from '@/features/settings/adapters/inbound/react/SettingsContext';
 import { readSettingsEnvironment } from '@/features/settings/utils/readSettingsEnvironment';
