@@ -7,7 +7,7 @@ import type { LayoutOptions } from 'cytoscape';
 import { Slider } from 'radix-ui';
 import React from 'react';
 
-import { useSettings } from '@/contexts/SettingsContext';
+import { useSettings } from '@/features/settings/adapters/inbound/react/useSettings';
 import { t } from '@/i18n/i18n';
 
 const LAYOUT_OPTIONS: readonly LayoutOptions['name'][] = [

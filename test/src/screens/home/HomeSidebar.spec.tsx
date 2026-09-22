@@ -2,7 +2,7 @@ import { describe, expect, it, render } from '@artiphishle/testosterone';
 import { ZoraProvider } from '@zora/ZoraProvider';
 import React from 'react';
 
-import { SettingsProvider } from '@/contexts/SettingsContext';
+import { SettingsProvider } from '@/features/settings/adapters/inbound/react/SettingsProvider';
 import { HomeSidebar } from '@/screens/home/HomeSidebar';
 import type { Audit } from '@/types/audit';
 
