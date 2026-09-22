@@ -14,8 +14,8 @@ import { useGraphInteractions } from '@/features/graph-view/adapters/inbound/rea
 import { useGraphProjection } from '@/features/graph-view/adapters/inbound/react/useGraphProjection';
 import { useGraphViewport } from '@/features/graph-view/adapters/inbound/react/useGraphViewport';
 import { useThemeMode } from '@/features/theme/adapters/inbound/react/useThemeMode';
-import { LAYOUTS } from '@/layouts/constants';
-import { getCanvasBg } from '@/layouts/style';
+import { LAYOUTS } from '@/features/graph-view/adapters/inbound/cytoscape/constants';
+import { getCanvasBg } from '@/features/graph-view/adapters/inbound/cytoscape/style';
 import type { CycleHighlight } from '@/types/auditVisualization';
 import type { PackageDependencyGraph } from '@/types/dependencyAnalysis';
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@artiphishle/testosterone';
-import { filterByPackagePrefix } from '@/utils/filter/filterByPackagePrefix';
+import { filterByPackagePrefix } from '@/features/graph-view/utils/filterByPackagePrefix';
 
 describe('[filterByPackagePrefix]', () => {
   it('treats the selected package as scope and returns only its descendants', () => {

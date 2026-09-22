@@ -3,7 +3,7 @@ import { describe, expect, it } from '@artiphishle/testosterone';
 import cytoscape, { type ElementsDefinition } from 'cytoscape';
 
 import { createGraphViewModel } from '@/features/graph-view/adapters/inbound/react/createGraphViewModel';
-import { getStyle } from '@/layouts/style';
+import { getStyle } from '@/features/graph-view/adapters/inbound/cytoscape/style';
 
 describe('[getStyle]', () => {
   it('marks cycle compounds without coloring their entire underlay in either theme', () => {

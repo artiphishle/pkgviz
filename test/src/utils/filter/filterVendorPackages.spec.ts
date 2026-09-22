@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@artiphishle/testosterone';
 
-import { filterVendorPackages } from '@/utils/filter/filterVendorPackages';
+import { filterVendorPackages } from '@/features/graph-view/utils/filterVendorPackages';
 import type { ElementsDefinition } from 'cytoscape';
 
 describe('[filterVendorPackages]', () => {

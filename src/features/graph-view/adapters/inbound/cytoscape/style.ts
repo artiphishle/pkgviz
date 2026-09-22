@@ -1,7 +1,7 @@
 import type { ElementsDefinition, StylesheetJson } from 'cytoscape';
 
 import { createCompoundOpacityIndex } from '@/features/graph-view/utils/createCompoundOpacityIndex';
-import { getWeightBuckets } from '@/layouts/getWeightBuckets';
+import { getWeightBuckets } from '@/features/graph-view/adapters/inbound/cytoscape/getWeightBuckets';
 
 export type ThemeKey = 'dark' | 'light';
 

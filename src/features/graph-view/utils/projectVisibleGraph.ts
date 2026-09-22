@@ -1,11 +1,11 @@
 import type { ElementsDefinition, NodeDefinition } from 'cytoscape';
 
 import { removeEmptyStructuralNodes } from '@/features/graph-view/utils/removeEmptyStructuralNodes';
-import { filterByPackagePrefix } from '@/utils/filter/filterByPackagePrefix';
-import { filterEmptyPackages } from '@/utils/filter/filterEmptyPackages';
-import { filterSubPackagesByDepth, getMaxDepth } from '@/utils/filter/filterSubPackagesFromDepth';
-import { filterVendorPackages } from '@/utils/filter/filterVendorPackages';
-import { toggleCompoundNodes } from '@/utils/filter/toggleCompoundNodes';
+import { filterByPackagePrefix } from '@/features/graph-view/utils/filterByPackagePrefix';
+import { filterEmptyPackages } from '@/features/graph-view/utils/filterEmptyPackages';
+import { filterSubPackagesByDepth, getMaxDepth } from '@/features/graph-view/utils/filterSubPackagesFromDepth';
+import { filterVendorPackages } from '@/features/graph-view/utils/filterVendorPackages';
+import { toggleCompoundNodes } from '@/features/graph-view/utils/toggleCompoundNodes';
 
 /*** Projects the complete dependency graph into the explicitly selected package/depth/filter view. */
 export function projectVisibleGraph(input: ProjectVisibleGraphInput): ProjectVisibleGraphResult {
