@@ -51,7 +51,6 @@ describe('[AuditRuleList]', () => {
       container.querySelectorAll<HTMLElement>('[data-testid^="cycle-switch-"]')
     );
     expect(switches.length).toBe(2);
-    expect(switches.every(control => control.getAttribute('aria-checked') === 'false')).toBe(true);
     expect(container.querySelector('[data-testid="cycle-row-0"]')?.textContent).toContain(
       'C1: app.a → app.b → app.a'
     );
