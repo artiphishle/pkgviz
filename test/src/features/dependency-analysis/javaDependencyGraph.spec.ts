@@ -2,7 +2,7 @@ import { createDependencyGraphAsync } from '@ankhorage/dependency-graph';
 import { assert, describe, expect, it, resolve } from '@artiphishle/testosterone';
 
 import { projectDependencyImportsAsync } from '@/features/dependency-analysis/adapters/outbound/dependency-graph/projectDependencyImportsAsync';
-import { readProjectSnapshotAsync } from '@/features/project-analysis/adapters/outbound/filesystem/readProjectSnapshotAsync';
+import { readProjectSnapshotAsync } from '@/features/project-analysis/composition/readProjectSnapshotAsync';
 
 describe('[Java dependency graph migration]', () => {
   it('rejects an analysis root outside the selected project', async () => {
