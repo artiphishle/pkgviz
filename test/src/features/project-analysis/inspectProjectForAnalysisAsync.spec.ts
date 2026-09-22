@@ -27,6 +27,31 @@ it('inspects nested source files and prunes dependencies and examples', async ()
   }
 });
 
+it('prunes conventional test sources before production analysis', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'pkgviz-detector-'));
+  try {
+    await mkdir(join(root, 'src/nested'), { recursive: true });
+    await mkdir(join(root, 'tests'), { recursive: true });
+    await mkdir(join(root, 'src/__tests__'), { recursive: true });
+    await writeFile(join(root, 'src/main.ts'), '');
+    await writeFile(join(root, 'src/main.test.ts'), '');
+    await writeFile(join(root, 'src/nested/widget.spec.ts'), '');
+    await writeFile(join(root, 'src/nested/service_test.py'), '');
+    await writeFile(join(root, 'src/nested/test_adapter.py'), '');
+    await writeFile(join(root, 'tests/integration.ts'), '');
+    await writeFile(join(root, 'src/__tests__/unit.ts'), '');
+
+    const inspection = await inspectProjectForAnalysisAsync(root);
+
+    assert.deepEqual(inspection.files, ['src/main.ts']);
+    const result = selectParserLanguage(inspection.detection);
+    assert.equal(result.language, Language.TypeScript);
+    assert.deepEqual(result.indicators, ['src/main.ts']);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 it('reports incomplete scans rather than treating partial evidence as complete', async () => {
   const root = await mkdtemp(join(tmpdir(), 'pkgviz-detector-'));
   try {

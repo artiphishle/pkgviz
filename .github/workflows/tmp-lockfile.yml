@@ -1,0 +1,24 @@
+name: Temporary lockfile refresh
+
+on:
+  push:
+    branches:
+      - fix/246-ignore-test-sources
+
+permissions:
+  contents: read
+
+jobs:
+  lockfile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.2'
+      - name: Generate lockfile
+        run: |
+          bun install --lockfile-only
+          echo '---PROJECT-DETECTOR---'
+          grep -F '"@ankhorage/project-detector"' bun.lock
+          grep -F '"@ankhorage/project-detector": [' bun.lock
