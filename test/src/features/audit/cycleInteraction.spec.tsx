@@ -24,7 +24,8 @@ function Harness() {
         }}
         onCycleInspectionChange={setInspection}
       />
-      <output>{inspection?.label ?? 'closed'}</output>
+      <output data-testid="inspection-state">{inspection?.label ?? 'closed'}</output>
+      <output data-testid="selection-state">{selected ? 'selected' : 'unselected'}</output>
     </>
   );
 }
@@ -49,24 +50,29 @@ describe('[cycle interaction]', () => {
       const row = host.container.querySelector<HTMLElement>('[data-testid="cycle-row-0"]')!;
       const toggle = host.container.querySelector<HTMLElement>('[data-testid="cycle-switch-0"]')!;
 
+      const inspectionState = () =>
+        host.container.querySelector<HTMLElement>('[data-testid="inspection-state"]')?.textContent;
+      const selectionState = () =>
+        host.container.querySelector<HTMLElement>('[data-testid="selection-state"]')?.textContent;
+
       expect(row.textContent).toContain('C1: a → b → a');
-      expect(toggle.getAttribute('aria-checked')).toBe('true');
-      expect(host.container.querySelector('output')?.textContent).toBe('closed');
+      expect(selectionState()).toBe('selected');
+      expect(inspectionState()).toBe('closed');
 
       await act(async () => toggle.click());
-      expect(toggle.getAttribute('aria-checked')).toBe('false');
-      expect(host.container.querySelector('output')?.textContent).toBe('closed');
+      expect(selectionState()).toBe('unselected');
+      expect(inspectionState()).toBe('closed');
 
       await act(async () => toggle.click());
-      expect(toggle.getAttribute('aria-checked')).toBe('true');
-      expect(host.container.querySelector('output')?.textContent).toBe('closed');
+      expect(selectionState()).toBe('selected');
+      expect(inspectionState()).toBe('closed');
 
       await act(async () => row.click());
-      expect(host.container.querySelector('output')?.textContent).toBe('Cycle 1');
+      expect(inspectionState()).toBe('Cycle 1');
 
       await act(async () => toggle.click());
-      expect(toggle.getAttribute('aria-checked')).toBe('false');
-      expect(host.container.querySelector('output')?.textContent).toBe('closed');
+      expect(selectionState()).toBe('unselected');
+      expect(inspectionState()).toBe('closed');
     } finally {
       await act(async () => root.unmount());
       host.unmount();
