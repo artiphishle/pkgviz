@@ -2,7 +2,7 @@
 import { js2xml } from 'xml-js';
 
 import { createAuditAsync } from '@/features/audit/composition/createAuditAsync';
-import { parseProjectPath } from '@/shared/utils/parseProjectPath';
+import { parseProjectPath } from '@/utils/parseProjectPath';
 import type { Audit } from '@/types/audit';
 
 /*** Builds the audit payload for the configured project. */
