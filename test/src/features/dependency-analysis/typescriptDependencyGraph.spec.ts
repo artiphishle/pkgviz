@@ -31,20 +31,20 @@ describe('[TypeScript dependency graph migration]', () => {
 
   it('keeps the existing PKGViz package graph output from the owner graph', async () => {
     const projectRoot = resolve(process.cwd(), 'examples/typescript/my-app');
-    const { graph } = await readProjectSnapshotAsync(projectRoot);
+    const { packageGraph } = await readProjectSnapshotAsync(projectRoot);
 
-    const rootToComponents = graph.edges.find(
-      edge => edge.data.source === 'src' && edge.data.target === 'src.components'
+    const rootToComponents = packageGraph.edges.find(
+      edge => edge.source === 'src' && edge.target === 'src.components'
     );
-    const componentsToNext = graph.edges.find(
-      edge => edge.data.source === 'src.components' && edge.data.target === 'next'
+    const componentsToNext = packageGraph.edges.find(
+      edge => edge.source === 'src.components' && edge.target === 'next'
     );
 
     expect(rootToComponents?.data.weight).toBe(2);
     expect(componentsToNext?.data.weight).toBe(1);
-    expect(graph.nodes.some(node => node.data.id === 'src.components')).toBe(true);
-    expect(graph.nodes.some(node => node.data.id === 'next' && node.classes === 'isVendor')).toBe(
-      true
-    );
+    expect(packageGraph.nodes.some(node => node.id === 'src.components')).toBe(true);
+    expect(
+      packageGraph.nodes.some(node => node.id === 'next' && node.data.isIntrinsic !== true)
+    ).toBe(true);
   });
 });
