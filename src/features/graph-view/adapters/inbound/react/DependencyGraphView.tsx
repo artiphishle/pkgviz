@@ -2,7 +2,7 @@
 
 import { toCytoscapeElements } from '@ankhorage/graph-cytoscape';
 import { GraphView, type GraphViewElementEvent, type GraphViewLayoutName } from '@zora/graph-view';
-import { type ZoraRuntimeTheme, useZoraTheme } from '@zora/ZoraProvider';
+import { useZoraTheme, type ZoraRuntimeTheme } from '@zora/ZoraProvider';
 import type { ElementsDefinition, LayoutOptions } from 'cytoscape';
 import React, { useMemo } from 'react';
 
@@ -17,6 +17,25 @@ import { useGraphViewport } from '@/features/graph-view/adapters/inbound/react/u
 import { useSettings } from '@/features/settings/adapters/inbound/react/useSettings';
 import type { CycleHighlight } from '@/types/auditVisualization';
 import type { PackageDependencyGraph } from '@/types/dependencyAnalysis';
+
+const GRAPH_CANVAS_STYLE = {
+  display: 'flex',
+  flex: 1,
+  flexDirection: 'column',
+  gap: 8,
+  minHeight: 0,
+  minWidth: 0,
+  overflow: 'hidden',
+  paddingLeft: 32,
+  paddingRight: 32,
+} as const;
+
+const GRAPH_VIEWPORT_STYLE = {
+  flex: 1,
+  minHeight: 0,
+  overflow: 'hidden',
+  position: 'relative',
+} as const;
 
 /*** Renders PKGViz graph policy through the materialized ZORA GraphView runtime. */
 export function DependencyGraphView(props: DependencyGraphViewProps) {
@@ -121,20 +140,8 @@ function DependencyGraphCanvas(props: DependencyGraphCanvasProps) {
   };
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flex: 1,
-        flexDirection: 'column',
-        gap: 8,
-        minHeight: 0,
-        minWidth: 0,
-        overflow: 'hidden',
-        paddingLeft: 32,
-        paddingRight: 32,
-      }}
-    >
-      <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', position: 'relative' }}>
+    <div style={GRAPH_CANVAS_STYLE}>
+      <div style={GRAPH_VIEWPORT_STYLE}>
         <GraphView
           edges={interactions.edges}
           layout={props.layout}
