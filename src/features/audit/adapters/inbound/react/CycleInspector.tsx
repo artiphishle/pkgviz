@@ -76,10 +76,7 @@ function CycleInspectorCard({ borderColor, inspection, onClose }: CycleInspector
         <Text selectable variant="code">
           {inspection.cycle.packages.join(' → ')}
         </Text>
-        <CycleEvidence
-          edges={inspection.cycle.edges}
-          borderColor={borderColor}
-        />
+        <CycleEvidence edges={inspection.cycle.edges} borderColor={borderColor} />
       </View>
     </Card>
   );
