@@ -6,6 +6,6 @@ export const layout: GridLayoutOptions = {
   // padding: 30, // Add some space around the graph
   avoidOverlap: true,
 
-  // Sort nodes alphabetically by their ID
-  sort: (a: NodeSingular, b: NodeSingular) => a.data('id').localeCompare(b.data('id')),
+  // Sort nodes alphabetically by their Cytoscape identity.
+  sort: (a: NodeSingular, b: NodeSingular) => a.id().localeCompare(b.id()),
 };

@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@artiphishle/testosterone';
-import { filterEmptyPackages } from '@/utils/filter/filterEmptyPackages';
+import { filterEmptyPackages } from '@/features/graph-view/utils/filterEmptyPackages';
 import type { ElementsDefinition } from 'cytoscape';
 
 describe('[filterEmptyPackage]', () => {

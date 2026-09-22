@@ -6,5 +6,5 @@ export const layout: ConcentricLayoutOptions = {
   avoidOverlap: true,
   fit: true,
   padding: 30,
-  sort: (a: NodeSingular, b: NodeSingular) => a.data('id').localeCompare(b.data('id')),
+  sort: (a: NodeSingular, b: NodeSingular) => a.id().localeCompare(b.id()),
 };

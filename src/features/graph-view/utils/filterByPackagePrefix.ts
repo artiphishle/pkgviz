@@ -1,4 +1,4 @@
-import { isIntrinsicGraphNode } from '@/utils/filter/isIntrinsicGraphNode';
+import { isIntrinsicGraphNode } from '@/features/graph-view/utils/isIntrinsicGraphNode';
 
 /***
  * Filters project descendants while retaining their adjacent external dependency endpoints.

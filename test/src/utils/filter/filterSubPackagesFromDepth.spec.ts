@@ -1,6 +1,7 @@
 import { describe, expect, it } from '@artiphishle/testosterone';
 
-import { filterSubPackagesByDepth, getMaxDepth } from '@/utils/filter/filterSubPackagesFromDepth';
+import { filterSubPackagesByDepth } from '@/features/graph-view/utils/filterSubPackagesByDepth';
+import { getMaxDepth } from '@/features/graph-view/utils/getMaxDepth';
 import type { ElementsDefinition } from 'cytoscape';
 
 describe('[filterSubPackagesByDepth]', () => {

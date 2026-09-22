@@ -1,6 +1,6 @@
 import type { ElementsDefinition } from 'cytoscape';
 
-import { isIntrinsicGraphNode } from '@/utils/filter/isIntrinsicGraphNode';
+import { isIntrinsicGraphNode } from '@/features/graph-view/utils/isIntrinsicGraphNode';
 
 /***
  * Skips a unique chain of structural project packages, stopping before real dependency endpoints.
@@ -29,7 +29,7 @@ function descend(
   connected: ReadonlySet<string>
 ): string {
   const candidates = children.get(scope) ?? [];
-  const next = candidates[0];
+  const [next] = candidates;
   if (candidates.length !== 1 || !next || connected.has(next) || !children.has(next)) return scope;
   return descend(next, children, connected);
 }

@@ -4,8 +4,9 @@ import { toCytoscapeElements } from '@ankhorage/graph-cytoscape';
 import { GraphView, type GraphViewElementEvent, type GraphViewLayoutName } from '@zora/graph-view';
 import type { ElementsDefinition, LayoutOptions } from 'cytoscape';
 import React, { useMemo } from 'react';
-
 import { useSettings } from '@/features/settings/adapters/inbound/react/useSettings';
+import { LAYOUTS } from '@/features/graph-view/adapters/inbound/cytoscape/constants';
+import { getCanvasBg } from '@/features/graph-view/adapters/inbound/cytoscape/getCanvasBg';
 import { createGraphViewModel } from '@/features/graph-view/adapters/inbound/react/createGraphViewModel';
 import { createGraphViewStyles } from '@/features/graph-view/adapters/inbound/react/createGraphViewStyles';
 import { GraphZoomControls } from '@/features/graph-view/adapters/inbound/react/GraphZoomControls';
@@ -14,8 +15,6 @@ import { useGraphInteractions } from '@/features/graph-view/adapters/inbound/rea
 import { useGraphProjection } from '@/features/graph-view/adapters/inbound/react/useGraphProjection';
 import { useGraphViewport } from '@/features/graph-view/adapters/inbound/react/useGraphViewport';
 import { useThemeMode } from '@/features/theme/adapters/inbound/react/useThemeMode';
-import { LAYOUTS } from '@/layouts/constants';
-import { getCanvasBg } from '@/layouts/style';
 import type { CycleHighlight } from '@/types/auditVisualization';
 import type { PackageDependencyGraph } from '@/types/dependencyAnalysis';
 

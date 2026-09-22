@@ -18,14 +18,14 @@ function toggleCompoundNode(
   show: boolean,
   currentPackage: string
 ): NodeDefinition {
-  const idInactive = node.data.idInactive ?? node.data.id;
-  const parentInactive = node.data.parentInactive ?? node.data.parent;
+  const idInactive = toGraphString(node.data.idInactive ?? node.data.id);
+  const parentInactive = toOptionalGraphString(node.data.parentInactive ?? node.data.parent);
   const data = {
     ...node.data,
     idInactive,
     name: show
-      ? String(idInactive).split('.').pop()
-      : String(idInactive).slice(currentPackage.length ? currentPackage.length + 1 : 0),
+      ? idInactive.split('.').pop()
+      : idInactive.slice(currentPackage.length ? currentPackage.length + 1 : 0),
   };
 
   if (show) {
@@ -47,4 +47,17 @@ function toggleCompoundNode(
       parentInactive,
     },
   };
+}
+
+/*** Normalizes primitive graph metadata into the string identity expected by Cytoscape. */
+function toGraphString(value: unknown): string {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  return '';
+}
+
+/*** Normalizes optional graph metadata without inventing an empty parent identity. */
+function toOptionalGraphString(value: unknown): string | undefined {
+  const normalized = toGraphString(value);
+  return normalized.length > 0 ? normalized : undefined;
 }
