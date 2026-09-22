@@ -1,7 +1,7 @@
 import { createDependencyGraphAsync } from '@ankhorage/dependency-graph';
 import { describe, expect, it, resolve } from '@artiphishle/testosterone';
 
-import { parseKotlinFile } from '@/app/utils/parser/kotlin/parseFile';
+import { readKotlinProjectFileMetadataAsync } from '@/features/project-analysis/adapters/outbound/source-metadata/readKotlinProjectFileMetadataAsync';
 import { projectDependencyImportsAsync } from '@/features/dependency-analysis/adapters/outbound/dependency-graph/projectDependencyImportsAsync';
 
 describe('[Kotlin dependency graph migration]', () => {
@@ -19,7 +19,7 @@ describe('[Kotlin dependency graph migration]', () => {
       'specifier',
       'kotlin-standard-library'
     );
-    const parsed = await parseKotlinFile(
+    const parsed = await readKotlinProjectFileMetadataAsync(
       file,
       projectRoot,
       importsByFile.get('com/example/services/UserService.kt') ?? []
