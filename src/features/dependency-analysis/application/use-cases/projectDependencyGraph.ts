@@ -61,6 +61,7 @@ function projectNode(
   return {
     id,
     data: {
+      classification: data.classification,
       path: id,
       parent,
       label,
