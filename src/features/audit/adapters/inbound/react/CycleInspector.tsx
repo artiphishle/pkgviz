@@ -10,63 +10,78 @@ import { t } from '@/i18n/i18n';
 import type { CycleEdgeEvidence } from '@/types/audit';
 import type { CycleInspection } from '@/types/auditVisualization';
 
+const INSPECTOR_STYLE = {
+  maxWidth: 'calc(100% - 2rem)',
+  position: 'absolute',
+  right: 16,
+  top: 16,
+  width: 384,
+  zIndex: 20,
+} as const;
+
 /*** Renders detailed cycle evidence in a ZORA card outside the constrained settings sidebar. */
 export function CycleInspector({ inspection, onClose }: CycleInspectorProps) {
   const { theme } = useZoraTheme();
+
+  return (
+    <aside style={INSPECTOR_STYLE}>
+      <CycleInspectorCard
+        inspection={inspection}
+        borderColor={theme.semantics.border.subtle}
+        onClose={onClose}
+      />
+    </aside>
+  );
+}
+
+/*** Renders the themed card body for one inspected dependency cycle. */
+function CycleInspectorCard({ borderColor, inspection, onClose }: CycleInspectorCardProps) {
   const packageCount = new Set(inspection.cycle.packages).size;
 
   return (
-    <aside
-      style={{
-        maxWidth: 'calc(100% - 2rem)',
-        position: 'absolute',
-        right: 16,
-        top: 16,
-        width: 384,
-        zIndex: 20,
-      }}
+    <Card
+      compact
+      actions={
+        <IconButton
+          color="neutral"
+          icon={{ name: 'close-outline' }}
+          label={t('audit.closeInspector')}
+          size="s"
+          variant="ghost"
+          onPress={onClose}
+        />
+      }
+      description={`${packageCount} ${t('audit.packages')} · ${inspection.cycle.edges.length} ${t(
+        'audit.dependencyEdges'
+      )}`}
+      title={inspection.label}
+      tone="outline"
     >
-      <Card
-        compact
-        actions={
-          <IconButton
-            color="neutral"
-            icon={{ name: 'close-outline' }}
-            label={t('audit.closeInspector')}
-            size="s"
-            variant="ghost"
-            onPress={onClose}
+      <View gap="m">
+        <View align="center" direction="row" gap="s">
+          <span
+            aria-hidden="true"
+            style={{
+              backgroundColor: inspection.color,
+              borderRadius: 999,
+              flexShrink: 0,
+              height: 10,
+              width: 10,
+            }}
           />
-        }
-        description={`${packageCount} ${t('audit.packages')} · ${inspection.cycle.edges.length} ${t(
-          'audit.dependencyEdges'
-        )}`}
-        title={inspection.label}
-        tone="outline"
-      >
-        <View gap="m">
-          <View align="center" direction="row" gap="s">
-            <span
-              aria-hidden="true"
-              style={{
-                backgroundColor: inspection.color,
-                borderRadius: 999,
-                flexShrink: 0,
-                height: 10,
-                width: 10,
-              }}
-            />
-            <Text variant="label" weight="bold">
-              {t('audit.cyclePath')}
-            </Text>
-          </View>
-          <Text selectable variant="code">
-            {inspection.cycle.packages.join(' → ')}
+          <Text variant="label" weight="bold">
+            {t('audit.cyclePath')}
           </Text>
-          <CycleEvidence edges={inspection.cycle.edges} borderColor={theme.semantics.border.subtle} />
         </View>
-      </Card>
-    </aside>
+        <Text selectable variant="code">
+          {inspection.cycle.packages.join(' → ')}
+        </Text>
+        <CycleEvidence
+          edges={inspection.cycle.edges}
+          borderColor={borderColor}
+        />
+      </View>
+    </Card>
   );
 }
 
@@ -135,6 +150,10 @@ function EvidenceEdge({ borderColor, edge, index }: EvidenceEdgeProps) {
 interface CycleInspectorProps {
   readonly inspection: CycleInspection;
   readonly onClose: () => void;
+}
+
+interface CycleInspectorCardProps extends CycleInspectorProps {
+  readonly borderColor: string;
 }
 
 interface CycleEvidenceProps {
