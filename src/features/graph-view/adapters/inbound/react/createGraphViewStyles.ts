@@ -1,18 +1,18 @@
 import type { GraphViewStyleRule } from '@zora/graph-view';
+import type { ZoraRuntimeTheme } from '@zora/ZoraProvider';
 import type { ElementsDefinition, LayoutOptions, StylesheetJson } from 'cytoscape';
 
 import { getStyle as getBreadthfirstStyle } from '@/features/graph-view/adapters/inbound/cytoscape/breadthfirst/style';
 import { getStyle as getCircleStyle } from '@/features/graph-view/adapters/inbound/cytoscape/circle/style';
 import { getStyle as getConcentricStyle } from '@/features/graph-view/adapters/inbound/cytoscape/concentric/style';
 import { getStyle as getElkStyle } from '@/features/graph-view/adapters/inbound/cytoscape/elk/style';
-import type { ThemeKey } from '@/features/graph-view/adapters/inbound/cytoscape/getGraphPalette';
 import { getStyle as getGridStyle } from '@/features/graph-view/adapters/inbound/cytoscape/grid/style';
 import { getStyle as getCommonStyle } from '@/features/graph-view/adapters/inbound/cytoscape/style';
 
 /*** Builds ZORA GraphView style rules from the existing PKGViz Cytoscape style policy. */
 export function createGraphViewStyles(
   elements: ElementsDefinition,
-  theme: ThemeKey,
+  theme: ZoraRuntimeTheme,
   layout: LayoutOptions['name']
 ): readonly GraphViewStyleRule[] {
   return [...getCommonStyle(elements, theme), ...getLayoutStyle(layout)].map(toGraphViewStyleRule);
