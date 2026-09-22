@@ -18,7 +18,7 @@ describe('[C++ dependency graph migration]', () => {
       projectRoot,
       'specifier'
     );
-    const parsed = await readCppProjectFileMetadata(
+    const parsed = readCppProjectFileMetadata(
       file,
       projectRoot,
       importsByFile.get('services/UserService.cpp') ?? []
