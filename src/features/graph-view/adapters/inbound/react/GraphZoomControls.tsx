@@ -9,11 +9,18 @@ interface GraphZoomControlsProps {
   readonly controller: GraphViewController | null;
   readonly maxZoom: number;
   readonly minZoom: number;
+  readonly onFit: () => void;
   readonly zoom: number;
 }
 
 /*** Renders graph zoom controls through ZORA except for the retained range slider. */
-export function GraphZoomControls({ controller, maxZoom, minZoom, zoom }: GraphZoomControlsProps) {
+export function GraphZoomControls({
+  controller,
+  maxZoom,
+  minZoom,
+  onFit,
+  zoom,
+}: GraphZoomControlsProps) {
   /*** Applies one slider zoom value through the GraphView controller. */
   const handleSliderChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (controller === null) return;
@@ -30,7 +37,7 @@ export function GraphZoomControls({ controller, maxZoom, minZoom, zoom }: GraphZ
         label="Fit graph and optimize spacing for readability"
         size="s"
         variant="ghost"
-        onPress={() => controller?.fit({ optimizeSpacing: true })}
+        onPress={onFit}
       />
       <input
         id="zoom"
