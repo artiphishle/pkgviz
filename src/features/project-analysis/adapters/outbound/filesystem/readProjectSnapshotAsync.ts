@@ -1,12 +1,14 @@
 import { buildGraph } from '@/app/utils/buildGraph';
-import { getParsedFileStructure } from '@/app/utils/getParsedFileStructure';
-import { inspectParserLanguageAsync } from '@/app/utils/inspectParserLanguageAsync';
+import { selectParserLanguage } from '@/app/utils/selectParserLanguage';
+import { inspectProjectForAnalysisAsync } from '@/features/project-analysis/adapters/outbound/project-detector/inspectProjectForAnalysisAsync';
+import { parseProjectInspectionAsync } from '@/features/project-analysis/adapters/outbound/project-detector/parseProjectInspectionAsync';
 import type { ProjectSnapshot } from '@/types/projectAnalysis';
 
-/*** Reads one project's language and source files and constructs its shared weighted graph. */
+/*** Reads one project inventory once and constructs its parsed tree and shared weighted graph. */
 export async function readProjectSnapshotAsync(projectPath: string): Promise<ProjectSnapshot> {
   const timeStart = Date.now();
-  const language = await inspectParserLanguageAsync(projectPath);
-  const files = await getParsedFileStructure(language.language, projectPath);
+  const inspection = await inspectProjectForAnalysisAsync(projectPath);
+  const language = selectParserLanguage(inspection.detection);
+  const files = await parseProjectInspectionAsync(inspection, language.language, projectPath);
   return { files, graph: buildGraph(files), language, projectPath, timeStart };
 }

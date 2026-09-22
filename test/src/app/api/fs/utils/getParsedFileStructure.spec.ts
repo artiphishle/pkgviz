@@ -27,6 +27,24 @@ describe('[getParsedFileStructure]', () => {
     expect(comExampleMyappD['D.java'].className).toBe('D');
   });
 
+  it('preserves empty source directories from the canonical inspection inventory', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'pkgviz-empty-directory-'));
+
+    try {
+      await mkdir(join(root, 'src', 'empty'), { recursive: true });
+      await writeFile(join(root, 'src', 'main.py'), 'VALUE = 1\n');
+
+      const parsedFileStructure = await getParsedFileStructure(Language.Python, root);
+      const emptyDirectory = parsedFileStructure.empty as ParsedDirectory;
+
+      expect(Object.prototype.hasOwnProperty.call(parsedFileStructure, 'empty')).toBe(true);
+      expect(Object.getPrototypeOf(emptyDirectory)).toBe(null);
+      expect(Object.keys(emptyDirectory)).toEqual([]);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
   it('preserves __proto__ directories as own keys without prototype pollution', async () => {
     const root = await mkdtemp(join(tmpdir(), 'pkgviz-prototype-'));
     const previousProjectPath = process.env.NEXT_PUBLIC_PROJECT_PATH;
