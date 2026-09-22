@@ -27,10 +27,7 @@ const FLAG_UPDATERS = new Map<string, FlagUpdater>([
   ['--serve', options => ({ ...options, serve: true })],
   ['--prod', options => ({ ...options, prod: true })],
   ['--no-pretty', options => ({ ...options, pretty: false })],
-  [
-    '--no-fail-on-rule-violation',
-    options => ({ ...options, failOnRuleViolation: false }),
-  ],
+  ['--no-fail-on-rule-violation', options => ({ ...options, failOnRuleViolation: false })],
   ['-v', options => ({ ...options, verbose: true })],
   ['--verbose', options => ({ ...options, verbose: true })],
   ['-h', options => ({ ...options, help: true })],
@@ -56,7 +53,7 @@ const VALUE_UPDATERS = new Map<string, ValueUpdater>([
 function parseTokens(tokens: readonly string[], options: PkgvizCliOptions): PkgvizCliOptions {
   if (tokens.length === 0) return options;
 
-  const argument = tokens[0];
+  const [argument] = tokens;
   const rest = tokens.slice(1);
   const flagUpdater = FLAG_UPDATERS.get(argument);
   if (flagUpdater !== undefined) return parseTokens(rest, flagUpdater(options));

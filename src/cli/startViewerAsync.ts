@@ -63,7 +63,7 @@ async function findFreePortAsync(preferred?: number): Promise<number> {
 async function findAvailablePortAsync(candidates: readonly number[]): Promise<number | null> {
   if (candidates.length === 0) return null;
 
-  const candidate = candidates[0];
+  const [candidate] = candidates;
   const port = await claimAvailablePortAsync(candidate);
   return port ?? findAvailablePortAsync(candidates.slice(1));
 }
