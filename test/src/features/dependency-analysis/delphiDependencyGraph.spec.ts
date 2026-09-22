@@ -19,7 +19,7 @@ describe('[Delphi dependency graph migration]', () => {
       'specifier',
       'delphi-standard-library'
     );
-    const parsed = await readDelphiProjectFileMetadata(
+    const parsed = readDelphiProjectFileMetadata(
       file,
       projectRoot,
       importsByFile.get('Services/UserService.pas') ?? []
