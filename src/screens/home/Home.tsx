@@ -26,7 +26,7 @@ export default function HomeScreen({ project }: HomeScreenProps) {
   const { setTheme } = useTheme();
   const { mode, mounted: themeMounted } = useThemeMode();
   const [currentPackage, setCurrentPackage] = useState<string>('');
-  const packageGraph = project.ok ? project.value.graph : null;
+  const packageGraph = project.ok ? project.value.packageGraph : null;
   const projectTree = project.ok ? project.value.tree : [];
   const [selectedTreeId, setSelectedTreeId] = useState<string | null>(null);
   const auditEvaluation = project.ok ? project.value.evaluation : null;
@@ -50,7 +50,7 @@ export default function HomeScreen({ project }: HomeScreenProps) {
     setCurrentPackage(
       resolveProjectTreeNavigation(
         node,
-        packageGraph?.nodes.map(candidate => String(candidate.data.id ?? '')) ?? [],
+        packageGraph?.nodes.map(candidate => candidate.id) ?? [],
         currentPackage
       )
     );
@@ -147,7 +147,7 @@ interface HomeScreenProps {
   readonly project: ProjectAnalysisActionResult<ProjectOverview>;
 }
 
-/*** Normalizes graph navigation paths to the package-id representation used by Cytoscape. */
+/*** Normalizes graph navigation paths to the package-id representation used by the graph view. */
 function normalizeGraphPackage(path: string): string {
   return path.replaceAll('/', '.').replace(/^\.+|\.+$/g, '');
 }

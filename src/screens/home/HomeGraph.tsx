@@ -1,12 +1,12 @@
 'use client';
 import { ActivityIndicator } from '@zora/activity-indicator';
 import { View } from '@zora/view';
-import type { ElementsDefinition } from 'cytoscape';
 import React from 'react';
 
 import { CycleInspector } from '@/features/audit/adapters/inbound/react/CycleInspector';
 import { DependencyGraphView } from '@/features/graph-view/adapters/inbound/react/DependencyGraphView';
 import type { CycleHighlight, CycleInspection } from '@/types/auditVisualization';
+import type { PackageDependencyGraph } from '@/types/dependencyAnalysis';
 
 /*** Renders the graph surface together with its optional cycle inspector overlay. */
 export function HomeGraph({
@@ -44,7 +44,7 @@ interface HomeGraphProps {
   readonly currentPackage: string;
   readonly cycleHighlights: readonly CycleHighlight[];
   readonly cycleInspection: CycleInspection | null;
-  readonly packageGraph: ElementsDefinition | null;
+  readonly packageGraph: PackageDependencyGraph | null;
   readonly setCurrentPackage: (path: string) => void;
   readonly onCloseInspection: () => void;
 }
