@@ -46,14 +46,14 @@ describe('[WorkspaceSidebar]', () => {
     );
     const tabList = container.querySelector<HTMLElement>('[role="tablist"]');
     const tabWrappers = Array.from(tabList?.children ?? []);
-    const rulesTab = Array.from(container.querySelectorAll<HTMLElement>('[role="tab"]')).find(
-      tab => tab.textContent?.includes('Rules')
+    const rulesTab = Array.from(container.querySelectorAll<HTMLElement>('[role="tab"]')).find(tab =>
+      tab.textContent?.includes('Rules')
     );
 
     expect(tabWrappers.length).toBe(3);
-    expect(
-      tabWrappers.every(wrapper => wrapper.getAttribute('style')?.includes('flex:1'))
-    ).toBe(true);
+    expect(tabWrappers.every(wrapper => wrapper.getAttribute('style')?.includes('flex:1'))).toBe(
+      true
+    );
     expect(rulesTab?.textContent).toContain('Rules');
     expect(rulesTab?.textContent).toContain('2');
     expect(rulesTab?.textContent?.includes('Findings')).toBe(false);
