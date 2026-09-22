@@ -80,5 +80,6 @@ function parentPackage(id: string): string {
 /*** Normalize optional owner identifiers before they become graph identities. */
 function nonEmpty(value: string | undefined): string | undefined {
   const normalized = value?.trim();
-  return normalized ? normalized : undefined;
+  if (!normalized) return undefined;
+  return normalized;
 }
